@@ -113,11 +113,9 @@ export type ApiApproveReviewInput = {
 
 export type ApiAppsMutation = {
   __typename?: 'AppsMutation';
-  /** Установить приложение */
+  /** Install app */
   install: Scalars['Boolean']['output'];
-  /** Опубликовать событие (для тестирования) */
-  publishEvent: Scalars['Boolean']['output'];
-  /** Удалить приложение */
+  /** Uninstall app */
   uninstall: Scalars['Boolean']['output'];
 };
 
@@ -133,9 +131,9 @@ export type ApiAppsMutationUninstallArgs = {
 
 export type ApiAppsQuery = {
   __typename?: 'AppsQuery';
-  /** Получить список доступных приложений для установки */
+  /** Get list of available apps for installation */
   apps: Array<ApiApp>;
-  /** Получить список установленных приложений */
+  /** Get list of installed apps */
   installedApps: Array<ApiInstalledApp>;
 };
 

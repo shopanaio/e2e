@@ -1,0 +1,31 @@
+mutation OrderCreate($input: CreateOrderInput!) {
+  orderMutation {
+    orderCreate(input: $input) {
+      id
+      status
+      number
+      cost {
+        subtotalAmount {
+          amount
+          currencyCode
+        }
+        totalDiscountAmount {
+          amount
+          currencyCode
+        }
+        totalTaxAmount {
+          amount
+          currencyCode
+        }
+        totalShippingAmount {
+          amount
+          currencyCode
+        }
+        totalAmount {
+          amount
+          currencyCode
+        }
+      }
+    }
+  }
+}

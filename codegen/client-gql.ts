@@ -22,32 +22,6 @@ export type Scalars = {
   Uuid: { input: string; output: string; }
 };
 
-/** Input data for adding an item to an existing cart. */
-export type ApiAddCartLineInput = {
-  /** ID of the cart. */
-  cartId: Scalars['ID']['input'];
-  /** Unique identifier for the client mutation. */
-  clientMutationId?: InputMaybe<Scalars['String']['input']>;
-  /**
-   * ID of the product to add.
-   * Error if the product is not found or already exists in the cart.
-   */
-  productId: Scalars['ID']['input'];
-  /** Quantity to add; must be greater than 0. */
-  quantity: Scalars['Int']['input'];
-};
-
-/** Payload returned after adding an item to the cart. */
-export type ApiAddCartLinePayload = {
-  __typename?: 'AddCartLinePayload';
-  /** The updated cart. */
-  cart?: Maybe<ApiCart>;
-  /** Unique identifier echoed from the input. */
-  clientMutationId?: Maybe<Scalars['String']['output']>;
-  /** List of field-specific or general errors. */
-  errors?: Maybe<Array<ApiFieldError>>;
-};
-
 /**
  * A postal address.
  * Implements the Node interface.
@@ -123,17 +97,6 @@ export type ApiAddressInput = {
   provinceCode?: InputMaybe<Scalars['String']['input']>;
 };
 
-/** Information about an applied discount or promotion. */
-export type ApiAppliedDiscount = {
-  __typename?: 'AppliedDiscount';
-  /** Amount by which the cost was reduced. */
-  amount: ApiMoney;
-  /** Coupon code used (if this is a coupon). */
-  code?: Maybe<Scalars['String']['output']>;
-  /** ID of the promotion or coupon in the system (if applicable). */
-  id?: Maybe<Scalars['ID']['output']>;
-};
-
 /** A content article. */
 export type ApiArticle = ApiNode & {
   __typename?: 'Article';
@@ -198,171 +161,6 @@ export enum ArticleSort {
   UpdatedAtAsc = 'UPDATED_AT_ASC',
   UpdatedAtDesc = 'UPDATED_AT_DESC'
 }
-
-/** A shopping cart with multiple items. */
-export type ApiCart = ApiNode & {
-  __typename?: 'Cart';
-  /** List of all discounts applied at the cart level. */
-  appliedDiscounts: Array<ApiAppliedDiscount>;
-  /** Details of all tax components applied at the cart level. */
-  appliedTaxLines: Array<ApiTaxLine>;
-  /** Billing address, if provided. */
-  billingAddress?: Maybe<ApiAddress>;
-  /** All cost calculations for the cart. */
-  cost: ApiCartCost;
-  /** When this cart was first created. */
-  createdAt: Scalars['DateTime']['output'];
-  /** A globally-unique ID. */
-  id: Scalars['ID']['output'];
-  /** Object identifier (Internal). */
-  iid: Scalars['Uuid']['output'];
-  /** List of items in the cart (paginated). */
-  lines: ApiCartLineConnection;
-  /** Notifications for the user regarding the cart. */
-  notifications: Array<ApiCartNotification>;
-  /** Shipping address, if provided. */
-  shippingAddress?: Maybe<ApiAddress>;
-  /** Shipping information including available and selected methods. */
-  shippingDetails: ApiCartShippingDetails;
-  /** Quantity of the item being purchased. */
-  totalQuantity: Scalars['Int']['output'];
-  /** When this cart was last updated. */
-  updatedAt: Scalars['DateTime']['output'];
-};
-
-
-/** A shopping cart with multiple items. */
-export type ApiCartLinesArgs = {
-  after?: InputMaybe<Scalars['Cursor']['input']>;
-  before?: InputMaybe<Scalars['Cursor']['input']>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  last?: InputMaybe<Scalars['Int']['input']>;
-};
-
-/** All monetary calculations related to the cart. */
-export type ApiCartCost = {
-  __typename?: 'CartCost';
-  /** Shipping cost including taxes (if selected). */
-  shippingCost?: Maybe<ApiMoney>;
-  /** Total value of items before any discounts. */
-  subtotalAmount: ApiMoney;
-  /** Final amount to be paid, including item cost, shipping, and taxes. */
-  totalAmount: ApiMoney;
-  /** Total discount from both item-level and cart-level promotions. */
-  totalDiscountAmount: ApiMoney;
-  /** Total tax amount applied to the cart. */
-  totalTaxAmount: ApiMoney;
-};
-
-/** A single item in a shopping cart. */
-export type ApiCartLine = ApiNode & {
-  __typename?: 'CartLine';
-  /** List of discounts applied specifically to this cart item. */
-  appliedDiscounts: Array<ApiAppliedDiscount>;
-  /** Details of all taxes applied to this cart item. */
-  appliedTaxLines: Array<ApiTaxLine>;
-  /** A list of components that make up this cart line, such as individual products in a bundle. */
-  children: Array<Maybe<ApiCartLine>>;
-  /** Cost calculations for this cart item. */
-  cost: ApiCartLineCost;
-  /** Global unique identifier for the address. */
-  id: Scalars['ID']['output'];
-  /** Object identifier (Internal). */
-  iid: Scalars['Uuid']['output'];
-  /** The purchasable item added to the cart, such as a product or bundle. */
-  purchasable: ApiProductVariant;
-  /** Quantity of the item being purchased. */
-  quantity: Scalars['Int']['output'];
-};
-
-/** A paginated list of CartLines. */
-export type ApiCartLineConnection = {
-  __typename?: 'CartLineConnection';
-  /** List of CartLine edges. */
-  edges: Array<ApiCartLineEdge>;
-  /** Pagination information. */
-  pageInfo: ApiPageInfo;
-  /** The total number of items. */
-  totalCount: Scalars['Int']['output'];
-};
-
-/** Detailed breakdown of costs for a cart line item */
-export type ApiCartLineCost = {
-  __typename?: 'CartLineCost';
-  /** The original list price per unit before any discounts. */
-  compareAtUnitPrice: ApiMoney;
-  /** Discount amount applied to a single unit. */
-  discountAmount: ApiMoney;
-  /** Total cost of all units before discounts. */
-  subtotalAmount: ApiMoney;
-  /** Total tax amount applied to the cart line. */
-  taxAmount: ApiMoney;
-  /** Final total cost for the cart line, including all discounts, taxes, and any additional fees. */
-  totalAmount: ApiMoney;
-  /** The current price per unit before discounts are applied (may differ from compareAt price if on sale). */
-  unitPrice: ApiMoney;
-};
-
-/** An edge in a paginated list of CartLines. */
-export type ApiCartLineEdge = {
-  __typename?: 'CartLineEdge';
-  /** Cursor for pagination. */
-  cursor: Scalars['Cursor']['output'];
-  /** The CartLine at this edge. */
-  node: ApiCartLine;
-};
-
-/** Input data for a single item in the cart. */
-export type ApiCartLineInput = {
-  /** ID of the product to add or update. */
-  productId: Scalars['ID']['input'];
-  /** Quantity of the product in the cart. */
-  quantity: Scalars['Int']['input'];
-};
-
-/** A non-blocking warning generated by cart operations. */
-export type ApiCartNotification = {
-  __typename?: 'CartNotification';
-  /** Code categorizing the warning. */
-  code: CartNotificationCode;
-  /** A globally-unique ID. */
-  id: Scalars['ID']['output'];
-  /** Object identifier (Internal). */
-  iid: Scalars['Uuid']['output'];
-  /** Whether the warning has been acknowledged by the user. */
-  isDismissed: Scalars['Boolean']['output'];
-  /** Importance level of the warning. */
-  severity: NotificationSeverity;
-};
-
-/**
- * Codes for warnings that may be returned with Cart mutations,
- * indicating non-blocking adjustments or issues in the cart.
- */
-export enum CartNotificationCode {
-  /** An item in the cart is no longer available for sale. */
-  ItemUnavailable = 'ITEM_UNAVAILABLE',
-  /**
-   * The requested quantity exceeds available stock;
-   * quantity was automatically reduced to the maximum available.
-   */
-  NotEnoughStock = 'NOT_ENOUGH_STOCK',
-  /** The requested item is completely out of stock and has been removed from the cart. */
-  OutOfStock = 'OUT_OF_STOCK',
-  /** The price of one or more items has changed since they were added to the cart. */
-  PriceChanged = 'PRICE_CHANGED'
-}
-
-/** Details about shipping methods at the cart level. */
-export type ApiCartShippingDetails = {
-  __typename?: 'CartShippingDetails';
-  /** List of available shipping methods. */
-  availableMethods: Array<ApiShippingMethod>;
-  /** Estimated delivery date based on the selected shipping method. */
-  estimatedDeliveryDate?: Maybe<Scalars['DateTime']['output']>;
-  /** Currently selected shipping method, if any. */
-  selectedMethod?: Maybe<ApiShippingMethod>;
-};
 
 export type ApiCategory = ApiNode & {
   __typename?: 'Category';
@@ -521,11 +319,11 @@ export type ApiCheckoutCreatePayload = {
   errors?: Maybe<Array<ApiCheckoutFieldError>>;
 };
 
-/** Входные данные для обновления отображаемой валюты корзины. */
+/** Input data for updating the display currency of the checkout. */
 export type ApiCheckoutCurrencyCodeUpdateInput = {
-  /** Идентификатор корзины, над которой выполняется операция. */
+  /** Identifier of the checkout on which the operation is performed. */
   checkoutId: Scalars['ID']['input'];
-  /** Код валюты по ISO 4217 (например, "USD", "EUR"). */
+  /** Currency code according to ISO 4217 (e.g., "USD", "EUR"). */
   currencyCode: CurrencyCode;
 };
 
@@ -541,9 +339,9 @@ export type ApiCheckoutCustomerIdentity = {
   phone?: Maybe<Scalars['String']['output']>;
 };
 
-/** Входные данные для обновления идентификационных данных покупателя, связанных с корзиной. */
+/** Input data for updating customer identification data associated with the checkout. */
 export type ApiCheckoutCustomerIdentityUpdateInput = {
-  /** Идентификатор корзины, над которой выполняется операция. */
+  /** Identifier of the checkout on which the operation is performed. */
   checkoutId: Scalars['ID']['input'];
   /**
    * Country code of the customer.
@@ -551,23 +349,23 @@ export type ApiCheckoutCustomerIdentityUpdateInput = {
    */
   countryCode?: InputMaybe<CountryCode>;
   /**
-   * Идентификатор покупателя во внешней/внутренней системе.
-   * Используется для связывания корзины с существующим клиентом.
+   * Customer identifier in external/internal system.
+   * Used to link the checkout with an existing customer.
    */
   customerId?: InputMaybe<Scalars['ID']['input']>;
-  /** Электронная почта покупателя. Если указана, будет привязана к корзине. */
+  /** Customer's email address. If specified, will be linked to the checkout. */
   email?: InputMaybe<Scalars['Email']['input']>;
   /** Phone number of the customer. */
   phone?: InputMaybe<Scalars['String']['input']>;
 };
 
-/** Входные данные для обновления заметки покупателя, прикреплённой к корзине. */
+/** Input data for updating the customer note attached to the checkout. */
 export type ApiCheckoutCustomerNoteUpdateInput = {
-  /** Идентификатор корзины, над которой выполняется операция. */
+  /** Identifier of the checkout on which the operation is performed. */
   checkoutId: Scalars['ID']['input'];
   /**
-   * Текст заметки покупателя (инструкции по доставке и т.п.).
-   * Пустое значение очищает заметку.
+   * Text of the customer note (delivery instructions, etc.).
+   * Empty value clears the note.
    */
   note?: InputMaybe<Scalars['String']['input']>;
 };
@@ -622,38 +420,38 @@ export type ApiCheckoutDeliveryAddressInput = {
   provinceCode?: InputMaybe<Scalars['String']['input']>;
 };
 
-/** Элемент обновления адреса доставки: какой адрес обновляем и на какие данные. */
+/** Delivery address update element: which address to update and with what data. */
 export type ApiCheckoutDeliveryAddressUpdateInput = {
-  /** Новые значения почтового адреса. */
+  /** New postal address values. */
   address: ApiCheckoutDeliveryAddressInput;
-  /** Идентификатор существующего адреса доставки в корзине. */
+  /** Identifier of the existing delivery address in the checkout. */
   addressId: Scalars['ID']['input'];
 };
 
 /**
- * Входные данные для добавления одного или нескольких адресов доставки к корзине.
- * Поддерживает мультишиппинг.
+ * Input data for adding one or more delivery addresses to the checkout.
+ * Supports multi-shipping.
  */
 export type ApiCheckoutDeliveryAddressesAddInput = {
-  /** Список добавляемых адресов доставки. */
+  /** List of delivery addresses to be added. */
   addresses: Array<ApiCheckoutDeliveryAddressInput>;
-  /** Идентификатор корзины, над которой выполняется операция. */
+  /** Identifier of the checkout on which the operation is performed. */
   checkoutId: Scalars['ID']['input'];
 };
 
-/** Входные данные для удаления одного или нескольких адресов доставки из корзины. */
+/** Input data for removing one or more delivery addresses from the checkout. */
 export type ApiCheckoutDeliveryAddressesRemoveInput = {
-  /** Идентификаторы адресов доставки, которые следует удалить. */
+  /** Identifiers of delivery addresses to be removed. */
   addressIds: Array<Scalars['ID']['input']>;
-  /** Идентификатор корзины, над которой выполняется операция. */
+  /** Identifier of the checkout on which the operation is performed. */
   checkoutId: Scalars['ID']['input'];
 };
 
-/** Входные данные для пакетного обновления ранее добавленных адресов доставки. */
+/** Input data for batch updating previously added delivery addresses. */
 export type ApiCheckoutDeliveryAddressesUpdateInput = {
-  /** Идентификатор корзины, над которой выполняется операция. */
+  /** Identifier of the checkout on which the operation is performed. */
   checkoutId: Scalars['ID']['input'];
-  /** Список обновлений для адресов доставки. */
+  /** List of updates for delivery addresses. */
   updates: Array<ApiCheckoutDeliveryAddressUpdateInput>;
 };
 
@@ -692,15 +490,15 @@ export enum CheckoutDeliveryMethodType {
 }
 
 /**
- * Входные данные для выбора/изменения способа доставки.
- * Может применяться ко всей корзине либо к конкретному адресу доставки.
+ * Input data for selecting/changing delivery method.
+ * Can be applied to the entire checkout or to a specific delivery address.
  */
 export type ApiCheckoutDeliveryMethodUpdateInput = {
-  /** Идентификатор корзины, над которой выполняется операция. */
+  /** Identifier of the checkout on which the operation is performed. */
   checkoutId: Scalars['ID']['input'];
-  /** Идентификатор delivery group, для которой выбирается метод доставки. */
+  /** Identifier of the delivery group for which the delivery method is selected. */
   deliveryGroupId: Scalars['ID']['input'];
-  /** Код способа доставки, доступного для данной корзины/адреса. */
+  /** Code of the delivery method available for this checkout/address. */
   shippingMethodCode: Scalars['String']['input'];
 };
 
@@ -720,33 +518,13 @@ export type ApiCheckoutFieldError = {
   message: Scalars['String']['output'];
 };
 
-/** Input data for placing an order (checkout). */
-export type ApiCheckoutInput = {
-  /** Billing address. */
-  billingAddress: ApiAddressInput;
-  /** Cart ID. */
-  cartId: Scalars['ID']['input'];
-  /** Unique identifier for the client mutation. */
-  clientMutationId?: InputMaybe<Scalars['String']['input']>;
-  /** Customer contact details. */
-  customerDetails: ApiOrderCustomerDetailsInput;
-  /** Unique key for idempotency. */
-  idempotencyKey: Scalars['String']['input'];
-  /** Payment method ID. */
-  paymentMethod: Scalars['ID']['input'];
-  /** Shipping address. */
-  shippingAddress: ApiAddressInput;
-  /** Shipping method ID. */
-  shippingMethod: Scalars['ID']['input'];
-};
-
-/** Входные данные для обновления кода языка/локали корзины. */
+/** Input data for updating the language/locale code of the checkout. */
 export type ApiCheckoutLanguageCodeUpdateInput = {
-  /** Идентификатор корзины, над которой выполняется операция. */
+  /** Identifier of the checkout on which the operation is performed. */
   checkoutId: Scalars['ID']['input'];
   /**
-   * Код языка/локали (ISO 639-1, при необходимости BCP 47), например "en", "ru", "uk".
-   * Влияет на локализацию и форматирование.
+   * Language/locale code (ISO 639-1, BCP 47 if necessary), e.g. "en", "ru", "uk".
+   * Affects localization and formatting.
    */
   localeCode: Scalars['String']['input'];
 };
@@ -890,24 +668,24 @@ export type ApiCheckoutMutation = {
   __typename?: 'CheckoutMutation';
   /** Creates a new checkout. */
   checkoutCreate: ApiCheckout;
-  /** Обновляет отображаемую валюту корзины (ISO 4217, например "USD", "EUR"). */
+  /** Updates the display currency of the checkout (ISO 4217, e.g. "USD", "EUR"). */
   checkoutCurrencyCodeUpdate: ApiCheckout;
   /**
-   * Обновляет идентификационные данные покупателя, связанные с корзиной
-   * (email, customerId и при необходимости страна/язык для расчётов).
+   * Updates customer identification data associated with the checkout
+   * (email, customerId and if necessary country/language for calculations).
    */
   checkoutCustomerIdentityUpdate: ApiCheckout;
-  /** Обновляет заметку покупателя, прикреплённую к корзине (инструкции по доставке и т.п.). */
+  /** Updates the customer note attached to the checkout (delivery instructions, etc.). */
   checkoutCustomerNoteUpdate: ApiCheckout;
-  /** Добавляет один или несколько адресов доставки к корзине (поддерживает мультишиппинг). */
+  /** Adds one or more delivery addresses to the checkout (supports multi-shipping). */
   checkoutDeliveryAddressesAdd: ApiCheckout;
-  /** Удаляет один или несколько адресов доставки, ранее привязанных к корзине. */
+  /** Removes one or more delivery addresses previously attached to the checkout. */
   checkoutDeliveryAddressesRemove: ApiCheckout;
-  /** Обновляет ранее добавленные адреса доставки (например, исправление индекса или города). */
+  /** Updates previously added delivery addresses (e.g., correcting postal code or city). */
   checkoutDeliveryAddressesUpdate: ApiCheckout;
-  /** Выбирает или изменяет способ доставки для всей корзины либо конкретного адреса. */
+  /** Selects or changes the delivery method for the entire checkout or specific address. */
   checkoutDeliveryMethodUpdate: ApiCheckout;
-  /** Обновляет язык/локаль корзины (влияет на локализацию и форматирование). */
+  /** Updates the language/locale of the checkout (affects localization and formatting). */
   checkoutLanguageCodeUpdate: ApiCheckout;
   /** Adds an item to an existing checkout. */
   checkoutLinesAdd: ApiCheckoutLinesAddPayload;
@@ -917,9 +695,9 @@ export type ApiCheckoutMutation = {
   checkoutLinesDelete: ApiCheckoutLinesDeletePayload;
   /** Updates the quantity of a specific checkout item. */
   checkoutLinesUpdate: ApiCheckoutLinesUpdatePayload;
-  /** Применяет промокод/купон к корзине. */
+  /** Applies a promo code/coupon to the checkout. */
   checkoutPromoCodeAdd: ApiCheckout;
-  /** Удаляет ранее применённый промокод/купон из корзины. */
+  /** Removes a previously applied promo code/coupon from the checkout. */
   checkoutPromoCodeRemove: ApiCheckout;
 };
 
@@ -1029,17 +807,6 @@ export enum CheckoutNotificationCode {
   PriceChanged = 'PRICE_CHANGED'
 }
 
-/** Payload returned after performing checkout (placing an order). */
-export type ApiCheckoutPayload = {
-  __typename?: 'CheckoutPayload';
-  /** Unique identifier echoed from the input. */
-  clientMutationId?: Maybe<Scalars['String']['output']>;
-  /** List of field-specific or general errors. */
-  errors?: Maybe<Array<ApiFieldError>>;
-  /** The newly created order. */
-  order?: Maybe<ApiOrder>;
-};
-
 /** Applied promo code for a checkout. */
 export type ApiCheckoutPromoCode = {
   __typename?: 'CheckoutPromoCode';
@@ -1057,19 +824,19 @@ export type ApiCheckoutPromoCode = {
   value: Scalars['Int']['output'];
 };
 
-/** Входные данные для применения промокода к корзине. */
+/** Input data for applying a promo code to the checkout. */
 export type ApiCheckoutPromoCodeAddInput = {
-  /** Идентификатор корзины, над которой выполняется операция. */
+  /** Identifier of the checkout on which the operation is performed. */
   checkoutId: Scalars['ID']['input'];
-  /** Текстовый код купона/промокода. */
+  /** Text code of the coupon/promo code. */
   code: Scalars['String']['input'];
 };
 
-/** Входные данные для удаления ранее применённого промокода из корзины. */
+/** Input data for removing a previously applied promo code from the checkout. */
 export type ApiCheckoutPromoCodeRemoveInput = {
-  /** Идентификатор корзины, над которой выполняется операция. */
+  /** Identifier of the checkout on which the operation is performed. */
   checkoutId: Scalars['ID']['input'];
-  /** Текстовый код купона/промокода, который требуется отменить. */
+  /** Text code of the coupon/promo code to be cancelled. */
   code: Scalars['String']['input'];
 };
 
@@ -1082,25 +849,6 @@ export type ApiCheckoutQuery = {
 
 export type ApiCheckoutQueryCheckoutArgs = {
   id: Scalars['ID']['input'];
-};
-
-/** Input data for clearing all items from a cart. */
-export type ApiClearCartLinesInput = {
-  /** ID of the cart to clear. */
-  cartId: Scalars['ID']['input'];
-  /** Unique identifier for the client mutation. */
-  clientMutationId?: InputMaybe<Scalars['String']['input']>;
-};
-
-/** Payload returned after clearing all items from the cart. */
-export type ApiClearCartLinesPayload = {
-  __typename?: 'ClearCartLinesPayload';
-  /** The updated (now empty) cart. */
-  cart?: Maybe<ApiCart>;
-  /** Unique identifier echoed from the input. */
-  clientMutationId?: Maybe<Scalars['String']['output']>;
-  /** List of field-specific or general errors. */
-  errors?: Maybe<Array<ApiFieldError>>;
 };
 
 export enum CountryCode {
@@ -1512,25 +1260,9 @@ export enum CountryCode {
   Zw = 'ZW'
 }
 
-/** Input data for creating a new cart. */
-export type ApiCreateCartInput = {
-  /** Unique identifier for the client mutation. */
-  clientMutationId?: InputMaybe<Scalars['String']['input']>;
-  /** Currency code for all items (e.g., "USD"). */
-  currencyCode: CurrencyCode;
-  /** Initial items to add to the new cart. */
-  items: Array<ApiCartLineInput>;
-};
-
-/** Payload returned after creating a cart. */
-export type ApiCreateCartPayload = {
-  __typename?: 'CreateCartPayload';
-  /** The newly created cart. */
-  cart?: Maybe<ApiCart>;
-  /** Unique identifier echoed from the input. */
-  clientMutationId?: Maybe<Scalars['String']['output']>;
-  /** List of field-specific or general errors. */
-  errors?: Maybe<Array<ApiFieldError>>;
+export type ApiCreateOrderInput = {
+  /** ID of the checkout. */
+  checkoutId: Scalars['ID']['input'];
 };
 
 /** Input type for submitting a new product review. */
@@ -1900,12 +1632,12 @@ export enum CurrencyCode {
   Zwl = 'ZWL'
 }
 
-/** Стоимость доставки с моделью оплаты */
+/** Delivery cost with payment model */
 export type ApiDeliveryCost = {
   __typename?: 'DeliveryCost';
-  /** Сумма доставки */
+  /** Delivery amount */
   amount: ApiMoney;
-  /** Модель оплаты доставки */
+  /** Shipping payment model */
   paymentModel: ShippingPaymentModel;
 };
 
@@ -1951,49 +1683,6 @@ export type ApiFilterInput = {
   /** The value handles of the Filter. Ranges accept min, max values. */
   values: Array<Scalars['String']['input']>;
 };
-
-/** Fulfillment information for the order. */
-export type ApiFulfillment = ApiNode & {
-  __typename?: 'Fulfillment';
-  /** Fulfillment creation date. */
-  createdAt: Scalars['DateTime']['output'];
-  /** Global unique identifier for the address. */
-  id: Scalars['ID']['output'];
-  /** Object identifier (Internal). */
-  iid: Scalars['Uuid']['output'];
-  /** Fulfillment lines. */
-  lines: Array<ApiFulfillmentLine>;
-  /** Fulfillment status. */
-  status: FulfillmentStatus;
-  /** Tracking number. */
-  trackingNumber?: Maybe<Scalars['String']['output']>;
-  /** Tracking URL. */
-  trackingUrl?: Maybe<Scalars['String']['output']>;
-};
-
-/** Fulfillment line within a fulfillment. */
-export type ApiFulfillmentLine = ApiNode & {
-  __typename?: 'FulfillmentLine';
-  /** Global unique identifier for the address. */
-  id: Scalars['ID']['output'];
-  /** Object identifier (Internal). */
-  iid: Scalars['Uuid']['output'];
-  /** Order item ID. */
-  orderItemId: Scalars['ID']['output'];
-  /** Quantity shipped. */
-  quantity: Scalars['Int']['output'];
-};
-
-export enum FulfillmentStatus {
-  Cancelled = 'CANCELLED',
-  Delivered = 'DELIVERED',
-  Fulfilled = 'FULFILLED',
-  OnHold = 'ON_HOLD',
-  Pending = 'PENDING',
-  Processing = 'PROCESSING',
-  Returned = 'RETURNED',
-  Shipped = 'SHIPPED'
-}
 
 /** Result of cursor-based pagination for a gallery of files. */
 export type ApiGalleryConnection = {
@@ -2102,25 +1791,6 @@ export enum ListingType {
   /** Manually curated: admin selects products and defines their order; */
   Standard = 'STANDARD'
 }
-
-/** Input data for loading a cart by its ID. */
-export type ApiLoadCartInput = {
-  /** ID of the cart to load. */
-  cartId: Scalars['ID']['input'];
-  /** Unique identifier for the client mutation. */
-  clientMutationId?: InputMaybe<Scalars['String']['input']>;
-};
-
-/** Payload returned after clearing all items from the cart. */
-export type ApiLoadCartPayload = {
-  __typename?: 'LoadCartPayload';
-  /** The updated (now empty) cart. */
-  cart?: Maybe<ApiCart>;
-  /** Unique identifier echoed from the input. */
-  clientMutationId?: Maybe<Scalars['String']['output']>;
-  /** List of field-specific or general errors. */
-  errors?: Maybe<Array<ApiFieldError>>;
-};
 
 /** Language codes based on ISO 639-1 and BCP 47 */
 export enum LocaleCode {
@@ -2432,29 +2102,16 @@ export type ApiMoneyInput = {
 
 export type ApiMutation = {
   __typename?: 'Mutation';
-  /** Adds an item to an existing cart. */
-  addCartLine: ApiAddCartLinePayload;
-  /** Place an order (checkout). */
-  checkout: ApiCheckoutPayload;
   checkoutMutation: ApiCheckoutMutation;
-  /** Clears all items from a cart. */
-  clearCartLines: ApiClearCartLinesPayload;
-  /** Creates a new cart. */
-  createCart: ApiCreateCartPayload;
   /** Create a review. */
   createReview: ApiProductReview;
   /** Delete own review. */
   deleteReview: Scalars['Boolean']['output'];
-  /** Loads a cart by its ID. Has side effects. */
-  loadCart?: Maybe<ApiLoadCartPayload>;
+  orderMutation: ApiOrderMutation;
   /** Creates a new session using email and password. */
   passwordSignIn: ApiPasswordSignInPayload;
   /** Registers a new user and returns a session. */
   passwordSignUp: ApiPasswordSignUpPayload;
-  /** Removes a single item from the cart. */
-  removeCartLine: ApiRemoveCartLinePayload;
-  /** Replaces all items in an existing cart. */
-  replaceCartLines: ApiReplaceCartLinesPayload;
   /** Report review abuse. */
   reportReviewAbuse: Scalars['Boolean']['output'];
   /** Sends a password recovery email. */
@@ -2465,8 +2122,6 @@ export type ApiMutation = {
   sellerReplyToReview: Scalars['Boolean']['output'];
   /** Signs out the current user. */
   signOut: Scalars['Boolean']['output'];
-  /** Updates the quantity of a specific cart item. */
-  updateCartLineQuantity: ApiUpdateCartLineQuantityPayload;
   /** Updates the authenticated user's password. */
   updatePassword: ApiUpdatePasswordPayload;
   /** Edit own review. */
@@ -2480,26 +2135,6 @@ export type ApiMutation = {
 };
 
 
-export type ApiMutationAddCartLineArgs = {
-  input: ApiAddCartLineInput;
-};
-
-
-export type ApiMutationCheckoutArgs = {
-  input: ApiCheckoutInput;
-};
-
-
-export type ApiMutationClearCartLinesArgs = {
-  input: ApiClearCartLinesInput;
-};
-
-
-export type ApiMutationCreateCartArgs = {
-  input: ApiCreateCartInput;
-};
-
-
 export type ApiMutationCreateReviewArgs = {
   input: ApiCreateReviewInput;
 };
@@ -2510,11 +2145,6 @@ export type ApiMutationDeleteReviewArgs = {
 };
 
 
-export type ApiMutationLoadCartArgs = {
-  input: ApiLoadCartInput;
-};
-
-
 export type ApiMutationPasswordSignInArgs = {
   input: ApiPasswordSignInInput;
 };
@@ -2522,16 +2152,6 @@ export type ApiMutationPasswordSignInArgs = {
 
 export type ApiMutationPasswordSignUpArgs = {
   input: ApiPasswordSignUpInput;
-};
-
-
-export type ApiMutationRemoveCartLineArgs = {
-  input: ApiRemoveCartLineInput;
-};
-
-
-export type ApiMutationReplaceCartLinesArgs = {
-  input: ApiReplaceCartLinesInput;
 };
 
 
@@ -2553,11 +2173,6 @@ export type ApiMutationResetPasswordArgs = {
 
 export type ApiMutationSellerReplyToReviewArgs = {
   input: ApiSellerReplyInput;
-};
-
-
-export type ApiMutationUpdateCartLineQuantityArgs = {
-  input: ApiUpdateCartLineQuantityInput;
 };
 
 
@@ -2597,172 +2212,82 @@ export enum NotificationSeverity {
   Warning = 'WARNING'
 }
 
-/** Order. */
-export type ApiOrder = ApiNode & {
+export type ApiOrder = {
   __typename?: 'Order';
-  /** Billing address. */
-  billingAddress: ApiAddress;
-  /** Creation date. */
-  createdAt: Scalars['DateTime']['output'];
-  /** The code of the currency used for the payment. */
-  currencyCode: CurrencyCode;
-  /** Customer contact details. */
-  customerDetails: ApiOrderCustomerDetails;
-  /** Total discount amount for the order. */
-  discount: ApiMoney;
-  /** Financial status (payment, refund, etc.). */
-  financialStatus: OrderFinancialStatus;
-  /** Fulfillment status. */
-  fulfillmentStatus: FulfillmentStatus;
-  /** Fulfillment information. */
-  fulfillments: Array<ApiFulfillment>;
-  /** Global unique identifier for the address. */
+  /** Cost breakdown for the order. */
+  cost: ApiOrderCost;
+  /** A globally-unique ID. */
   id: Scalars['ID']['output'];
-  /** Object identifier (Internal). */
-  iid: Scalars['Uuid']['output'];
-  /** Paginated order items. */
-  items: ApiOrderItemConnection;
-  /** Public metadata. */
-  metadata?: Maybe<Scalars['JSON']['output']>;
+  /** Order items. */
+  lines: Array<ApiOrderLine>;
   /** A unique numeric identifier for the order for use by shop owner and customer. */
-  orderNumber: Scalars['Int']['output'];
-  /** Payment method. */
-  paymentMethod: ApiPaymentMethod;
-  /** Refund information. */
-  refunds: Array<ApiRefund>;
-  /** Shipping address. */
-  shippingAddress: ApiAddress;
-  /** Shipping method. */
-  shippingMethod: ApiShippingMethod;
+  number: Scalars['BigInt']['output'];
   /** Order status. */
   status: OrderStatus;
-  /** Order subtotal without discounts and taxes. */
-  subtotal: ApiMoney;
-  /** Tax lines at the order level. */
-  taxLines: Array<ApiTaxLine>;
-  /** Order total including discounts and taxes. */
-  total: ApiMoney;
-  /** Shipping cost. */
+};
+
+export type ApiOrderCost = {
+  __typename?: 'OrderCost';
+  /** Total value of items before any discounts. */
+  subtotalAmount: ApiMoney;
+  /** Final amount to be paid, including item cost, shipping, and taxes. */
+  totalAmount: ApiMoney;
+  /** Total discount from both item-level and checkout-level promotions. */
+  totalDiscountAmount: ApiMoney;
+  /** Total shipping cost (only MERCHANT_COLLECTED payments). */
   totalShippingAmount: ApiMoney;
-  /** Total tax amount for the order. */
+  /** Total tax amount applied to the checkout. */
   totalTaxAmount: ApiMoney;
+};
+
+export type ApiOrderLine = {
+  __typename?: 'OrderLine';
+  /** Cost breakdown for the order line. */
+  cost: ApiOrderLineCost;
+  /** Creation date. */
+  createdAt: Scalars['DateTime']['output'];
+  /** A globally-unique ID. */
+  id: Scalars['ID']['output'];
+  /** Purchasable unit. */
+  purchasable: ApiPurchasable;
+  /** ID of the purchasable. */
+  purchasableId: Scalars['ID']['output'];
+  /** Quantity of the item being purchased. */
+  quantity: Scalars['Int']['output'];
   /** Last updated date. */
   updatedAt: Scalars['DateTime']['output'];
 };
 
-
-/** Order. */
-export type ApiOrderItemsArgs = {
-  after?: InputMaybe<Scalars['Cursor']['input']>;
-  before?: InputMaybe<Scalars['Cursor']['input']>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  last?: InputMaybe<Scalars['Int']['input']>;
-};
-
-/** A paginated list of Orders. */
-export type ApiOrderConnection = {
-  __typename?: 'OrderConnection';
-  /** List of edges in this connection. */
-  edges: Array<ApiOrderEdge>;
-  /** Pagination metadata. */
-  pageInfo: ApiPageInfo;
-  /** The total number of items. */
-  totalCount: Scalars['Int']['output'];
-};
-
-/** Customer's contact details in the order. */
-export type ApiOrderCustomerDetails = {
-  __typename?: 'OrderCustomerDetails';
-  /** Customer's email address. */
-  email: Scalars['Email']['output'];
-  /** Public metadata (plugins, notes, etc.). */
-  metadata?: Maybe<Scalars['JSON']['output']>;
-  /** Customer's full name. */
-  name: ApiUserName;
-  /** Customer's phone number in E.164 format. */
-  phone: Scalars['Phone']['output'];
-};
-
-/** Input type for customer's contact details. */
-export type ApiOrderCustomerDetailsInput = {
-  /** Customer's email address. */
-  email: Scalars['Email']['input'];
-  /** Additional public metadata. */
-  metadata?: InputMaybe<Scalars['JSON']['input']>;
-  /** Customer's full name. */
-  name: ApiUserNameInput;
-  /** Customer's phone number in E.164 format. */
-  phone: Scalars['Phone']['input'];
-};
-
-/** A single edge in a paginated list of Orders. */
-export type ApiOrderEdge = {
-  __typename?: 'OrderEdge';
-  /** Cursor for this edge. */
-  cursor: Scalars['Cursor']['output'];
-  /** The Order at this edge. */
-  node: ApiOrder;
-};
-
-export enum OrderFinancialStatus {
-  Authorized = 'AUTHORIZED',
-  Paid = 'PAID',
-  PartiallyPaid = 'PARTIALLY_PAID',
-  PartiallyRefunded = 'PARTIALLY_REFUNDED',
-  Pending = 'PENDING',
-  Refunded = 'REFUNDED',
-  Voided = 'VOIDED'
-}
-
-/** Order item (line) in the order. */
-export type ApiOrderItem = ApiNode & {
-  __typename?: 'OrderItem';
-  /** Discount amount for this item. */
+export type ApiOrderLineCost = {
+  __typename?: 'OrderLineCost';
+  /** Discount amount applied to a line. */
   discountAmount: ApiMoney;
-  /** Subtotal for this item after item level discounts. */
-  discountedSubtotalAmount: ApiMoney;
-  /** Global unique identifier for the address. */
-  id: Scalars['ID']['output'];
-  /** Object identifier (Internal). */
-  iid: Scalars['Uuid']['output'];
-  /** Quantity of units. */
-  quantity: Scalars['Int']['output'];
-  /** Subtotal for this item without discounts. */
+  /** Total cost of all units before discounts. */
   subtotalAmount: ApiMoney;
-  /** The purchasable item such as a product or bundle. */
-  target: ApiPurchasable;
-  /** Product title. */
-  title: Scalars['String']['output'];
-  /** Total amount for this item including taxes and discounts. */
+  /** Total tax amount applied to the checkout line. */
+  taxAmount: ApiMoney;
+  /** Total cost of this line (all units), after discounts and taxes. */
   totalAmount: ApiMoney;
+  /** The original list price per unit before any discounts. */
+  unitCompareAtPrice: ApiMoney;
+  /** The current price per unit before discounts are applied (may differ from compareAt price if on sale). */
+  unitPrice: ApiMoney;
 };
 
-/** Connection for order items (Relay-style pagination). */
-export type ApiOrderItemConnection = {
-  __typename?: 'OrderItemConnection';
-  /** List of item edges. */
-  edges: Array<ApiOrderItemEdge>;
-  /** Pagination information. */
-  pageInfo: ApiPageInfo;
-  /** The total number of items. */
-  totalCount: Scalars['Int']['output'];
+export type ApiOrderMutation = {
+  __typename?: 'OrderMutation';
+  orderCreate: ApiOrder;
 };
 
-/** Cursor for Relay-style pagination. */
-export type ApiOrderItemEdge = {
-  __typename?: 'OrderItemEdge';
-  /** Cursor for Relay-style pagination. */
-  cursor: Scalars['Cursor']['output'];
-  /** Node containing the order item data. */
-  node: ApiOrderItem;
+
+export type ApiOrderMutationOrderCreateArgs = {
+  input: ApiCreateOrderInput;
 };
 
-/** Overall order status. */
 export enum OrderStatus {
   Active = 'ACTIVE',
   Cancelled = 'CANCELLED',
-  Completed = 'COMPLETED',
-  Pending = 'PENDING'
+  Closed = 'CLOSED'
 }
 
 /** A content page. */
@@ -2902,18 +2427,6 @@ export type ApiPasswordSignUpPayload = {
   errors?: Maybe<Array<ApiFieldError>>;
   /** Newly created session. */
   session?: Maybe<ApiSession>;
-};
-
-export type ApiPaymentMethod = ApiNode & {
-  __typename?: 'PaymentMethod';
-  /** Payment method type. */
-  handle: Scalars['String']['output'];
-  /** Global unique identifier for the address. */
-  id: Scalars['ID']['output'];
-  /** Object identifier (Internal). */
-  iid: Scalars['Uuid']['output'];
-  /** Title of the payment method. */
-  title: Scalars['String']['output'];
 };
 
 /** Input type for executing predictive search (autocomplete suggestions). */
@@ -3324,7 +2837,7 @@ export type ApiProductVariantTagsArgs = {
   sort?: InputMaybe<TagSort>;
 };
 
-export type ApiPurchasable = ApiProductVariant | ApiPurchasableSnapshot;
+export type ApiPurchasable = ApiPurchasableSnapshot;
 
 export type ApiPurchasableSnapshot = {
   __typename?: 'PurchasableSnapshot';
@@ -3479,69 +2992,6 @@ export type ApiRatingRangeFilter = ApiFilter & {
   title: Scalars['String']['output'];
 };
 
-/** Refund information for the order. */
-export type ApiRefund = ApiNode & {
-  __typename?: 'Refund';
-  /** Refund amount. */
-  amount: ApiMoney;
-  /** Refund creation date. */
-  createdAt: Scalars['DateTime']['output'];
-  /** Global unique identifier for the address. */
-  id: Scalars['ID']['output'];
-  /** Object identifier (Internal). */
-  iid: Scalars['Uuid']['output'];
-  /** Reason for the refund. */
-  reason?: Maybe<Scalars['String']['output']>;
-};
-
-/** Input data for removing a single item from the cart. */
-export type ApiRemoveCartLineInput = {
-  /** ID of the cart. */
-  cartId: Scalars['ID']['input'];
-  /** Unique identifier for the client mutation. */
-  clientMutationId?: InputMaybe<Scalars['String']['input']>;
-  /**
-   * ID of the product to remove.
-   * Error if the product is not found in the cart.
-   */
-  productId: Scalars['ID']['input'];
-};
-
-/** Payload returned after removing an item from the cart. */
-export type ApiRemoveCartLinePayload = {
-  __typename?: 'RemoveCartLinePayload';
-  /** The updated cart. */
-  cart?: Maybe<ApiCart>;
-  /** Unique identifier echoed from the input. */
-  clientMutationId?: Maybe<Scalars['String']['output']>;
-  /** List of field-specific or general errors. */
-  errors?: Maybe<Array<ApiFieldError>>;
-};
-
-/** Input data for replacing all items in an existing cart. */
-export type ApiReplaceCartLinesInput = {
-  /** ID of the cart to update. */
-  cartId: Scalars['ID']['input'];
-  /** Unique identifier for the client mutation. */
-  clientMutationId?: InputMaybe<Scalars['String']['input']>;
-  /**
-   * New list of items for the cart.
-   * Providing an empty array clears the cart completely.
-   */
-  items: Array<ApiCartLineInput>;
-};
-
-/** Payload returned after replacing all items in the cart. */
-export type ApiReplaceCartLinesPayload = {
-  __typename?: 'ReplaceCartLinesPayload';
-  /** The updated cart. */
-  cart?: Maybe<ApiCart>;
-  /** Unique identifier echoed from the input. */
-  clientMutationId?: Maybe<Scalars['String']['output']>;
-  /** List of field-specific or general errors. */
-  errors?: Maybe<Array<ApiFieldError>>;
-};
-
 /** Input data for resetting a password using a token. */
 export type ApiResetPasswordInput = {
   /** Unique identifier for the client mutation. */
@@ -3661,25 +3111,11 @@ export type ApiSession = {
   user: ApiUser;
 };
 
-export type ApiShippingMethod = ApiNode & {
-  __typename?: 'ShippingMethod';
-  /** Estimated delivery time as a textual representation. */
-  estimatedDeliveryTime?: Maybe<Scalars['String']['output']>;
-  /** Payment method type. */
-  handle: Scalars['String']['output'];
-  /** Global unique identifier for the address. */
-  id: Scalars['ID']['output'];
-  /** Object identifier (Internal). */
-  iid: Scalars['Uuid']['output'];
-  /** Title of the payment method. */
-  title: Scalars['String']['output'];
-};
-
-/** Модель оплаты доставки */
+/** Shipping payment model */
 export enum ShippingPaymentModel {
-  /** Покупатель платит перевозчику напрямую, НЕ включается в grandTotal */
+  /** Customer pays carrier directly, NOT included in grandTotal */
   CarrierDirect = 'CARRIER_DIRECT',
-  /** Покупатель платит мерчанту, включается в grandTotal */
+  /** Customer pays merchant, included in grandTotal */
   MerchantCollected = 'MERCHANT_COLLECTED'
 }
 
@@ -3753,52 +3189,11 @@ export enum TagSort {
   UpdatedAtDesc = 'UPDATED_AT_DESC'
 }
 
-/** Detailed tax line. */
-export type ApiTaxLine = ApiNode & {
-  __typename?: 'TaxLine';
-  /** Tax amount. */
-  amountCollected: ApiMoney;
-  /** Global unique identifier for the address. */
-  id: Scalars['ID']['output'];
-  /** Object identifier (Internal). */
-  iid: Scalars['Uuid']['output'];
-  /** Tax rate (decimal value, e.g., 0.20). */
-  rate: Scalars['Float']['output'];
-  /** Tax type name, e.g., VAT. */
-  title: Scalars['String']['output'];
-};
-
 /** A node representing an arbitrary URL. */
 export type ApiUrlNode = {
   __typename?: 'URLNode';
   /** The URL string. */
   url: Scalars['String']['output'];
-};
-
-/** Input data for updating the quantity of a specific cart item. */
-export type ApiUpdateCartLineQuantityInput = {
-  /** ID of the cart. */
-  cartId: Scalars['ID']['input'];
-  /** ID of the cart item to update. */
-  cartItemId: Scalars['ID']['input'];
-  /** Unique identifier for the client mutation. */
-  clientMutationId?: InputMaybe<Scalars['String']['input']>;
-  /**
-   * New quantity for the cart item.
-   * If set to 0, the item will be removed.
-   */
-  quantity: Scalars['Int']['input'];
-};
-
-/** Payload returned after updating a cart item's quantity. */
-export type ApiUpdateCartLineQuantityPayload = {
-  __typename?: 'UpdateCartLineQuantityPayload';
-  /** The updated cart. */
-  cart?: Maybe<ApiCart>;
-  /** Unique identifier echoed from the input. */
-  clientMutationId?: Maybe<Scalars['String']['output']>;
-  /** List of field-specific or general errors. */
-  errors?: Maybe<Array<ApiFieldError>>;
 };
 
 /** Input data for changing the password of an authenticated user. */
@@ -3871,19 +3266,10 @@ export type ApiUser = ApiNode & {
   language?: Maybe<LocaleCode>;
   /** Full name of the user. */
   name: ApiUserName;
-  /** Paginated list of the user's orders. */
-  orders: ApiOrderConnection;
+  /** List of the user's orders. */
+  orders: Array<ApiOrder>;
   /** Phone number in E.164 format. */
   phone?: Maybe<Scalars['Phone']['output']>;
-};
-
-
-/** Represents a user in the system. */
-export type ApiUserOrdersArgs = {
-  after?: InputMaybe<Scalars['Cursor']['input']>;
-  before?: InputMaybe<Scalars['Cursor']['input']>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  last?: InputMaybe<Scalars['Int']['input']>;
 };
 
 /** Customer's first, middle, and last name. */

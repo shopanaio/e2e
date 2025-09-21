@@ -113,6 +113,7 @@ export type GraphQLFileName =
   | 'client/LoadCart'
   | 'client/NodeCategoryListing'
   | 'client/NodeProductGallery'
+  | 'client/OrderCreate'
   | 'client/PasswordSignIn'
   | 'client/PasswordSignUp'
   | 'client/PredictiveSearchProducts'
