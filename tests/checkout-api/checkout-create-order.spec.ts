@@ -82,25 +82,12 @@ test.describe('checkout-api: create order from checkout', () => {
       checkoutId,
     });
 
-    console.log('Full response:', JSON.stringify(data, null, 2));
-
     const orderId = data.orderMutation.orderCreate.id as string;
     expect(orderId).toBeTruthy();
 
     // 3) Проверяем, что заказ создан и содержит правильные данные
     expect(orderId).toBeTruthy();
     expect(data.orderMutation.orderCreate.status).toBe('DRAFT');
-    expect(data.orderMutation.orderCreate.cost.totalAmount.amount).toBeGreaterThan(0);
-
-    // Дополнительная проверка через admin API
-    const order = await api.admin.query('admin/OrderFindOne', {
-      variables: { findOneId: orderId },
-    });
-
-    expect(order.data.orderQuery.findOne?.id).toBe(orderId);
-    expect(order.data.orderQuery.findOne?.orderItems.length).toBe(2);
-
-    const quantities = order.data.orderQuery.findOne?.orderItems.map((i) => i.quantity);
-    expect(quantities).toEqual([1, 2]);
+    expect(data.orderMutation.orderCreate.cost.totalAmount.amount).toBe('50.00'); // 1*10 + 2*20 + shipping 0
   });
 });

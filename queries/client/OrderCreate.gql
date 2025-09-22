@@ -3,7 +3,6 @@ mutation OrderCreate($input: CreateOrderInput!) {
     orderCreate(input: $input) {
       id
       status
-      number
       cost {
         subtotalAmount {
           amount
