@@ -27,7 +27,8 @@
     "query:gen": "node ./bin/graphql/query-map-script.js queries queries/filenames.ts",
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "test": "npx playwright test"
   },
   "dependencies": {
     "@types/lodash": "^4.17.20",
