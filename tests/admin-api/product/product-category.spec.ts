@@ -30,7 +30,7 @@ test.describe('Product Category', () => {
   };
 
   test('Create product with primary category', async ({ api }) => {
-    await test.step('Создать пользователя и магазин', async () => {
+    await test.step('Create user and project', async () => {
       await api.session.setupUserAndProject();
     });
 
@@ -38,7 +38,7 @@ test.describe('Product Category', () => {
       category = await api.admin.category.create({ input: categoryInput });
     });
 
-    await test.step('Создать продукт с primaryCategory и категорией во всех вариантах', async () => {
+    await test.step('Create product with primary category and category in all variants', async () => {
       product = await api.admin.product.create({
         input: {
           primaryCategory: category.id,
@@ -51,7 +51,7 @@ test.describe('Product Category', () => {
         },
       });
 
-      
+
       expect(product.variants[0]).toMatchSchema(
         Yup.object({
           categories: Yup.array().of(
@@ -63,7 +63,7 @@ test.describe('Product Category', () => {
       );
     });
 
-    await test.step('Получить продукт и убедиться, что категория есть', async () => {
+    await test.step('Get product and check that category is present', async () => {
       const { data } = await api.admin.query('admin/ProductFindOne', {
         variables: {
           id: product.id,

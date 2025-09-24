@@ -57,9 +57,7 @@ test.describe('storefront predictive products search', () => {
       options: [{ title: 'Edition', values: ['Ultra Performance X'] }],
     });
 
-    // 1) создаём группу keyword
     const groupId = await api.admin.search.keywordGroupCreate({ title: 'SEO' });
-    // 2) keyword + link
     await api.admin.search.keywordCreate({ groupId, keyword: 'laptop', localeCode: 'en' });
     await api.admin.search.linkGroupToProduct({ groupId, productId: product.id });
 
@@ -128,7 +126,6 @@ test.describe('storefront predictive products search', () => {
       options: [{ title: 'Model', values: ['Canon', 'Canon XR', 'Canonite'] }],
     });
 
-
     const exactVariant = product.variants.find((v: any) => v.title === 'Canon');
     const prefixVariant = product.variants.find((v: any) => v.title === 'Canon XR');
 
@@ -140,24 +137,19 @@ test.describe('storefront predictive products search', () => {
 
     await api.session.setupApiKey();
 
-
     await checkProductInSearch(api, 'Canon', exactMatchTitle);
     await checkProductInSearch(api, 'Canon', prefixMatchTitle);
-
 
     const { data } = await api.client.query('client/PredictiveSearchProducts', {
       variables: { query: 'Canon' },
     });
     const products: ApiProduct[] = data.predictiveSearch.products;
 
-
     expect(products.length).toBeGreaterThanOrEqual(2);
 
     const titles: string[] = products.map((it) => it.title);
 
-
     expect(titles[0]).toBe(exactMatchTitle);
-
 
     const prefixIndex = titles.indexOf(prefixMatchTitle);
     expect(prefixIndex).toBeGreaterThan(0);

@@ -1,7 +1,5 @@
-// Интерфейсы для типизации данных
 import { ProductGroupPriceType } from '@codegen/admin-gql';
 
-// Категории
 export interface CategoryData {
   title: string;
   slug: string;
@@ -20,7 +18,6 @@ export interface FeatureGroupData {
   values: string[];
 }
 
-// Продукты теперь ссылаются на существующие опции
 export interface ProductDataWithFeatures {
   title: string;
   slug: string;

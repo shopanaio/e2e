@@ -113,7 +113,6 @@ export async function seedProducts(
     const categoryId = categoryMap[productData.category];
     const categoriesForVariant = categoryId ? [categoryId] : [];
 
-    // Безопасное определение базовой цены
     const rawPrice =
       productData.price ??
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -413,7 +412,7 @@ export async function seedReviews(
           productId: variantId,
           customerId: customerId,
           displayName: reviewerName,
-          status: ReviewStatus.Approved, // Сразу одобряем отзыв
+          status: ReviewStatus.Approved,
         },
       });
     }
