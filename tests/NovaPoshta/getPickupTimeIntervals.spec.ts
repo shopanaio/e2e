@@ -3,7 +3,7 @@ import { NovaPoshta } from '../../fixtures/novaposhta/NovaPoshta';
 import { pickupTimeIntervalsResponse, pickupTimeIntervalsProperties } from '../../fixtures/novaposhta/NovaPoshta.types';
 
 test('Отримання доступних часових інтервалів для виклику кур’єра NovaPoshta', async () => {
-  const apiKey = ''; // ключ не нужен
+  const apiKey = ''; 
   const np = new NovaPoshta(apiKey);
 
   const methodProperties: pickupTimeIntervalsProperties = {

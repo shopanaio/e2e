@@ -12,7 +12,7 @@ export class Review {
   async create(input: ApiReviewMutationCreateArgs['input']): Promise<string> {
     const { data } = await this.api.mutation('admin/ReviewCreate', { variables: { input } });
 
-    // Создаётся только ID, поэтому запрашиваем целый объект отдельным запросом
+    
     return data.reviewMutation.create as string;
   }
 
@@ -20,7 +20,7 @@ export class Review {
     const { data } = await this.api.mutation('admin/ReviewUpdate', {
       variables,
     });
-    // После обновления возвращаем актуальный объект
+    
     return data.reviewMutation.edit;
   }
 

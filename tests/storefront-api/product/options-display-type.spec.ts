@@ -10,18 +10,16 @@ import {
 import { randomUUID } from 'crypto';
 import { ApiFixtures } from '@fixtures/api/api';
 
-/**
- * Подготовка продукта со всеми типами отображения опций + Swatch.
- */
+
 const prepareProductWithDisplayTypes = async (api: ApiFixtures['api']) => {
-  // 1. Создаём пользователя и проект
+  
   await api.session.setupUserAndProject();
 
   type GroupSpec = {
     title: string;
     type: FeatureStyleType;
     values: string[];
-    colors?: string[]; // Только для SWATCH
+    colors?: string[]; 
   };
 
   const specs: GroupSpec[] = [
@@ -37,7 +35,7 @@ const prepareProductWithDisplayTypes = async (api: ApiFixtures['api']) => {
     },
   ];
 
-  // 2. Генерируем все комбинации значений для вариантов продукта
+  
   type FeatureEntity = {
     slug: string;
     title: string;
@@ -107,7 +105,7 @@ const prepareProductWithDisplayTypes = async (api: ApiFixtures['api']) => {
     dimensionUnit: DimensionUnit.Cm,
   }));
 
-  // 3. Создаём продукт с помощью фикстуры
+  
   const product = await api.admin.product.create({
     input: {
       description: null,
@@ -124,10 +122,10 @@ const prepareProductWithDisplayTypes = async (api: ApiFixtures['api']) => {
     },
   });
 
-  // 4. Включаем Client API
+  
   await api.session.setupApiKey();
 
-  // 5. Подготавливаем информацию о группах для проверки
+  
   const featureGroups = specs.map((spec) => ({
     slug: spec.title.toLowerCase().replace(/\s+/g, '-'),
     type: spec.type,
@@ -155,7 +153,7 @@ test.describe('product container options displayType & swatch', () => {
     const options = productData.options;
     expect(options.length).toBe(featureGroups.length);
 
-    // Проверяем displayType для каждой группы
+    
     featureGroups.forEach((group) => {
       const opt = options.find((o: { handle: string }) => o.handle === group.slug);
       expect(opt).toBeDefined();
@@ -163,7 +161,7 @@ test.describe('product container options displayType & swatch', () => {
       expect(opt.displayType).toBe(group.type);
     });
 
-    // Проверяем swatch для группы SWATCH
+    
     const swatchGroup = featureGroups.find((g) => g.type === FeatureStyleType.Swatch);
     if (swatchGroup) {
       const opt = options.find((o: { handle: string }) => o.handle === swatchGroup.slug);
@@ -171,7 +169,7 @@ test.describe('product container options displayType & swatch', () => {
       if (!opt) throw new Error('Swatch option not found');
       opt.values.forEach((v) => {
         expect(v.swatch).not.toBeNull();
-        // Проверяем, что цвет соответствует заданному
+        
         const expectedColor = swatchGroup.features.find((f) => f.slug === v.handle)?.color;
         if (expectedColor) {
           expect(v.swatch?.color.toLowerCase()).toBe(expectedColor.toLowerCase());

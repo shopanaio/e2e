@@ -19,7 +19,7 @@ test.describe('StorefrontReviewCancelVote', () => {
       message: 'Vote test',
     });
 
-    // Ставим «полезно»
+    
     const ok1 = await api.client.review.voteHelpful({ reviewId, helpful: true });
     expect(ok1).toBe(true);
 
@@ -27,7 +27,7 @@ test.describe('StorefrontReviewCancelVote', () => {
     expect(afterFirst?.helpfulYes).toBe(1);
     expect(afterFirst?.meHelpful).toBe(true);
 
-    // Повторный клик по той же кнопке должен отменить голос
+    
     const ok2 = await api.client.review.voteHelpful({
       reviewId,
       helpful: true,

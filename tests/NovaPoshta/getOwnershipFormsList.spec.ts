@@ -3,7 +3,7 @@ import { NovaPoshta } from '../../fixtures/novaposhta/NovaPoshta';
 import { ownershipFormsListResponse } from '../../fixtures/novaposhta/NovaPoshta.types';
 
 test('Форми власності NovaPoshta', async () => {
-  const apiKey = ''; // ключ не нужен
+  const apiKey = ''; 
   const np = new NovaPoshta(apiKey);
 
   const result: ownershipFormsListResponse = await np.getOwnershipFormsList();

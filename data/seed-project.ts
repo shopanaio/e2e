@@ -364,7 +364,7 @@ export async function seedProducts(
 export async function seedCustomers(api: TenantApiFixture): Promise<string[]> {
   const customerIds: string[] = [];
 
-  console.log('\\n👤 Создание покупателей...');
+  console.log('\\n👤 Creating customers...');
 
   const customers = [
     { firstName: 'Иван', lastName: 'Петров', email: 'ivan.petrov@example.com' },

@@ -1,8 +1,4 @@
-/**
- * Тесты работы с Feature и FeatureGroup в Admin API.
- *
- * TODO: Переписать тест для использования api.admin.product фикстурных методов вместо ручных GraphQL вызовов
- */
+
 import { test } from '@fixtures/base.extend';
 import { expect } from '@playwright/test';
 import { ApiProduct, EntityStatus } from '@codegen/admin-gql';

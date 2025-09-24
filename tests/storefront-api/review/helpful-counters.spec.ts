@@ -2,13 +2,13 @@ import { test } from '@fixtures/base.extend';
 import { expect } from '@playwright/test';
 import { generateUser } from '@utils/user';
 
-// e2e test: счётчики helpfulYes / helpfulNo от разных клиентов
+
 
 test.describe('StorefrontReviewHelpfulCounters', () => {
   test('three yes and two no votes are counted correctly', async ({ api }) => {
     await api.session.setupUserAndProject();
 
-    // Создаём продукт и ключ для витрины
+    
     const {
       variants: [{ slug: handle }],
     } = await api.admin.product.create();
@@ -24,7 +24,7 @@ test.describe('StorefrontReviewHelpfulCounters', () => {
       message: 'Initial message',
     });
 
-    // Массив голосов: true = полезно, false = не полезно
+    
     const votes = [true, true, true, false, false];
 
     for (const helpful of votes) {

@@ -3,7 +3,7 @@ import { NovaPoshta } from '../../fixtures/novaposhta/NovaPoshta';
 import { tiresWheelsListResponse } from '../../fixtures/novaposhta/NovaPoshta.types';
 
 test('Види шин і дисків NovaPoshta', async () => {
-  const apiKey = ''; // ключ не нужен
+  const apiKey = ''; 
   const np = new NovaPoshta(apiKey);
 
   const result: tiresWheelsListResponse = await np.getTiresWheelsList();

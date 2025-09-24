@@ -8,7 +8,7 @@ test.describe('ReviewCreate', () => {
     const product = await api.admin.product.create();
     const { id: customerId } = await api.admin.customer.create();
 
-    // создаём отзыв и получаем его ID
+    
     const reviewId = await api.admin.review.create({
       customerId: customerId,
       productId: product.id,

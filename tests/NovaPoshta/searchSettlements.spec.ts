@@ -3,13 +3,13 @@ import { NovaPoshta } from '../../fixtures/novaposhta/NovaPoshta';
 import { searchSettlementsProperties, searchSettlementsResponse } from '../../fixtures/novaposhta/NovaPoshta.types';
 
 test('Онлайн пошук в довіднику населених пунктів NovaPoshta', async () => {
-  const apiKey = ''; // ключ не нужен
+  const apiKey = ''; 
   const np = new NovaPoshta(apiKey);
 
   const methodProperties: searchSettlementsProperties = {
-    /* не обязательно вводить полное название города */
+    
     CityName: "київ",
-    /* ограничивает количество объектов в result.data[0].Addresses */
+    
     Limit: "50",
     Page: "1"
   };

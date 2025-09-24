@@ -22,10 +22,7 @@ interface ListingResponse {
   };
 }
 
-/**
- * Проверяем, что storefront-листинг Smart-категории корректно показывает товары
- * по фильтру PRICE Between.
- */
+
 
 test.describe.skip('Storefront Smart-collection by price', () => {
   const createProduct = async (api: ApiFixtures['api'], title: string, price: number) => {
@@ -71,15 +68,15 @@ test.describe.skip('Storefront Smart-collection by price', () => {
   };
 
   test('price filter reflected in storefront listing', async ({ api }) => {
-    // 1. Пользователь + проект + API key для storefront
+    
     await api.session.setupUserAndProject();
 
-    // Три продукта с разными ценами
+    
     await createProduct(api, 'P1', 1000);
     await createProduct(api, 'P2', 2000);
     await createProduct(api, 'P3', 5000);
 
-    // 2. Smart-категория без фильтров
+    
     const slug = `smart-${randomUUID()}`;
     const category = (await api.admin.category.create({
       input: {
@@ -108,11 +105,11 @@ test.describe.skip('Storefront Smart-collection by price', () => {
       });
     };
 
-    // 3. Без фильтров – 3 товара
+    
     let resp = await fetchListing();
     expect(resp.data.category?.listing.edges).toHaveLength(0);
 
-    // 4. Добавляем фильтр по цене 0-3000
+    
     await api.admin.mutation('admin/CategoryUpdate', {
       variables: {
         input: {
@@ -167,7 +164,7 @@ test.describe.skip('Storefront Smart-collection by price', () => {
       },
     })) as ApiCategory;
 
-    // добавляем фильтр Eq через update
+    
     await api.admin.mutation('admin/CategoryUpdate', {
       variables: {
         input: {

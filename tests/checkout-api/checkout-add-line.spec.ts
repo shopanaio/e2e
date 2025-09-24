@@ -85,13 +85,11 @@ test.describe('checkout-api: lines add', () => {
 
       const checkout = data.checkoutQuery.checkout;
       const line = checkout?.lines[0] as ApiCheckoutLine;
-      // Все точные проверки переносим в yup-схемы ниже
 
       // Схематичная проверка через yup
       const moneySchema = yup
         .object({
           currencyCode: yup.string().equals(['USD']).required(),
-          // Decimal сериализуется строкой, ожидаем строку с двумя знаками
           amount: yup
             .string()
             .matches(/^[-+]?\d+\.\d{2}$/)
@@ -99,7 +97,6 @@ test.describe('checkout-api: lines add', () => {
         })
         .required();
 
-      // Вычисляем ожидаемое значение totalAmount без использования schema.test
       const unitAmount = parseFloat(String(line.cost.unitPrice.amount));
       const expectedTotalRounded = (
         Math.round((unitAmount * 2 + Number.EPSILON) * 100) / 100
@@ -134,7 +131,6 @@ test.describe('checkout-api: lines add', () => {
 
       expect(line).toMatchSchema(lineSchema);
 
-      // Валидация структуры checkout в целом и точных значений через yup
       expect(checkout).toMatchSchema(
         yup.object({
           id: yup.string().equals([checkoutId]).required(),

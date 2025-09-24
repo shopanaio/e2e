@@ -74,7 +74,7 @@ test.describe('checkout-api: customer identity update', () => {
 
   test('should clear customer email by setting null', async ({ api }) => {
     await api.session.setupClient();
-    await api.session.setupCustomer(); // Регистрирует кастомера и делает setCustomerScope()
+    await api.session.setupCustomer();
 
     let checkoutId = '';
 

@@ -205,7 +205,7 @@ export class Product {
     description?: ApiDescriptionFieldsInput | null;
     excerpt?: string;
   }): Promise<ApiProduct> => {
-    // 1. Формируем матрицу возможных значений опций напрямую (без предварительного создания Feature/FeatureGroup)
+
     type FeatureEntity = {
       title: string;
       slug: string;
@@ -266,7 +266,7 @@ export class Product {
       }),
     );
 
-    // 3. Создаём продукт с подготовленными вариантами
+
     const createInput = {
       description,
       excerpt,

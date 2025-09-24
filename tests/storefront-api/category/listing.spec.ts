@@ -163,14 +163,11 @@ test.describe('Client Category Listing API', () => {
     });
   });
 
-  /**
-   * Подготовка данных для проверки availableFirst (listingOrderByStatus).
-   * Если availableFirst === true – товары со статусом IN_STOCK должны идти первыми.
-   */
+  
   async function prepareListingAvailableFirst(api: ApiFixtures['api'], availableFirst: boolean) {
     await api.session.setupUserAndProject();
 
-    // 1. Категория для теста
+    
     const categorySlug = `listing-category-available-${randomUUID()}`;
     const category = await api.admin.category.create({
       input: {
@@ -192,7 +189,7 @@ test.describe('Client Category Listing API', () => {
       },
     });
 
-    // 2. Товары с разным stockStatus
+    
     type ProductSeed = { title: string; stockStatus: 'IN_STOCK' | 'OUT_OF_STOCK' };
     const products: ProductSeed[] = [
       { title: 'Alpha', stockStatus: 'OUT_OF_STOCK' },
@@ -256,10 +253,10 @@ test.describe('Client Category Listing API', () => {
       });
     }
 
-    // Ожидаемый порядок по умолчанию (TitleAsc)
+    
     const expectedTitleAsc = products.map((p) => p.title).sort((a, b) => a.localeCompare(b));
 
-    // Ожидаемый порядок при availableFirst = true
+    
     const expectedAvailableFirst = [
       ...products
         .filter((p) => p.stockStatus === 'IN_STOCK')
@@ -405,7 +402,7 @@ test.describe('Client Category Listing API', () => {
       },
     });
 
-    // Черновик – не должен участвовать в листинге
+    
     const draftChild = await api.admin.category.create({
       input: {
         title: 'Child Draft',

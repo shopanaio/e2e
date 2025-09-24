@@ -1,4 +1,3 @@
-# 1. Базовый образ Playwright с предустановленным Node.js, браузерами и зависимостями
 FROM mcr.microsoft.com/playwright:v1.51.1-jammy
 
 USER pwuser

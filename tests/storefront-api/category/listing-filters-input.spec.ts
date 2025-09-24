@@ -15,7 +15,7 @@ import { randomUUID } from 'node:crypto';
 import { ApiListFilter } from '@codegen/client-gql';
 
 // ---------------------------------------------------------------------------
-// Подготовка данных
+
 // ---------------------------------------------------------------------------
 
 type TagInfo = { id: string; slug: string; title: string };
@@ -27,7 +27,7 @@ async function setupCategoryAndProducts(api: ApiFixtures['api']): Promise<{
 }> {
   await api.session.setupUserAndProject();
 
-  // 1. Категория
+  
   const categorySlug = `filters-input-${randomUUID()}`;
   const category = await api.admin.category.create({
     input: {
@@ -45,7 +45,7 @@ async function setupCategoryAndProducts(api: ApiFixtures['api']): Promise<{
     },
   });
 
-  // 2. Теги
+  
   const createTag = async (title: string): Promise<TagInfo> => {
     const slug = `${title}-${randomUUID()}`;
     const tag = await api.admin.tag.create({
@@ -62,7 +62,7 @@ async function setupCategoryAndProducts(api: ApiFixtures['api']): Promise<{
   const tagBeta = await createTag('beta');
   const tagGamma = await createTag('gamma');
 
-  // 3. Продукты
+  
   type Seed = { title: string; price: number; tag: TagInfo };
   const seeds: Seed[] = [
     { title: 'Alpha One', price: 1000, tag: tagAlpha },
@@ -117,7 +117,7 @@ async function setupCategoryAndProducts(api: ApiFixtures['api']): Promise<{
     productIds.push(data.productMutation.create.id as string);
   }
 
-  // 4. Привязываем продукты к категории
+  
   await api.admin.mutation('admin/CategoryAddProducts', {
     variables: {
       input: {
@@ -142,7 +142,7 @@ async function setupProductsWithPriceRange(api: ApiFixtures['api']): Promise<{
 }> {
   await api.session.setupUserAndProject();
 
-  // 1. Категория для проверки ценового фильтра
+  
   const categorySlug = `filters-price-${randomUUID()}`;
   const category = await api.admin.category.create({
     input: {
@@ -160,14 +160,14 @@ async function setupProductsWithPriceRange(api: ApiFixtures['api']): Promise<{
     },
   });
 
-  // 2. Продукты с различными ценами (цена хранится в минимальных денежных единицах, т.е. 1000 = 10)
+  
   type Seed = { title: string; price: number };
   const seeds: Seed[] = [
-    { title: 'Product 5', price: 500 }, // вне диапазона
+    { title: 'Product 5', price: 500 }, 
     { title: 'Product 10', price: 1000 },
     { title: 'Product 15', price: 1500 },
     { title: 'Product 20', price: 2000 },
-    { title: 'Product 25', price: 2500 }, // вне диапазона
+    { title: 'Product 25', price: 2500 }, 
   ];
 
   const productIds: string[] = [];
@@ -214,7 +214,7 @@ async function setupProductsWithPriceRange(api: ApiFixtures['api']): Promise<{
     productIds.push(product.id);
   }
 
-  // 3. Привязываем продукты к категории
+  
   await api.admin.mutation('admin/CategoryAddProducts', {
     variables: {
       input: {
@@ -226,7 +226,7 @@ async function setupProductsWithPriceRange(api: ApiFixtures['api']): Promise<{
 
   await api.session.setupApiKey();
 
-  // Ожидаемые названия товаров, которые попадают в диапазон 10-20 (включительно)
+  
   const expectedTitlesInRange = ['Product 10', 'Product 15', 'Product 20'];
 
   return {
@@ -241,7 +241,7 @@ async function setupProductsWithStockStatus(api: ApiFixtures['api']): Promise<{
 }> {
   await api.session.setupUserAndProject();
 
-  // 1. Категория для проверки статуса наличия
+  
   const categorySlug = `filters-availability-${randomUUID()}`;
   const category = await api.admin.category.create({
     input: {
@@ -259,7 +259,7 @@ async function setupProductsWithStockStatus(api: ApiFixtures['api']): Promise<{
     },
   });
 
-  // 2. Продукты с разными статусами наличия
+  
   type Seed = { title: string; stockStatus: 'IN_STOCK' | 'OUT_OF_STOCK' };
   const seeds: Seed[] = [
     { title: 'Available A', stockStatus: 'IN_STOCK' },
@@ -317,7 +317,7 @@ async function setupProductsWithStockStatus(api: ApiFixtures['api']): Promise<{
     }
   }
 
-  // 3. Привязываем продукты к категории
+  
   await api.admin.mutation('admin/CategoryAddProducts', {
     variables: {
       input: { categoryId: category.id, productContainerIds: productIds },
@@ -336,7 +336,7 @@ async function setupProductsWithFeature(api: ApiFixtures['api']): Promise<{
 }> {
   await api.session.setupUserAndProject();
 
-  // Создаём категорию
+  
   const categorySlug = `filters-feature-${randomUUID()}`;
   const category = await api.admin.category.create({
     input: {
@@ -354,7 +354,7 @@ async function setupProductsWithFeature(api: ApiFixtures['api']): Promise<{
     },
   });
 
-  // Material features будут созданы inline при создании продуктов
+  
   const cottonHandle = 'material.cotton';
 
   type Seed = { title: string; material: 'Cotton' | 'Leather' };
@@ -461,7 +461,7 @@ async function setupProductsWithOption(api: ApiFixtures['api']): Promise<{
     },
   });
 
-  // Size options будут созданы inline при создании продуктов
+  
   const sizeSHandle = 'size.s';
 
   type Seed = { title: string; size: 'S' | 'M' };
@@ -545,14 +545,14 @@ function findFilterByType(filters: any[], typename: string) {
 }
 
 // ---------------------------------------------------------------------------
-// Тест
+
 // ---------------------------------------------------------------------------
 
 test.describe('Category Listing + Facets with filter input', () => {
   test('returns only products matching price range', async ({ api }) => {
     const { categorySlug, expectedTitlesInRange } = await setupProductsWithPriceRange(api);
 
-    // Формируем input фильтр по цене 10–20 (значения в основных единицах 10 и 20)
+    
     const filtersInput = [
       {
         handle: 'PRICE',
@@ -564,13 +564,13 @@ test.describe('Category Listing + Facets with filter input', () => {
       variables: { handle: categorySlug, first: 20, filters: filtersInput },
     });
 
-    // Проверяем листинг – только продукты в диапазоне 10-20
+    
     const edges = data.category!.listing.edges;
     expect(edges).toHaveLength(expectedTitlesInRange.length);
     const receivedTitles = edges.map((e: any) => e.node.title);
     expect(receivedTitles.sort()).toEqual(expectedTitlesInRange.sort());
 
-    // Проверяем facets – PriceRangeFilter.count
+    
     const filters = data.category!.listing.filters;
 
     const priceFilter = findFilterByType(filters, 'PriceRangeFilter') as any;
@@ -580,7 +580,7 @@ test.describe('Category Listing + Facets with filter input', () => {
   test('returns only products matching stock status', async ({ api }) => {
     const { categorySlug, expectedOutOfStockTitles } = await setupProductsWithStockStatus(api);
 
-    // Формируем input фильтр по статусу наличия
+    
     const filtersInput = [
       {
         handle: 'AVAILABILITY',
@@ -592,13 +592,13 @@ test.describe('Category Listing + Facets with filter input', () => {
       variables: { handle: categorySlug, first: 20, filters: filtersInput },
     });
 
-    // Проверяем листинг – только OUT_OF_STOCK продукты
+    
     const edges = data.category!.listing.edges;
     expect(edges).toHaveLength(expectedOutOfStockTitles.length);
     const receivedTitles = edges.map((e: any) => e.node.title);
     expect(receivedTitles.sort()).toEqual(expectedOutOfStockTitles.sort());
 
-    // Проверяем facets – Availability ListFilter
+    
     const filters = data.category!.listing.filters;
 
     const availFilter = filters.find(
@@ -610,7 +610,7 @@ test.describe('Category Listing + Facets with filter input', () => {
     expect(outOfStockValue).toBeDefined();
     expect(outOfStockValue.count).toBe(expectedOutOfStockTitles.length);
 
-    // Убеждаемся, что значение IN_STOCK либо отсутствует, либо имеет count 0
+    
     const inStockValue = availFilter.values.find((v: any) => v.handle === 'IN_STOCK');
     if (inStockValue) {
       expect(inStockValue.count).toBe(0);
@@ -688,7 +688,7 @@ test.describe('Category Listing + Facets with filter input', () => {
 
   test('returns only products matching tag', async ({ api }) => {
     const { categorySlug, alphaTagSlug, expectedAlphaTitles } = await setupCategoryAndProducts(api);
-    // Формируем input фильтр по тегу alpha
+    
     const filtersInput = [
       {
         handle: 'TAG',
@@ -700,13 +700,13 @@ test.describe('Category Listing + Facets with filter input', () => {
       variables: { handle: categorySlug, first: 20, filters: filtersInput },
     });
 
-    // Проверяем листинг – только альфа продукты
+    
     const edges = data.category!.listing.edges;
     expect(edges).toHaveLength(expectedAlphaTitles.length);
     const receivedTitles = edges.map((e: any) => e.node.title);
     expect(receivedTitles.sort()).toEqual(expectedAlphaTitles.sort());
 
-    // Проверяем facets – Tag ListFilter
+    
     const filters = data.category!.listing.filters;
 
     const tagFilter = filters.find((f) => f.handle === 'TAG') as ApiListFilter;
@@ -716,7 +716,7 @@ test.describe('Category Listing + Facets with filter input', () => {
     expect(alphaValue).toBeDefined();
     expect(alphaValue?.count).toBe(expectedAlphaTitles.length);
 
-    // Остальные значения либо отсутствуют, либо count 0
+    
     tagFilter.values
       .filter((v) => v.handle !== alphaTagSlug)
       .forEach((v) => {

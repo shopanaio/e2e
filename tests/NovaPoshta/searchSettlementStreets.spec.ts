@@ -3,13 +3,12 @@ import { NovaPoshta } from '../../fixtures/novaposhta/NovaPoshta';
 import { searchSettlementStreetsProperties, searchSettlementStreetsResponse } from '../../fixtures/novaposhta/NovaPoshta.types';
 
 test('Онлайн пошук вулиць в довіднику населених пунктів NovaPoshta', async () => {
-  const apiKey = ''; // ключ не нужен
+  const apiKey = ''; 
   const np = new NovaPoshta(apiKey);
 
   const methodProperties: searchSettlementStreetsProperties = {
     StreetName: "Хрещатик",
-    /* без SettlementRef не работает
-    получить можно в searchSettlements data[0].Addresses[0].Ref */
+    
     SettlementRef: "e718a680-4b33-11e4-ab6d-005056801329",
   };
 

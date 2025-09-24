@@ -3,7 +3,7 @@ import { NovaPoshta } from '../../fixtures/novaposhta/NovaPoshta';
 import { cargoTypesResponse } from '../../fixtures/novaposhta/NovaPoshta.types';
 
 test('Види зворотної доставки вантажу NovaPoshta', async () => {
-  const apiKey = ''; // ключ не нужен
+  const apiKey = ''; 
   const np = new NovaPoshta(apiKey);
 
   const result: cargoTypesResponse = await np.backwardDelivery();

@@ -3,7 +3,7 @@ import { NovaPoshta } from '../../fixtures/novaposhta/NovaPoshta';
 import { messageCodeTextResponse } from '../../fixtures/novaposhta/NovaPoshta.types';
 
 test('Перелік помилок NovaPoshta', async () => {
-  const apiKey = ''; // ключ не нужен
+  const apiKey = ''; 
   const np = new NovaPoshta(apiKey);
 
   const result: messageCodeTextResponse = await np.getMessageCodeText();

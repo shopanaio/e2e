@@ -3,7 +3,7 @@ import { NovaPoshta } from '../../fixtures/novaposhta/NovaPoshta';
 import { settlementsCountryRegionProperties, settlementsCountryRegionResponse } from '../../fixtures/novaposhta/NovaPoshta.types';
 
 test('Довідник районів областей населених пунктів NovaPoshta', async () => {
-  const apiKey = ''; // ключ не нужен
+  const apiKey = ''; 
   const np = new NovaPoshta(apiKey);
 
   const methodProperties: settlementsCountryRegionProperties = {

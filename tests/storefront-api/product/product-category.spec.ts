@@ -10,9 +10,7 @@ import {
 } from '@codegen/admin-gql';
 import { randomUUID } from 'node:crypto';
 
-/*
-  Проверка, что client API возвращает primary category в поле categories продукта.
-*/
+
 
 test.describe('client product category', () => {
   let category = {} as ApiCategory;

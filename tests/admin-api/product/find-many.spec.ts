@@ -2,7 +2,7 @@ import { test } from '@fixtures/base.extend';
 import { expect } from '@playwright/test';
 import { ApiProductQueryFindManyArgs } from '@codegen/admin-gql';
 
-// TODO: Переписать тест для использования api.admin.product фикстурных методов вместо ручных GraphQL вызовов
+
 
 test.describe('ProductFindMany', () => {
   test('list of products', async ({ api }) => {
@@ -21,7 +21,7 @@ test.describe('ProductFindMany', () => {
         },
       });
 
-      // Обновляем цены варианта
+      
       await api.admin.product.update({
         input: {
           id: product.id,

@@ -132,9 +132,9 @@ test.describe('category children pagination with aliases', () => {
     const cat3Same = (second as any).cat3.children;
 
     expectTitles(cat1Page2, parent1.titles.slice(PAGE_SIZE, PAGE_SIZE * 2));
-    // cat2 должен теперь показать предыдущие элементы
+    
     expectTitles(cat2Prev, parent2.titles.slice(-PAGE_SIZE * 2, -PAGE_SIZE));
-    // cat3 остался без after/before → та же первая страница
+    
     expectTitles(cat3Same, parent3.titles.slice(0, PAGE_SIZE));
   });
 });

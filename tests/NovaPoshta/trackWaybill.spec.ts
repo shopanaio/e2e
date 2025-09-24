@@ -3,7 +3,7 @@ import { NovaPoshta } from '../../fixtures/novaposhta/NovaPoshta';
 import { trackMethodProperties, TrackResponse } from '../../fixtures/novaposhta/NovaPoshta.types';
 
 test('Трекинг накладной NovaPoshta', async () => {
-  const apiKey = ''; // ключ не обязателен, только номер посылки и один из двух номеров телефонов
+  const apiKey = ''; 
   const np = new NovaPoshta(apiKey);
 
   const methodProperties: trackMethodProperties = {

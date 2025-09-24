@@ -8,7 +8,6 @@ test.describe('checkout-api: create order from checkout', () => {
     await api.session.setupClient();
     api.session.setCustomerScope();
 
-    // 1) Создаём пустой checkout
     const { data: createdResp } = await api.client.checkout.create({
       idempotency: `e2e-${Date.now()}`,
       localeCode: 'en',
@@ -17,8 +16,6 @@ test.describe('checkout-api: create order from checkout', () => {
     });
     const checkoutId = createdResp.checkoutMutation.checkoutCreate.id as string;
 
-    // Добавляем пару линий, чтобы заказ мог создаться
-    // Сидапим 2 товара и добавляем их в checkout
     api.session.setTenantScope();
     const handle = `order-from-checkout-${Date.now()}`;
     const p1 = await api.admin.product.create({
@@ -77,7 +74,6 @@ test.describe('checkout-api: create order from checkout', () => {
       ],
     });
 
-    // 2) Вызываем orders-service для создания заказа из checkout через client API
     const { data } = await api.client.order.create({
       checkoutId,
     });
@@ -85,9 +81,8 @@ test.describe('checkout-api: create order from checkout', () => {
     const orderId = data.orderMutation.orderCreate.id as string;
     expect(orderId).toBeTruthy();
 
-    // 3) Проверяем, что заказ создан и содержит правильные данные
     expect(orderId).toBeTruthy();
     expect(data.orderMutation.orderCreate.status).toBe('DRAFT');
-    expect(data.orderMutation.orderCreate.cost.totalAmount.amount).toBe('50.00'); // 1*10 + 2*20 + shipping 0
+    expect(data.orderMutation.orderCreate.cost.totalAmount.amount).toBe('50.00');
   });
 });

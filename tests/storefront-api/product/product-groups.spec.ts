@@ -9,21 +9,18 @@ import {
 import { ProductGroupPriceType as ClientPriceType } from '@codegen/client-gql';
 import { randomUUID } from 'node:crypto';
 
-/*
-  Тест проверяет корректность применения правил ценообразования (BASE / FREE / FIXED / PERCENT)
-  для items внутри product groups в клиентском GraphQL API через поле product в ProductVariant.
-*/
+
 
 test.describe('client product container groups – price overrides', () => {
   test('variant -> product -> groups -> items -> product price should be adjusted', async ({ api }) => {
     await api.session.setupUserAndProject();
 
-    // Базовая цена варианта-компонента (в центах)
+    
     const basePriceCents = 1075; // 10.75
     const fixedAddCents = 299; // +2.99
     const percentValue = 7.5; // +7.5 %
 
-    // 1. Создаём продукт-компонент с 4 вариантами одинаковой базовой цены
+    
     const componentSlug = `component-${randomUUID()}`;
 
     const createVariantInput = (title: string, sortIndex: number) => ({
@@ -74,7 +71,7 @@ test.describe('client product container groups – price overrides', () => {
     const componentProduct = componentResp.productMutation.create;
     const variantIds = componentProduct.variants.map((v: { id: string }) => v.id);
 
-    // 2. Создаём основной продукт (Bundle / Box) с группой компонентов
+    
     const boxSlug = `box-${randomUUID()}`;
 
     const boxProduct = await api.admin.product.create({
@@ -115,7 +112,7 @@ test.describe('client product container groups – price overrides', () => {
       },
     });
 
-    // 2.b Добавляем группы через update
+    
     await api.admin.product.update({
       input: {
         id: boxProduct.id,
@@ -156,10 +153,10 @@ test.describe('client product container groups – price overrides', () => {
       },
     });
 
-    // 3. Делаем клиента авторизованным (API-key)
+    
     await api.session.setupApiKey();
 
-    // 4. Запрашиваем продукт через клиентское API через поле product в variant
+    
     const { data } = await api.client.query('client/ProductContainerGroups', {
       variables: { handle: boxSlug },
     });
@@ -172,14 +169,8 @@ test.describe('client product container groups – price overrides', () => {
     const items = group!.items;
     expect(items.length).toBe(4);
 
-    /*
-      Ожидаемые цены на клиенте:
-      1. BASE      – без изменений → 10.75
-      2. FREE      – бесплатно     → 0.00
-      3. FIXED     – +2.99$        → 10.75 + 2.99 = 13.74
-      4. PERCENT   – +7.5 %        → 10.75 × 1.075 = 11.556 → 11.56 (округление до 2 знаков)
-    */
-    // Сопоставляем ожидаемые цены
+    
+    
     const expectedByType: Record<ClientPriceType, number> = {
       [ClientPriceType.Base]: Number((basePriceCents / 100).toFixed(2)),
       [ClientPriceType.Free]: 0,

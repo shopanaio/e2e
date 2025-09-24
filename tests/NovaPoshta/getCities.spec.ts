@@ -3,10 +3,10 @@ import { NovaPoshta } from '../../fixtures/novaposhta/NovaPoshta';
 import { citiesProperties, citiesResponse } from '../../fixtures/novaposhta/NovaPoshta.types';
 
 test('Довідник міст компанії NovaPoshta', async () => {
-  const apiKey = ''; // ключ не нужен
+  const apiKey = ''; 
   const np = new NovaPoshta(apiKey);
 
-  // якщо відправити порожній об'єкт - отримаємо список усіх віст України
+  
   const methodProperties: citiesProperties = {
     "FindByString": "Одеса"
   };

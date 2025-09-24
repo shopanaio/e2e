@@ -82,7 +82,7 @@ async function prepareListing(api: ApiFixtures['api']) {
 
   await api.session.setupApiKey();
 
-  // Забираем GraphQL ID через публичное API
+  
   const { data: catData } = await api.client.query(
     'client/CategoryBreadcrumbs' as GraphQLFileName,
     {
@@ -123,7 +123,7 @@ const getExpectedBySort = (titles: string[], sort: ListingSort) => {
 };
 
 // ---------------------------------------------------------------------------
-// Register cursor pagination test suite (Node → Category)
+
 // ---------------------------------------------------------------------------
 
 createCursorPaginationTests<ListingSort>({

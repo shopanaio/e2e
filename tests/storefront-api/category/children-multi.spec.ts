@@ -8,7 +8,7 @@ import type { ApiFixtures } from '@fixtures/api/api';
 import type { GraphQLFileName } from '@queries/filenames';
 
 // -------------------------------------------------------------
-// Константы
+
 // -------------------------------------------------------------
 const PAGE_SIZE = 2;
 
@@ -45,7 +45,7 @@ async function prepareParents(api: ApiFixtures['api']): Promise<ParentInfo[]> {
 
   const commonChildTitles = Array.from({ length: 5 }).map((_, i) => `Child ${i}`);
 
-  // создаём 5 parent-категорий, каждой одинаковых детей
+  
   for (let p = 0; p < 5; p++) {
     const parentSlug = `parent-${p}-${randomUUID()}`;
     const parent = await api.admin.category.create({
@@ -72,7 +72,7 @@ async function prepareParents(api: ApiFixtures['api']): Promise<ParentInfo[]> {
       },
     });
 
-    // дети
+    
     for (let i = 0; i < commonChildTitles.length; i++) {
       const title = commonChildTitles[i];
       await api.admin.category.create({

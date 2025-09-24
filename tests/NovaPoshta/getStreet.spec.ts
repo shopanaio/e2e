@@ -4,12 +4,12 @@ import { streetProperties, streetResponse } from '../../fixtures/novaposhta/Nova
 //import { expectReferenceDictionary } from '@fixtures/novaposhta/expectReferenceDictionary';
 
 test('Довідник вулиць компанії NovaPoshta', async () => {
-  const apiKey = ''; // ключ не нужен
+  const apiKey = ''; 
   const np = new NovaPoshta(apiKey);
 
   const methodProperties: streetProperties = {
     CityRef: "db5c88d0-391c-11dd-90d9-001a92567626",
-    /* FindByString: "Одеса" */
+    
   };
 
   const result: streetResponse = await np.getStreet(methodProperties);

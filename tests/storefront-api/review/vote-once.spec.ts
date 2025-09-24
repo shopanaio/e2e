@@ -1,7 +1,7 @@
 import { test } from '@fixtures/base.extend';
 import { expect } from '@playwright/test';
 
-// e2e test: можно проголосовать только один раз
+
 
 test.describe('StorefrontReviewVoteOnce', () => {
   test('same customer second vote does not increase counters', async ({ api }) => {
@@ -20,14 +20,14 @@ test.describe('StorefrontReviewVoteOnce', () => {
       message: 'Love it',
     });
 
-    // Первый голос «полезно»
+    
     const ok1 = await api.client.review.voteHelpful({ reviewId, helpful: true });
     expect(ok1).toBe(true);
 
     const afterFirst = await api.client.review.findOne(reviewId);
     expect(afterFirst?.helpfulYes).toBe(1);
 
-    // Повторный голос тем же значением
+    
     const ok2 = await api.client.review.voteHelpful({ reviewId, helpful: false });
     expect(ok2).toBe(true);
 

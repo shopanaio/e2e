@@ -5,10 +5,7 @@ import { ApiTag, EntityStatus, WeightUnit } from '@codegen/admin-gql';
 import { TagSort } from '@codegen/client-gql';
 import { randomUUID } from 'node:crypto';
 
-/*
-  Проверка, что client API корректно отдаёт теги в поле tags продукта через поле product в ProductVariant,
-  включая релей-пагинацию (аналогично категориям).
-*/
+
 
 test.describe('client product container tag', () => {
   let tag = {} as ApiTag;

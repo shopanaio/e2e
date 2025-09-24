@@ -4,18 +4,14 @@ import { EntityStatus } from '@codegen/admin-gql';
 import { randomUUID } from 'node:crypto';
 import * as yup from 'yup';
 
-/*
-  Тест проверяет возможность привязки лейблов к продукту в момент создания.
 
-  TODO: Переписать тест для использования api.admin.product фикстурных методов вместо ручных GraphQL вызовов
-*/
 
 test.describe('Product Labels', () => {
   test('Create product with labels', async ({ api }) => {
-    // 1. Пользователь и проект
+    
     await api.session.setupUserAndProject();
 
-    // 2. Создаем два лейбла
+    
     const labelInputs = [
       { name: 'Label Uno', slug: randomUUID(), colorHex: '#aaaaaa' },
       { name: 'Label Dos', slug: randomUUID(), colorHex: '#bbbbbb' },
@@ -30,7 +26,7 @@ test.describe('Product Labels', () => {
 
     const labelIds = labels.map((l) => l.id);
 
-    // 3. Создаем продукт с этими лейблами
+    
     const product = await api.admin.product.create({
       input: {
         title: 'Product with Labels',
@@ -39,10 +35,10 @@ test.describe('Product Labels', () => {
       },
     });
 
-    // 4. Проверяем, что продукт содержит нужные лейблы
+    
     expect(product.labels.length).toBe(2);
 
-    // Проверка схемы каждого лейбла
+    
     product.labels.forEach((lbl) => {
       expect(lbl).toMatchSchema(
         yup.object({
@@ -54,7 +50,7 @@ test.describe('Product Labels', () => {
       );
     });
 
-    // 5. Получаем продукт через фикстуру и убеждаемся, что лейблы сохранились
+    
     const fetchedProduct = await api.admin.product.findOne(product.id);
 
     const fetchedLabels = fetchedProduct.labels || [];

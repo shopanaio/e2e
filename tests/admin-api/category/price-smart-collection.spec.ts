@@ -8,10 +8,7 @@ import {
   ListingType,
 } from '@codegen/admin-gql';
 
-/**
- * Проверяем, что smart-категория (listingType=AUTO) корректно подбирает товары
- * по фильтру PRICE (Between).  Сейчас backend поддерживает только price-фильтры.
- */
+
 
 interface ListingResponse {
   data: {
@@ -79,10 +76,10 @@ test.describe.skip('Smart-collection by price', () => {
   };
 
   test('filter by price', async ({ api }) => {
-    /* 1. Создаём пользователя и проект */
+    
     await api.session.setupUserAndProject();
 
-    /* 2. Создаём 3 товара с ценами 1 000 / 2 000 / 5 000 */
+    
     const prices = [1000, 2000, 5000];
     for (const p of prices) {
       const { data } = await api.admin.mutation('admin/ProductCreate', {
@@ -91,7 +88,7 @@ test.describe.skip('Smart-collection by price', () => {
       productsIds.push(data.productMutation.create.id);
     }
 
-    /* 3. Создаём smart-категорию без фильтров → должны увидеть все 3 товара */
+    
     categorySmart = await api.admin.category.create({
       input: {
         title: 'Smart by price',
@@ -110,7 +107,7 @@ test.describe.skip('Smart-collection by price', () => {
     let resp = (await getListing(api, categorySmart.slug)) as unknown as ListingResponse;
     expect(resp.data.listingQuery.listingV1.data.length).toBe(3);
 
-    /* 4. Добавляем фильтр PRICE: 0–3000 (2 товара) */
+    
     await api.admin.mutation('admin/CategoryUpdate', {
       variables: {
         input: {

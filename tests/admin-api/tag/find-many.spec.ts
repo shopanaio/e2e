@@ -3,7 +3,7 @@ import { expect } from '@playwright/test';
 import { ApiTagQueryFindManyArgs } from '@codegen/admin-gql';
 import { randomUUID } from 'node:crypto';
 
-// TODO: Переписать тест для использования api.admin.tag фикстурных методов вместо ручных GraphQL вызовов
+
 
 const inputs = [
   {
