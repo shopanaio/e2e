@@ -37,7 +37,7 @@ export interface ProductDataWithFeatures {
 
 export interface ProductGroupItemData {
   productSlug: string;
-  variantSlug?: string; // Если не указан, используется productSlug
+  variantSlug?: string;
   sortIndex: number;
   priceType: ProductGroupPriceType;
   priceAmountValue?: number;

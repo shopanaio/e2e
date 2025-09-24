@@ -10,7 +10,6 @@ export interface ReviewTemplate {
   cons: string;
 }
 
-// Папка, где лежат JSON-файлы с исходными данными
 const dataDir = path.resolve(process.cwd(), 'data', 'seed-json');
 
 function readJsonFile<T = unknown>(filePath: string): T {

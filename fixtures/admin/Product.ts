@@ -1,6 +1,6 @@
 import { expect } from '@playwright/test';
 import { randomUUID } from 'node:crypto';
-//import { GQLRequest } from '@utils/gql';
+
 import {
   ApiProduct,
   ApiVariant,
@@ -173,9 +173,6 @@ export class Product {
   };
 
   /**
-   * Быстрое создание продукта c произвольным набором опций и автоматической генерацией всех комбинаций вариантов.
-   *
-   * Пример использования:
    * ```ts
    * await api.admin.product.createWithOptions({
    *   title: 'T-Shirt',
