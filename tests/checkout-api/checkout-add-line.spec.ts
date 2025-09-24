@@ -86,7 +86,6 @@ test.describe('checkout-api: lines add', () => {
       const checkout = data.checkoutQuery.checkout;
       const line = checkout?.lines[0] as ApiCheckoutLine;
 
-      // Схематичная проверка через yup
       const moneySchema = yup
         .object({
           currencyCode: yup.string().equals(['USD']).required(),
