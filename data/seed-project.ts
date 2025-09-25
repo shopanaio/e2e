@@ -12,6 +12,7 @@ import { TenantApiFixture } from '@fixtures/admin/api';
 import { CATEGORIES, TAGS, PRODUCTS, REVIEW_TEMPLATES } from './seed-config';
 
 export async function seedCategories(api: TenantApiFixture): Promise<Record<string, string>> {
+  console.log('🏷️ Starting to seed categories...');
   const categoryMap: Record<string, string> = {};
 
   for (const categoryData of CATEGORIES) {
@@ -35,6 +36,7 @@ export async function seedCategories(api: TenantApiFixture): Promise<Record<stri
       });
 
       categoryMap[categoryData.slug] = category.id;
+      console.log(`✓ Created category: ${categoryData.title} (${categoryData.slug})`);
     } catch (error: any) {
       console.log(`Failed to create category ${categoryData.slug}, continuing...`, error);
       continue;
@@ -59,6 +61,7 @@ export async function seedCategories(api: TenantApiFixture): Promise<Record<stri
           });
 
           categoryMap[childSlug] = childCategory.id;
+          console.log(`✓ Created child category: ${childTitle} (${childSlug})`);
         } catch (error: any) {
           console.log(`Failed to create child category ${childSlug}, continuing...`, error);
           continue;
@@ -67,10 +70,12 @@ export async function seedCategories(api: TenantApiFixture): Promise<Record<stri
     }
   }
 
+  console.log(`🏷️ Finished seeding categories. Created: ${Object.keys(categoryMap).length}`);
   return categoryMap;
 }
 
 export async function seedTags(api: TenantApiFixture): Promise<Record<string, string>> {
+  console.log('🏷️ Starting to seed tags...');
   const tagMap: Record<string, string> = {};
 
   for (const tagData of TAGS) {
@@ -83,12 +88,14 @@ export async function seedTags(api: TenantApiFixture): Promise<Record<string, st
       });
 
       tagMap[tagData.slug] = tag.id;
+      console.log(`✓ Created tag: ${tagData.title} (${tagData.slug})`);
     } catch (error: any) {
       console.log(`Failed to create tag ${tagData.slug}, continuing...`, error);
       continue;
     }
   }
 
+  console.log(`🏷️ Finished seeding tags. Created: ${Object.keys(tagMap).length}`);
   return tagMap;
 }
 
@@ -97,11 +104,14 @@ export async function seedProducts(
   categoryMap: Record<string, string>,
   tagMap: Record<string, string>,
 ): Promise<Record<string, ApiProduct>> {
+  console.log('📦 Starting to seed products...');
   const productMap: Record<string, ApiProduct> = {};
 
   for (const productData of PRODUCTS) {
     const tagIds = (productData.tags ?? []).map((tagSlug) => tagMap[tagSlug]).filter(Boolean);
     const basePriceCents = Math.round((productData.price || 0) * 100);
+    const categoryId = categoryMap[productData.category];
+    const categoriesForVariant = categoryId ? [categoryId] : [];
 
     let product: ApiProduct;
 
@@ -121,6 +131,25 @@ export async function seedProducts(
           price: basePriceCents,
           options: options,
         });
+
+        // Добавляем категории к вариантам если они есть
+        if (categoriesForVariant.length > 0) {
+          await api.product.update({
+            input: {
+              id: product.id,
+              variants: {
+                update: product.variants.map((variant) => ({
+                  id: variant.id,
+                  categories: categoriesForVariant,
+                })),
+              },
+            },
+          });
+
+          // Обновляем локальный объект продукта
+          const updatedProduct = await api.product.findOne(product.id);
+          product = updatedProduct;
+        }
       } else {
         // Простой продукт без опций
         product = await api.product.create({
@@ -169,7 +198,7 @@ export async function seedProducts(
                   costPrice: 0,
                   sku: productData.slug,
                   stockStatus: 'IN_STOCK',
-                  categories: [],
+                  categories: categoriesForVariant,
                   inListing: true,
                   variantSortIndex: 0,
                   weight: 0,
@@ -188,6 +217,7 @@ export async function seedProducts(
       }
 
       productMap[product.slug] = product;
+      console.log(`✓ Created product: ${product.title} (${product.slug}) with ${product.variants.length} variants`);
     } catch (error: any) {
       console.log(`Failed to create product ${productData.slug}, continuing...`, error);
       continue;
@@ -264,10 +294,12 @@ export async function seedProducts(
     }
   }
 
+  console.log(`📦 Finished seeding products. Created: ${Object.keys(productMap).length}`);
   return productMap;
 }
 
 export async function seedCustomers(api: TenantApiFixture): Promise<string[]> {
+  console.log('👥 Starting to seed customers...');
   const customerIds: string[] = [];
 
   const customers = [
@@ -298,12 +330,14 @@ export async function seedCustomers(api: TenantApiFixture): Promise<string[]> {
       });
 
       customerIds.push(customer.id);
+      console.log(`✓ Created customer: ${customerData.firstName} ${customerData.lastName} (${customerData.email})`);
     } catch (error: any) {
       console.log(`Failed to create customer ${customerData.email}, continuing...`, error);
       continue;
     }
   }
 
+  console.log(`👥 Finished seeding customers. Created: ${customerIds.length}`);
   return customerIds;
 }
 
@@ -312,6 +346,17 @@ export async function seedReviews(
   productIds: string[],
   customerIds: string[],
 ): Promise<void> {
+  console.log(`⭐ Starting to seed reviews. Products: ${productIds.length}, Customers: ${customerIds.length}`);
+
+  if (productIds.length === 0) {
+    console.log('No products found, skipping reviews');
+    return;
+  }
+
+  if (customerIds.length === 0) {
+    console.log('No customers found, skipping reviews');
+    return;
+  }
   const reviewerNames = [
     'Александр К.',
     'Ольга М.',
@@ -332,12 +377,16 @@ export async function seedReviews(
 
   for (let i = 0; i < productIds.length; i++) {
     const productId = productIds[i];
-    const product = await adminApi.product.findOne(productId);
+    console.log(`Creating reviews for product ${i + 1}/${productIds.length}: ${productId}`);
 
-    const variantId = product.variants[0]?.id;
-    if (!variantId) {
-      continue;
-    }
+    try {
+      const product = await adminApi.product.findOne(productId);
+
+      const variantId = product.variants[0]?.id;
+      if (!variantId) {
+        console.log(`No variants found for product ${productId}, skipping`);
+        continue;
+      }
 
     const reviewCount = REVIEW_TEMPLATES.length;
 
@@ -368,12 +417,18 @@ export async function seedReviews(
             status: ReviewStatus.Approved,
           },
         });
+        console.log(`✓ Created review: ${reviewTemplate.title} (${reviewTemplate.rating}/5) by ${reviewerName}`);
         } catch (error: any) {
           console.log(`Failed to create review for product ${variantId} from ${reviewerName}, continuing...`, error);
           continue;
         }
+      }
+    } catch (error: any) {
+      console.log(`Failed to find product ${productId}, continuing...`, error);
+      continue;
     }
   }
+  console.log(`⭐ Finished seeding reviews`);
 }
 
 export async function seedProject(adminApi: TenantApiFixture): Promise<void> {
@@ -398,12 +453,14 @@ export async function seedProject(adminApi: TenantApiFixture): Promise<void> {
   try {
     productMap = await seedProducts(adminApi, categoryMap, tagMap);
     productIds = Object.values(productMap).map((p) => p.id);
+    console.log(`Created ${productIds.length} products`);
   } catch (error) {
     console.log('Error seeding products, continuing...', error);
   }
 
   try {
     customerIds = await seedCustomers(adminApi);
+    console.log(`Created ${customerIds.length} customers`);
   } catch (error) {
     console.log('Error seeding customers, continuing...', error);
   }
