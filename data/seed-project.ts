@@ -1,64 +1,68 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
-  ApiFeatureGroup,
   ApiProduct,
   DimensionUnit,
   EntityStatus,
-  FeatureStyleType,
   ListingSort,
   ListingType,
   ReviewStatus,
   WeightUnit,
 } from '@codegen/admin-gql';
 import { TenantApiFixture } from '@fixtures/admin/api';
-import { CATEGORIES, TAGS, FEATURE_GROUPS, PRODUCTS, REVIEW_TEMPLATES } from './seed-config';
-
-function generateVariantSlug(productSlug: string, featureValues: string[]): string {
-  return `${productSlug}_${featureValues.map((val) => val.toLowerCase()).join('_')}`;
-}
+import { CATEGORIES, TAGS, PRODUCTS, REVIEW_TEMPLATES } from './seed-config';
 
 export async function seedCategories(api: TenantApiFixture): Promise<Record<string, string>> {
   const categoryMap: Record<string, string> = {};
 
   for (const categoryData of CATEGORIES) {
-    const category = await api.category.create({
-      input: {
-        title: categoryData.title,
-        slug: categoryData.slug,
-        description: {
-          html: `<p>${categoryData.description}</p>`,
-          json: JSON.stringify({ content: categoryData.description }),
-          text: categoryData.description,
+    try {
+      const category = await api.category.create({
+        input: {
+          title: categoryData.title,
+          slug: categoryData.slug,
+          description: {
+            html: `<p>${categoryData.description}</p>`,
+            json: JSON.stringify({ content: categoryData.description }),
+            text: categoryData.description,
+          },
+          status: EntityStatus.Published,
+          listingType: ListingType.Manual,
+          includeChildrenProducts: false,
+          listingOrderByStatus: false,
+          listingFilters: [],
+          listingOrderBy: ListingSort.Custom,
         },
-        status: EntityStatus.Published,
-        listingType: ListingType.Manual,
-        includeChildrenProducts: false,
-        listingOrderByStatus: false,
-        listingFilters: [],
-        listingOrderBy: ListingSort.Custom,
-      },
-    });
+      });
 
-    categoryMap[categoryData.slug] = category.id;
+      categoryMap[categoryData.slug] = category.id;
+    } catch (error: any) {
+      console.log(`Failed to create category ${categoryData.slug}, continuing...`, error);
+      continue;
+    }
 
-    if (categoryData.children) {
+    if (categoryData.children && categoryMap[categoryData.slug]) {
       for (const childTitle of categoryData.children) {
         const childSlug = `${categoryData.slug}-${childTitle.toLowerCase().replace(/\s+/g, '-')}`;
-        const childCategory = await api.category.create({
-          input: {
-            title: childTitle,
-            slug: childSlug,
-            parentId: category.id,
-            status: EntityStatus.Published,
-            listingType: ListingType.Manual,
-            includeChildrenProducts: false,
-            listingOrderByStatus: false,
-            listingFilters: [],
-            listingOrderBy: ListingSort.Custom,
-          },
-        });
+        try {
+          const childCategory = await api.category.create({
+            input: {
+              title: childTitle,
+              slug: childSlug,
+              parentId: categoryMap[categoryData.slug],
+              status: EntityStatus.Published,
+              listingType: ListingType.Manual,
+              includeChildrenProducts: false,
+              listingOrderByStatus: false,
+              listingFilters: [],
+              listingOrderBy: ListingSort.Custom,
+            },
+          });
 
-        categoryMap[childSlug] = childCategory.id;
+          categoryMap[childSlug] = childCategory.id;
+        } catch (error: any) {
+          console.log(`Failed to create child category ${childSlug}, continuing...`, error);
+          continue;
+        }
       }
     }
   }
@@ -70,183 +74,124 @@ export async function seedTags(api: TenantApiFixture): Promise<Record<string, st
   const tagMap: Record<string, string> = {};
 
   for (const tagData of TAGS) {
-    const tag = await api.tag.create({
-      input: {
-        title: tagData.title,
-        slug: tagData.slug,
-      },
-    });
+    try {
+      const tag = await api.tag.create({
+        input: {
+          title: tagData.title,
+          slug: tagData.slug,
+        },
+      });
 
-    tagMap[tagData.slug] = tag.id;
+      tagMap[tagData.slug] = tag.id;
+    } catch (error: any) {
+      console.log(`Failed to create tag ${tagData.slug}, continuing...`, error);
+      continue;
+    }
   }
 
   return tagMap;
-}
-
-export async function seedFeatureGroups(
-  api: TenantApiFixture,
-): Promise<Record<string, ApiFeatureGroup>> {
-  const featureGroupMap: Record<string, ApiFeatureGroup> = {};
-
-  for (const featureGroupData of FEATURE_GROUPS) {
-    const featureGroup = await api.feature.createGroupWithValues({
-      title: featureGroupData.title,
-      slug: featureGroupData.slug,
-      values: featureGroupData.values,
-    });
-
-    featureGroupMap[featureGroupData.slug] = featureGroup;
-  }
-
-  return featureGroupMap;
 }
 
 export async function seedProducts(
   api: TenantApiFixture,
   categoryMap: Record<string, string>,
   tagMap: Record<string, string>,
-  featureGroupMap: Record<string, ApiFeatureGroup>,
 ): Promise<Record<string, ApiProduct>> {
   const productMap: Record<string, ApiProduct> = {};
 
   for (const productData of PRODUCTS) {
-    const categoryId = categoryMap[productData.category];
-    const categoriesForVariant = categoryId ? [categoryId] : [];
-
-    const rawPrice =
-      productData.price ??
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (Array.isArray((productData as any).variants) &&
-      (productData as any).variants[0]?.price?.amount
-        ? parseFloat((productData as any).variants[0].price.amount)
-        : 0);
-    const basePriceCents = Math.round((rawPrice || 0) * 100);
-
     const tagIds = (productData.tags ?? []).map((tagSlug) => tagMap[tagSlug]).filter(Boolean);
+    const basePriceCents = Math.round((productData.price || 0) * 100);
 
-    const variantsToCreate = [];
+    let product: ApiProduct;
 
-    if (productData.featureGroups && productData.featureGroups.length > 0) {
-      const featuresMatrix = productData.featureGroups
-        .map((fg) => {
-          const featureGroup = featureGroupMap[fg.slug];
-          if (!featureGroup) {
-            return [];
-          }
+    try {
+      if (productData.featureGroups && productData.featureGroups.length > 0) {
+        // Продукт с опциями - используем новый API
+        const options = productData.featureGroups.map((fg) => ({
+          title: fg.slug.charAt(0).toUpperCase() + fg.slug.slice(1), // capitalize first letter
+          slug: fg.slug,
+          values: fg.values,
+        }));
 
-          return featureGroup.features.filter((f) => fg.values.includes(f.title));
-        })
-        .filter((arr) => arr.length > 0);
-
-      const cartesianProduct = <T>(arrays: T[][]): T[][] => {
-        return arrays.reduce<T[][]>(
-          (acc, curr) => acc.flatMap((a) => curr.map((b) => [...a, b])),
-          [[]],
-        );
-      };
-
-      const combinations = cartesianProduct(featuresMatrix);
-
-      combinations.forEach((combo, index) => {
-        const variantTitle = `${productData.title} - ${combo.map((f) => f.title).join(' ')}`;
-        const variantSlug = generateVariantSlug(
-          productData.slug,
-          combo.map((f) => f.title),
-        );
-
-        variantsToCreate.push({
-          title: variantTitle,
-          slug: variantSlug,
+        product = await api.product.createWithOptions({
+          title: productData.title,
+          slug: productData.slug,
+          status: EntityStatus.Published,
           price: basePriceCents,
-          oldPrice: 0,
-          costPrice: 0,
-          sku: `${productData.slug}-${index}`,
-          stockStatus: 'IN_STOCK',
-          categories: categoriesForVariant,
-          inListing: true,
-          variantSortIndex: index,
-          weight: 0,
-          weightUnit: WeightUnit.Gr,
-          width: 0,
-          height: 0,
-          length: 0,
-          dimensionUnit: DimensionUnit.Cm,
-          features: combo.map((feature, idx) => ({
-            featureId: feature.id,
-            isOption: true,
-            isAttribute: true,
-            optionSortIndex: idx,
-            attributeSortIndex: idx,
-            styleType: FeatureStyleType.Radio,
-          })),
-          gallery: [],
-          coverId: null,
+          options: options,
         });
-      });
-    } else {
-      variantsToCreate.push({
-        title: productData.title,
-        slug: productData.slug,
-        price: basePriceCents,
-        oldPrice: 0,
-        costPrice: 0,
-        sku: productData.slug,
-        stockStatus: 'IN_STOCK',
-        categories: categoriesForVariant,
-        inListing: true,
-        variantSortIndex: 0,
-        weight: 0,
-        weightUnit: WeightUnit.Gr,
-        width: 0,
-        height: 0,
-        length: 0,
-        dimensionUnit: DimensionUnit.Cm,
-        features: [],
-        gallery: [],
-        coverId: null,
-      });
-    }
+      } else {
+        // Простой продукт без опций
+        product = await api.product.create({
+          input: {
+            title: productData.title,
+            slug: productData.slug,
+            status: EntityStatus.Published,
+            requiresShipping: true,
+            description: {
+              html: `<p>${productData.description}</p>`,
+              json: JSON.stringify({
+                data: {
+                  type: 'doc',
+                  content: [
+                    {
+                      type: 'paragraph',
+                      attrs: {
+                        nodeIndent: null,
+                        nodeTextAlignment: null,
+                        nodeLineHeight: null,
+                        style: '',
+                      },
+                      content: [
+                        {
+                          type: 'text',
+                          text: productData.description,
+                        },
+                      ],
+                    },
+                  ],
+                },
+              }),
+              text: productData.description,
+            },
 
-    const descriptionJson = {
-      data: {
-        type: 'doc',
-        content: [
-          {
-            type: 'paragraph',
-            attrs: { nodeIndent: null, nodeTextAlignment: null, nodeLineHeight: null, style: '' },
-            content: [
-              {
-                type: 'text',
-                text: productData.description,
-              },
-            ],
+            excerpt: '',
+            groups: [],
+            tags: tagIds,
+            variants: {
+              create: [
+                {
+                  title: productData.title,
+                  slug: productData.slug,
+                  price: basePriceCents,
+                  oldPrice: 0,
+                  costPrice: 0,
+                  sku: productData.slug,
+                  stockStatus: 'IN_STOCK',
+                  categories: [],
+                  inListing: true,
+                  variantSortIndex: 0,
+                  weight: 0,
+                  weightUnit: WeightUnit.Gr,
+                  width: 0,
+                  height: 0,
+                  length: 0,
+                  dimensionUnit: DimensionUnit.Cm,
+                  gallery: [],
+                  coverId: null,
+                },
+              ],
+            },
           },
-        ],
-      },
-    };
+        });
+      }
 
-    const productTitle = productData.title || (productData as any).name || productData.slug;
-    const product = await api.product.create({
-      input: {
-        title: productTitle,
-        slug: productData.slug,
-        status: EntityStatus.Published,
-        requiresShipping: true,
-        description: {
-          html: `<p>${productData.description}</p>`,
-          json: JSON.stringify(descriptionJson),
-          text: productData.description,
-        },
-        excerpt: '',
-        groups: [],
-        tags: tagIds,
-        variants: {
-          create: variantsToCreate,
-        },
-      },
-    });
-
-    productMap[product.slug] = product;
+      productMap[product.slug] = product;
+    } catch (error: any) {
+      console.log(`Failed to create product ${productData.slug}, continuing...`, error);
+      continue;
+    }
   }
 
   for (const productData of PRODUCTS) {
@@ -271,11 +216,13 @@ export async function seedProducts(
 
           const itemWithFeatures = item as any;
           if (itemWithFeatures.featureValues && itemWithFeatures.featureValues.length > 0) {
-            const generatedVariantSlug = generateVariantSlug(
-              item.productSlug,
-              itemWithFeatures.featureValues,
+            // Найти вариант по заголовку, который содержит все значения фич
+            const targetTitle = itemWithFeatures.featureValues.join(' ');
+            variant = componentProduct.variants.find(
+              (v) =>
+                v.title.includes(targetTitle) ||
+                itemWithFeatures.featureValues.every((value: string) => v.title.includes(value)),
             );
-            variant = componentProduct.variants.find((v) => v.slug === generatedVariantSlug);
 
             if (!variant) {
               return null;
@@ -342,14 +289,19 @@ export async function seedCustomers(api: TenantApiFixture): Promise<string[]> {
   ];
 
   for (const customerData of customers) {
-    const customer = await api.customer.create({
-      ...customerData,
-      password: 'Test123!',
-      isVerified: true,
-      language: 'ru',
-    });
+    try {
+      const customer = await api.customer.create({
+        ...customerData,
+        password: 'Test123!',
+        isVerified: true,
+        language: 'ru',
+      });
 
-    customerIds.push(customer);
+      customerIds.push(customer.id);
+    } catch (error: any) {
+      console.log(`Failed to create customer ${customerData.email}, continuing...`, error);
+      continue;
+    }
   }
 
   return customerIds;
@@ -394,37 +346,71 @@ export async function seedReviews(
       const reviewerName = reviewerNames[j];
       const reviewTemplate = REVIEW_TEMPLATES[j];
 
-      const id = await adminApi.review.create({
-        productId: variantId,
-        customerId: customerId,
-        rating: reviewTemplate.rating,
-        title: reviewTemplate.title,
-        message: reviewTemplate.message,
-        pros: reviewTemplate.pros,
-        cons: reviewTemplate.cons,
-        locale: 'ru',
-        displayName: reviewerName,
-      });
-
-      await adminApi.review.update({
-        input: {
-          id,
+      try {
+        const id = await adminApi.review.create({
           productId: variantId,
           customerId: customerId,
+          rating: reviewTemplate.rating,
+          title: reviewTemplate.title,
+          message: reviewTemplate.message,
+          pros: reviewTemplate.pros,
+          cons: reviewTemplate.cons,
+          locale: 'ru',
           displayName: reviewerName,
-          status: ReviewStatus.Approved,
-        },
-      });
+        });
+
+        await adminApi.review.update({
+          input: {
+            id,
+            productId: variantId,
+            customerId: customerId,
+            displayName: reviewerName,
+            status: ReviewStatus.Approved,
+          },
+        });
+        } catch (error: any) {
+          console.log(`Failed to create review for product ${variantId} from ${reviewerName}, continuing...`, error);
+          continue;
+        }
     }
   }
 }
 
 export async function seedProject(adminApi: TenantApiFixture): Promise<void> {
-  const categoryMap = await seedCategories(adminApi);
-  const tagMap = await seedTags(adminApi);
-  const featureGroupMap = await seedFeatureGroups(adminApi);
-  const productMap = await seedProducts(adminApi, categoryMap, tagMap, featureGroupMap);
-  const productIds = Object.values(productMap).map((p) => p.id);
-  const customerIds = await seedCustomers(adminApi);
-  await seedReviews(adminApi, productIds, customerIds);
+  let categoryMap: Record<string, string> = {};
+  let tagMap: Record<string, string> = {};
+  let productMap: Record<string, ApiProduct> = {};
+  let productIds: string[] = [];
+  let customerIds: string[] = [];
+
+  try {
+    categoryMap = await seedCategories(adminApi);
+  } catch (error) {
+    console.log('Error seeding categories, continuing...', error);
+  }
+
+  try {
+    tagMap = await seedTags(adminApi);
+  } catch (error) {
+    console.log('Error seeding tags, continuing...', error);
+  }
+
+  try {
+    productMap = await seedProducts(adminApi, categoryMap, tagMap);
+    productIds = Object.values(productMap).map((p) => p.id);
+  } catch (error) {
+    console.log('Error seeding products, continuing...', error);
+  }
+
+  try {
+    customerIds = await seedCustomers(adminApi);
+  } catch (error) {
+    console.log('Error seeding customers, continuing...', error);
+  }
+
+  try {
+    await seedReviews(adminApi, productIds, customerIds);
+  } catch (error) {
+    console.log('Error seeding reviews, continuing...', error);
+  }
 }
