@@ -27,7 +27,7 @@ test.describe('checkout-api: lines clear', () => {
     await test.step('seed product variant and get purchasableId', async () => {
       api.session.setTenantScope();
       const handle = `test-product-${Date.now()}`;
-      const product = await api.admin.product.create({
+      await api.admin.product.create({
         input: {
           title: 'Clear Lines Product',
           status: EntityStatus.Published,
@@ -49,7 +49,11 @@ test.describe('checkout-api: lines clear', () => {
           },
         },
       });
-      purchasableId = product.variants[0].id as string;
+
+      // Fetch product from client API to get correct purchasable ID (base64 encoded)
+      api.session.setCustomerScope();
+      const variant = await api.client.product.get(handle);
+      purchasableId = variant.id;
       expect(purchasableId).toBeTruthy();
     });
 

@@ -1,5 +1,5 @@
 import { EntityStatus } from '@codegen/admin-gql';
-import { ApiCheckoutLine, CurrencyCode } from '@codegen/client-gql';
+import { ApiCheckoutLine, ApiProductVariant, CurrencyCode } from '@codegen/client-gql';
 import { test } from '@fixtures/api/api';
 import { expect } from '@playwright/test';
 import * as yup from 'yup';
@@ -13,7 +13,7 @@ test.describe('checkout-api: lines add', () => {
     });
 
     let checkoutId = '';
-    let purchasableId = '';
+    let purchasableSlug = '';
 
     await test.step('create empty checkout', async () => {
       const { data } = await api.client.checkout.create({
@@ -53,17 +53,20 @@ test.describe('checkout-api: lines add', () => {
           },
         },
       });
-      purchasableId = product.variants[0].id as string;
-      expect(purchasableId).toBeTruthy();
+      purchasableSlug = product.variants[0].slug as string;
+      expect(purchasableSlug).toBeTruthy();
     });
+
+    let variant: ApiProductVariant;
 
     await test.step('add one line to checkout', async () => {
       api.session.setCustomerScope();
+      variant = await api.client.product.get(purchasableSlug);
       const { data } = await api.client.checkout.addLines({
         checkoutId,
         lines: [
           {
-            purchasableId,
+            purchasableId: variant.id,
             quantity: 2,
           },
         ],
@@ -104,7 +107,7 @@ test.describe('checkout-api: lines add', () => {
       const lineSchema = yup
         .object({
           id: yup.string().required(),
-          purchasableId: yup.string().equals([purchasableId]).required(),
+          purchasableId: yup.string().equals([variant.id]).required(),
           quantity: yup.number().equals([2]).required(),
           title: yup.string().required(),
           sku: yup.string().equals(['SKU-ALP-1']).required(),

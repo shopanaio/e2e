@@ -44,9 +44,12 @@ test.describe('checkout-api: promo codes management', () => {
           },
         },
       });
-      purchasableId = product.variants[0].id as string;
 
+      // Fetch product from client API to get correct purchasable ID (base64 encoded)
       api.session.setCustomerScope();
+      const variant = await api.client.product.get(handle);
+      purchasableId = variant.id;
+
       const { data } = await api.client.checkout.create({
         idempotency: `e2e-${Date.now()}`,
         localeCode: 'en',
@@ -157,11 +160,10 @@ test.describe('checkout-api: promo codes management', () => {
           },
         },
       });
-      purchasableId1 = product1.variants[0].id as string;
 
       // Create second product
       const handle2 = `test-product-promo-2-${Date.now()}`;
-      const product2 = await api.admin.product.create({
+      await api.admin.product.create({
         input: {
           title: 'Promo Test Product 2',
           status: EntityStatus.Published,
@@ -184,9 +186,13 @@ test.describe('checkout-api: promo codes management', () => {
           },
         },
       });
-      purchasableId2 = product2.variants[0].id as string;
 
+      // Fetch products from client API to get correct purchasable IDs (base64 encoded)
       api.session.setCustomerScope();
+      const variant1 = await api.client.product.get(handle1);
+      const variant2 = await api.client.product.get(handle2);
+      purchasableId1 = variant1.id;
+      purchasableId2 = variant2.id;
 
       const { data } = await api.client.checkout.create({
         idempotency: `e2e-add-items-${Date.now()}`,
@@ -283,9 +289,11 @@ test.describe('checkout-api: promo codes management', () => {
           },
         },
       });
-      purchasableId = product.variants[0].id as string;
 
+      // Fetch product from client API to get correct purchasable ID (base64 encoded)
       api.session.setCustomerScope();
+      const variant = await api.client.product.get(handle);
+      purchasableId = variant.id;
       const { data } = await api.client.checkout.create({
         idempotency: `e2e-update-qty-${Date.now()}`,
         localeCode: 'en',
@@ -417,11 +425,10 @@ test.describe('checkout-api: promo codes management', () => {
           },
         },
       });
-      purchasableId1 = product1.variants[0].id as string;
 
       // Create second product
       const handle2 = `test-product-remove-2-${Date.now()}`;
-      const product2 = await api.admin.product.create({
+      await api.admin.product.create({
         input: {
           title: 'Promo Test Product 2 for Removal',
           status: EntityStatus.Published,
@@ -444,9 +451,13 @@ test.describe('checkout-api: promo codes management', () => {
           },
         },
       });
-      purchasableId2 = product2.variants[0].id as string;
 
+      // Fetch products from client API to get correct purchasable IDs (base64 encoded)
       api.session.setCustomerScope();
+      const variant1 = await api.client.product.get(handle1);
+      const variant2 = await api.client.product.get(handle2);
+      purchasableId1 = variant1.id;
+      purchasableId2 = variant2.id;
 
       const { data } = await api.client.checkout.create({
         idempotency: `e2e-remove-items-${Date.now()}`,
@@ -564,12 +575,17 @@ test.describe('checkout-api: promo codes management', () => {
       api.session.setTenantScope();
 
       // Create three different products
-      const products = await Promise.all([
+      const timestamp = Date.now();
+      const handleA = `product-a-${timestamp}`;
+      const handleB = `product-b-${timestamp}`;
+      const handleC = `product-c-${timestamp}`;
+
+      await Promise.all([
         api.admin.product.create({
           input: {
             title: 'Product A',
             status: EntityStatus.Published,
-            slug: `product-a-${Date.now()}`,
+            slug: handleA,
             groups: [],
             requiresShipping: true,
             tags: [],
@@ -577,7 +593,7 @@ test.describe('checkout-api: promo codes management', () => {
               create: [
                 api.admin.product.getDefaultVariantInput({
                   title: 'Variant A',
-                  slug: `product-a-${Date.now()}`,
+                  slug: handleA,
                   price: 10000, // $100.00
                   stockStatus: 'IN_STOCK',
                   inListing: true,
@@ -592,7 +608,7 @@ test.describe('checkout-api: promo codes management', () => {
           input: {
             title: 'Product B',
             status: EntityStatus.Published,
-            slug: `product-b-${Date.now()}`,
+            slug: handleB,
             groups: [],
             requiresShipping: true,
             tags: [],
@@ -600,7 +616,7 @@ test.describe('checkout-api: promo codes management', () => {
               create: [
                 api.admin.product.getDefaultVariantInput({
                   title: 'Variant B',
-                  slug: `product-b-${Date.now()}`,
+                  slug: handleB,
                   price: 15000, // $150.00
                   stockStatus: 'IN_STOCK',
                   inListing: true,
@@ -615,7 +631,7 @@ test.describe('checkout-api: promo codes management', () => {
           input: {
             title: 'Product C',
             status: EntityStatus.Published,
-            slug: `product-c-${Date.now()}`,
+            slug: handleC,
             groups: [],
             requiresShipping: true,
             tags: [],
@@ -623,7 +639,7 @@ test.describe('checkout-api: promo codes management', () => {
               create: [
                 api.admin.product.getDefaultVariantInput({
                   title: 'Variant C',
-                  slug: `product-c-${Date.now()}`,
+                  slug: handleC,
                   price: 7500, // $75.00
                   stockStatus: 'IN_STOCK',
                   inListing: true,
@@ -636,11 +652,15 @@ test.describe('checkout-api: promo codes management', () => {
         }),
       ]);
 
-      purchasableId1 = products[0].variants[0].id as string;
-      purchasableId2 = products[1].variants[0].id as string;
-      purchasableId3 = products[2].variants[0].id as string;
-
+      // Fetch products from client API to get correct purchasable IDs (base64 encoded)
       api.session.setCustomerScope();
+      const variantA = await api.client.product.get(handleA);
+      const variantB = await api.client.product.get(handleB);
+      const variantC = await api.client.product.get(handleC);
+
+      purchasableId1 = variantA.id;
+      purchasableId2 = variantB.id;
+      purchasableId3 = variantC.id;
 
       const { data } = await api.client.checkout.create({
         idempotency: `e2e-complex-${Date.now()}`,

@@ -34,7 +34,7 @@ test.describe('checkout-api: lines update', () => {
     await test.step('seed two product variants and get purchasableIds', async () => {
       api.session.setTenantScope();
       const handle1 = `test-product-update-1-${Date.now()}`;
-      const product1 = await api.admin.product.create({
+      await api.admin.product.create({
         input: {
           title: 'Update Line Product 1',
           status: EntityStatus.Published,
@@ -57,10 +57,9 @@ test.describe('checkout-api: lines update', () => {
           },
         },
       });
-      purchasableId = product1.variants[0].id as string;
 
       const handle2 = `test-product-update-2-${Date.now()}`;
-      const product2 = await api.admin.product.create({
+      await api.admin.product.create({
         input: {
           title: 'Update Line Product 2',
           status: EntityStatus.Published,
@@ -83,7 +82,14 @@ test.describe('checkout-api: lines update', () => {
           },
         },
       });
-      purchasableId2 = product2.variants[0].id as string;
+
+      // Fetch products from client API to get correct purchasable IDs (base64 encoded)
+      api.session.setCustomerScope();
+      const variant1 = await api.client.product.get(handle1);
+      const variant2 = await api.client.product.get(handle2);
+
+      purchasableId = variant1.id as string;
+      purchasableId2 = variant2.id as string;
 
       expect(purchasableId).toBeTruthy();
       expect(purchasableId2).toBeTruthy();

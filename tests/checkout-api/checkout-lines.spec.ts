@@ -30,7 +30,7 @@ test.describe('checkout-api: lines operations', () => {
       api.session.setTenantScope();
       const handle = `test-product-${Date.now()}`;
       unitPrice = 100;
-      const product = await api.admin.product.create({
+      await api.admin.product.create({
         input: {
           title: 'Test Product',
           status: EntityStatus.Published,
@@ -52,8 +52,11 @@ test.describe('checkout-api: lines operations', () => {
           },
         },
       });
-      const variantId = product.variants[0].id as string;
-      purchasableId = variantId;
+
+      // Fetch product from client API to get correct purchasable ID (base64 encoded)
+      api.session.setCustomerScope();
+      const variant = await api.client.product.get(handle);
+      purchasableId = variant.id;
     });
 
     await test.step('add line to checkout', async () => {

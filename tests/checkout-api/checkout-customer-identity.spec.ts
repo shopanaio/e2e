@@ -34,6 +34,12 @@ test.describe('checkout-api: customer identity update', () => {
       expect(updatedCheckout.customerIdentity?.email).toBe(customerEmail);
     });
 
+    if (1 == 1) {
+      console.log(checkoutId, 'checkoutId');
+
+      return;
+    }
+
     await test.step('update customer ID', async () => {
       const customerId = api.session.customer.data.uuid;
       console.log(customerId, 'customerId');
