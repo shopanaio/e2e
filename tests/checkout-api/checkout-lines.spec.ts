@@ -15,7 +15,6 @@ test.describe('checkout-api: lines operations', () => {
       api.session.setCustomerScope();
 
       const { data: createdResp } = await api.client.checkout.create({
-        idempotency: `e2e-${Date.now()}`,
         localeCode: 'en',
         currencyCode: CurrencyCode.Usd,
         items: [],

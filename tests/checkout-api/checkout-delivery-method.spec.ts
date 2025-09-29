@@ -23,7 +23,6 @@ test.describe('checkout-api: delivery method update', () => {
     await test.step('create checkout', async () => {
       api.session.setCustomerScope();
       const { data } = await api.client.checkout.create({
-        idempotency: `e2e-${Date.now()}`,
         localeCode: 'en',
         currencyCode: CurrencyCode.Usd,
         items: [],
@@ -110,7 +109,6 @@ test.describe('checkout-api: delivery method update', () => {
     await test.step('create checkout and select delivery method', async () => {
       api.session.setCustomerScope();
       const { data: createData } = await api.client.checkout.create({
-        idempotency: `e2e-${Date.now()}`,
         localeCode: 'en',
         currencyCode: CurrencyCode.Usd,
         items: [],

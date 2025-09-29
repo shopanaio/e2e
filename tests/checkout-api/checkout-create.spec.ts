@@ -2,7 +2,7 @@ import { ApiCheckout, CurrencyCode } from '@codegen/client-gql';
 import { EntityStatus } from '@codegen/admin-gql';
 import { test } from '@fixtures/api/api';
 import { expect } from '@playwright/test';
-import crypto from 'crypto';
+// idempotency param removed from API; duplicate check is by server-side request hash
 
 test.describe('checkout-api: create checkout', () => {
   test('creates checkout via GraphQL', async ({ api }) => {
@@ -10,7 +10,6 @@ test.describe('checkout-api: create checkout', () => {
     api.session.setCustomerScope();
 
     const input = {
-      idempotency: `e2e-${Date.now()}`,
       localeCode: 'en',
       currencyCode: CurrencyCode.Usd,
       items: [],
@@ -32,37 +31,6 @@ test.describe('checkout-api: create checkout', () => {
     expect(created.cost.subtotalAmount.amount).toBe('0.00');
     expect(created.cost.totalAmount.amount).toBe('0.00');
     expect(created.cost.totalAmount.currencyCode).toBe('USD');
-  });
-
-  test('is idempotent for the same idempotency', async ({ api }) => {
-    await api.session.setupClient();
-    api.session.setCustomerScope();
-
-    const idempotency = `e2e-${crypto.randomUUID()}`;
-    const input = {
-      idempotency,
-      localeCode: 'en',
-      currencyCode: CurrencyCode.Usd,
-      items: [],
-    };
-
-    const { data: data1 } = await api.client.checkout.create(input);
-    const created1 = data1.checkoutMutation.checkoutCreate as {
-      id: string;
-      cost: { totalAmount: { amount: number } };
-      totalQuantity: number;
-    };
-
-    const { data: data2 } = await api.client.checkout.create(input);
-    const created2 = data2.checkoutMutation.checkoutCreate as {
-      id: string;
-      cost: { totalAmount: { amount: number } };
-      totalQuantity: number;
-    };
-
-    expect(created2.id).toBe(created1.id);
-    expect(created2.totalQuantity).toBe(created1.totalQuantity);
-    expect(created2.cost.totalAmount.amount).toBe(created1.cost.totalAmount.amount);
   });
 
   test('creates checkout with items in create mutation same as adding items separately', async ({
@@ -115,7 +83,6 @@ test.describe('checkout-api: create checkout', () => {
     // Method 1: Create checkout with items in create mutation
     await test.step('create checkout with items in create mutation', async () => {
       const { data } = await api.client.checkout.create({
-        idempotency: `e2e-with-items-${Date.now()}`,
         localeCode: 'en',
         currencyCode: CurrencyCode.Usd,
         items: [
@@ -136,7 +103,6 @@ test.describe('checkout-api: create checkout', () => {
     await test.step('create empty checkout and add items separately', async () => {
       // Create empty checkout
       const { data: createData } = await api.client.checkout.create({
-        idempotency: `e2e-separate-${Date.now()}`,
         localeCode: 'en',
         currencyCode: CurrencyCode.Usd,
         items: [],

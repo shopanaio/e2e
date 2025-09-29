@@ -51,7 +51,6 @@ test.describe('checkout-api: promo codes management', () => {
       purchasableId = variant.id;
 
       const { data } = await api.client.checkout.create({
-        idempotency: `e2e-${Date.now()}`,
         localeCode: 'en',
         currencyCode: CurrencyCode.Usd,
         items: [],
@@ -195,7 +194,6 @@ test.describe('checkout-api: promo codes management', () => {
       purchasableId2 = variant2.id;
 
       const { data } = await api.client.checkout.create({
-        idempotency: `e2e-add-items-${Date.now()}`,
         localeCode: 'en',
         currencyCode: CurrencyCode.Usd,
         items: [],
@@ -295,7 +293,6 @@ test.describe('checkout-api: promo codes management', () => {
       const variant = await api.client.product.get(handle);
       purchasableId = variant.id;
       const { data } = await api.client.checkout.create({
-        idempotency: `e2e-update-qty-${Date.now()}`,
         localeCode: 'en',
         currencyCode: CurrencyCode.Usd,
         items: [],
@@ -460,7 +457,6 @@ test.describe('checkout-api: promo codes management', () => {
       purchasableId2 = variant2.id;
 
       const { data } = await api.client.checkout.create({
-        idempotency: `e2e-remove-items-${Date.now()}`,
         localeCode: 'en',
         currencyCode: CurrencyCode.Usd,
         items: [],
@@ -663,7 +659,6 @@ test.describe('checkout-api: promo codes management', () => {
       purchasableId3 = variantC.id;
 
       const { data } = await api.client.checkout.create({
-        idempotency: `e2e-complex-${Date.now()}`,
         localeCode: 'en',
         currencyCode: CurrencyCode.Usd,
         items: [],

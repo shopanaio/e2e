@@ -9,7 +9,6 @@ test.describe('checkout-api: create order from checkout', () => {
     api.session.setCustomerScope();
 
     const { data: createdResp } = await api.client.checkout.create({
-      idempotency: `e2e-${Date.now()}`,
       localeCode: 'en',
       currencyCode: CurrencyCode.Usd,
       items: [],

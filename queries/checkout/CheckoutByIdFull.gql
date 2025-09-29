@@ -46,11 +46,6 @@ query CheckoutByIdFull($id: ID!) {
         purchasableId
         sku
         title
-        purchasable {
-          ...on PurchasableSnapshot {
-            snapshot
-          }
-        }
         imageSrc
         children {
           id

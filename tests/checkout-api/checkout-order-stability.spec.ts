@@ -48,7 +48,6 @@ test.describe('checkout-api: lines order stability', () => {
     const productIdA = variantA.id;
     const productIdB = variantB.id;
     const { data: createdResp } = await api.client.checkout.create({
-      idempotency: `e2e-${Date.now()}`,
       localeCode: 'en',
       currencyCode: CurrencyCode.Usd,
       items: [],
