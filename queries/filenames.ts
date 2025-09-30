@@ -1,5 +1,3 @@
-// ⚠️ This file was auto-generated. Do not edit manually.
-
 export type GraphQLFileName =
   | 'admin/AppsInstall'
   | 'admin/CartDelete'
@@ -82,6 +80,7 @@ export type GraphQLFileName =
   | 'admin/UserUpdateProfile'
   | 'checkout/CheckoutById'
   | 'checkout/CheckoutByIdFull'
+  | 'checkout/CheckoutByIdWithPayment'
   | 'checkout/CheckoutCreate'
   | 'checkout/CheckoutCurrencyCodeUpdate'
   | 'checkout/CheckoutCustomerIdentityUpdate'
@@ -95,6 +94,7 @@ export type GraphQLFileName =
   | 'checkout/CheckoutLinesClear'
   | 'checkout/CheckoutLinesDelete'
   | 'checkout/CheckoutLinesUpdate'
+  | 'checkout/CheckoutPaymentMethodUpdate'
   | 'checkout/CheckoutPromoCodeAdd'
   | 'checkout/CheckoutPromoCodeRemove'
   | 'client/AddCartLine'

@@ -112,6 +112,30 @@ query CheckoutByIdFull($id: ID!) {
         code
         appliedAt
       }
+      payment {
+        paymentMethods {
+          code
+          provider
+          flow
+          metadata
+          constraints {
+            shippingMethods
+          }
+        }
+        selectedPaymentMethod {
+          code
+          provider
+          flow
+          metadata
+          constraints {
+            shippingMethods
+          }
+        }
+        payableAmount {
+          amount
+          currencyCode
+        }
+      }
     }
   }
 }

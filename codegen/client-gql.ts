@@ -273,6 +273,8 @@ export type ApiCheckout = ApiNode & {
   lines: Array<ApiCheckoutLine>;
   /** Notifications for the user regarding the checkout. */
   notifications: Array<ApiCheckoutNotification>;
+  /** Payment aggregate for this checkout. */
+  payment: ApiCheckoutPayment;
   /** Quantity of the item being purchased. */
   totalQuantity: Scalars['Int']['output'];
   /** When this checkout was last updated. */
@@ -302,7 +304,6 @@ export type ApiCheckoutCreateInput = {
   externalId?: InputMaybe<Scalars['String']['input']>;
   /** Source of sales for the checkout. */
   externalSource?: InputMaybe<Scalars['String']['input']>;
-
   /** Initial items to add to the new checkout. */
   items: Array<ApiCheckoutLineInput>;
   /** Locale code for the checkout. ISO 639-1 (2 letters, e.g., "en", "ru") */
@@ -539,10 +540,11 @@ export type ApiCheckoutLine = ApiNode & {
   id: Scalars['ID']['output'];
   /** Image URL of the purchasable. */
   imageSrc?: Maybe<Scalars['String']['output']>;
-  /** Purchasable unit. */
-  purchasable?: Maybe<ApiPurchasable>;
+  purchasable: ApiProductVariant;
   /** ID of the purchasable. */
   purchasableId: Scalars['ID']['output'];
+  /** Purchasable snapshot data at the time of adding to checkout. */
+  purchasableSnapshot: Scalars['JSON']['output'];
   /** Quantity of the item being purchased. */
   quantity: Scalars['Int']['output'];
   /** SKU of the purchasable. */
@@ -694,6 +696,8 @@ export type ApiCheckoutMutation = {
   checkoutLinesDelete: ApiCheckoutLinesDeletePayload;
   /** Updates the quantity of a specific checkout item. */
   checkoutLinesUpdate: ApiCheckoutLinesUpdatePayload;
+  /** Selects or changes the payment method for the checkout. */
+  checkoutPaymentMethodUpdate: ApiCheckout;
   /** Applies a promo code/coupon to the checkout. */
   checkoutPromoCodeAdd: ApiCheckout;
   /** Removes a previously applied promo code/coupon from the checkout. */
@@ -766,6 +770,11 @@ export type ApiCheckoutMutationCheckoutLinesUpdateArgs = {
 };
 
 
+export type ApiCheckoutMutationCheckoutPaymentMethodUpdateArgs = {
+  input: ApiCheckoutPaymentMethodUpdateInput;
+};
+
+
 export type ApiCheckoutMutationCheckoutPromoCodeAddArgs = {
   input: ApiCheckoutPromoCodeAddInput;
 };
@@ -805,6 +814,57 @@ export enum CheckoutNotificationCode {
   /** The price of one or more items has changed since they were added to the checkout. */
   PriceChanged = 'PRICE_CHANGED'
 }
+
+/** Payment aggregate for a checkout. */
+export type ApiCheckoutPayment = {
+  __typename?: 'CheckoutPayment';
+  /**
+   * Amount payable to the merchant via the selected method.
+   * This excludes SHIPPING_CARRIER components (CARRIER_DIRECT).
+   */
+  payableAmount: ApiMoney;
+  /** Available payment methods for this checkout context. */
+  paymentMethods: Array<ApiCheckoutPaymentMethod>;
+  /** Selected payment method, if any. */
+  selectedPaymentMethod?: Maybe<ApiCheckoutPaymentMethod>;
+};
+
+/** Payment method available/selected for checkout. */
+export type ApiCheckoutPaymentMethod = {
+  __typename?: 'CheckoutPaymentMethod';
+  /** Method code (e.g., "card", "apple_pay", "bank_transfer", "cod"). */
+  code: Scalars['String']['output'];
+  /** Optional constraints for availability binding to shipping. */
+  constraints?: Maybe<ApiCheckoutPaymentMethodConstraints>;
+  /** Optional human-readable description. */
+  description?: Maybe<Scalars['String']['output']>;
+  /** Payment flow (ONLINE vs ON_DELIVERY). */
+  flow: PaymentFlow;
+  /** Optional method metadata (icons, labels, extra config). */
+  metadata?: Maybe<Scalars['JSON']['output']>;
+  /** Human-readable name of the method. */
+  name: Scalars['String']['output'];
+  /** Provider code (e.g., "stripe", "liqpay", "monobank", "paypal"). */
+  provider: Scalars['String']['output'];
+};
+
+/** Constraints for payment method availability (from payment-plugin-sdk). */
+export type ApiCheckoutPaymentMethodConstraints = {
+  __typename?: 'CheckoutPaymentMethodConstraints';
+  /**
+   * Limit to specific shipping method codes. If empty, all shipping methods are allowed.
+   * Code includes shipping provider code.
+   */
+  shippingMethods: Array<Scalars['String']['output']>;
+};
+
+/** Select or change payment method for the checkout. */
+export type ApiCheckoutPaymentMethodUpdateInput = {
+  /** Checkout identifier. */
+  checkoutId: Scalars['ID']['input'];
+  /** Code of the payment method available for this checkout. */
+  paymentMethodCode: Scalars['String']['input'];
+};
 
 /** Applied promo code for a checkout. */
 export type ApiCheckoutPromoCode = {
@@ -2247,10 +2307,11 @@ export type ApiOrderLine = {
   createdAt: Scalars['DateTime']['output'];
   /** A globally-unique ID. */
   id: Scalars['ID']['output'];
-  /** Purchasable unit. */
-  purchasable: ApiPurchasable;
+  purchasable: ApiProductVariant;
   /** ID of the purchasable. */
   purchasableId: Scalars['ID']['output'];
+  /** Purchasable snapshot data at the time of adding to checkout. */
+  purchasableSnapshot: Scalars['JSON']['output'];
   /** Quantity of the item being purchased. */
   quantity: Scalars['Int']['output'];
   /** Last updated date. */
@@ -2286,7 +2347,8 @@ export type ApiOrderMutationOrderCreateArgs = {
 export enum OrderStatus {
   Active = 'ACTIVE',
   Cancelled = 'CANCELLED',
-  Closed = 'CLOSED'
+  Closed = 'CLOSED',
+  Draft = 'DRAFT'
 }
 
 /** A content page. */
@@ -2427,6 +2489,16 @@ export type ApiPasswordSignUpPayload = {
   /** Newly created session. */
   session?: Maybe<ApiSession>;
 };
+
+/** Payment flow for the method, aligned with payment-plugin-sdk. */
+export enum PaymentFlow {
+  /** Customer pays offline via provider (QR code, display code, etc). */
+  Offline = 'OFFLINE',
+  /** Customer pays online via provider (redirect/app flow handled externally). */
+  Online = 'ONLINE',
+  /** Customer pays later/on delivery or by invoice (offline instructions). */
+  OnDelivery = 'ON_DELIVERY'
+}
 
 /** Input type for executing predictive search (autocomplete suggestions). */
 export type ApiPredictiveSearchInput = {
@@ -2834,13 +2906,6 @@ export type ApiProductVariantTagsArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
   last?: InputMaybe<Scalars['Int']['input']>;
   sort?: InputMaybe<TagSort>;
-};
-
-export type ApiPurchasable = ApiPurchasableSnapshot;
-
-export type ApiPurchasableSnapshot = {
-  __typename?: 'PurchasableSnapshot';
-  snapshot: Scalars['JSON']['output'];
 };
 
 export type ApiPurchasableSnapshotInput = {

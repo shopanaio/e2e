@@ -15,8 +15,8 @@ test.describe('checkout-api: create checkout', () => {
       items: [],
     };
 
-    const { data } = await api.client.checkout.create(input);
-
+    const { data, errors } = await api.client.checkout.create(input);
+    console.log(JSON.stringify(errors, null, 2));
     const created = data.checkoutMutation.checkoutCreate as {
       id: string;
       cost: {
