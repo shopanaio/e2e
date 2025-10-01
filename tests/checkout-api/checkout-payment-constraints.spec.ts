@@ -7,15 +7,6 @@ test.describe('checkout-api: payment method constraints', () => {
   test('should verify payment method constraints structure', async ({ api }) => {
     await api.session.setupClient();
 
-    await test.step('install payment and shipping apps', async () => {
-      await api.admin.mutation('admin/AppsInstall', {
-        variables: { code: 'payment:bank_transfer' },
-      });
-      await api.admin.mutation('admin/AppsInstall', {
-        variables: { code: 'shipping:novaposhta' },
-      });
-    });
-
     let checkoutId = '';
 
     await test.step('create checkout', async () => {
@@ -29,21 +20,21 @@ test.describe('checkout-api: payment method constraints', () => {
       checkoutId = data.checkoutMutation.checkoutCreate.id;
     });
 
-    await test.step('verify payment method constraints exist and have correct structure', async () => {
-      const { data } = await api.client.checkout.readFull(checkoutId);
+    const { data } = await api.client.checkout.readFull(checkoutId);
+    const payment = data.checkoutQuery.checkout?.payment as ApiCheckoutPayment;
 
-      const payment = data.checkoutQuery.checkout?.payment as ApiCheckoutPayment;
+    console.log(data.checkoutQuery.checkout?.payment);
 
-      payment.paymentMethods.forEach((method) => {
-        // Constraints should be defined (even if null)
-        expect(method.constraints).toBeDefined();
+    expect(payment.paymentMethods.length).toBeGreaterThan(0);
+    payment.paymentMethods.forEach((method) => {
+      // Constraints should be defined (even if null)
+      expect(method.constraints).toBeDefined();
 
-        // If constraints exist, verify structure
-        if (method.constraints) {
-          expect(method.constraints.shippingMethods).toBeDefined();
-          expect(Array.isArray(method.constraints.shippingMethods)).toBe(true);
-        }
-      });
+      // If constraints exist, verify structure
+      if (method.constraints) {
+        expect(method.constraints.shippingMethods).toBeDefined();
+        expect(Array.isArray(method.constraints.shippingMethods)).toBe(true);
+      }
     });
   });
 
@@ -52,18 +43,6 @@ test.describe('checkout-api: payment method constraints', () => {
 
     let purchasableId = '';
     const unitPrice = 4000; // $40.00
-
-    await test.step('install payment and shipping apps', async () => {
-      await api.admin.mutation('admin/AppsInstall', {
-        variables: { code: 'payment:bank_transfer' },
-      });
-      await api.admin.mutation('admin/AppsInstall', {
-        variables: { code: 'shipping:novaposhta' },
-      });
-      await api.admin.mutation('admin/AppsInstall', {
-        variables: { code: 'shipping:meest' },
-      });
-    });
 
     await test.step('create product variant requiring shipping', async () => {
       api.session.setTenantScope();
@@ -159,12 +138,6 @@ test.describe('checkout-api: payment method constraints', () => {
   test('should display all payment method fields correctly', async ({ api }) => {
     await api.session.setupClient();
 
-    await test.step('install payment apps', async () => {
-      await api.admin.mutation('admin/AppsInstall', {
-        variables: { code: 'payment:bank_transfer' },
-      });
-    });
-
     let checkoutId = '';
 
     await test.step('create checkout', async () => {
@@ -223,12 +196,6 @@ test.describe('checkout-api: payment method constraints', () => {
 
   test('should verify payment aggregate completeness', async ({ api }) => {
     await api.session.setupClient();
-
-    await test.step('install payment apps', async () => {
-      await api.admin.mutation('admin/AppsInstall', {
-        variables: { code: 'payment:bank_transfer' },
-      });
-    });
 
     let checkoutId = '';
 

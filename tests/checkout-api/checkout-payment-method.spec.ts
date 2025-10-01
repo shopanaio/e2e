@@ -4,13 +4,8 @@ import { expect } from '@playwright/test';
 
 test.describe('checkout-api: payment method', () => {
   test('should have payment methods available when checkout is created', async ({ api }) => {
-    await test.step('setup client and install payment apps', async () => {
+    await test.step('setup client', async () => {
       await api.session.setupClient();
-
-      // Install payment apps to get payment methods
-      await api.admin.mutation('admin/AppsInstall', {
-        variables: { code: 'payment:bank_transfer' },
-      });
     });
 
     let checkoutId = '';
@@ -54,12 +49,8 @@ test.describe('checkout-api: payment method', () => {
   });
 
   test('should select payment method for checkout', async ({ api }) => {
-    await test.step('setup client and install payment apps', async () => {
+    await test.step('setup client', async () => {
       await api.session.setupClient();
-
-      await api.admin.mutation('admin/AppsInstall', {
-        variables: { code: 'payment:bank_transfer' },
-      });
     });
 
     let checkoutId = '';
@@ -108,13 +99,8 @@ test.describe('checkout-api: payment method', () => {
   });
 
   test('should change payment method to different one', async ({ api }) => {
-    await test.step('setup client and install multiple payment apps', async () => {
+    await test.step('setup client', async () => {
       await api.session.setupClient();
-
-      // Install multiple payment apps to have different methods
-      await api.admin.mutation('admin/AppsInstall', {
-        variables: { code: 'payment:bank_transfer' },
-      });
     });
 
     let checkoutId = '';
@@ -180,12 +166,8 @@ test.describe('checkout-api: payment method', () => {
   });
 
   test('should fail to select non-existent payment method', async ({ api }) => {
-    await test.step('setup client and install payment apps', async () => {
+    await test.step('setup client', async () => {
       await api.session.setupClient();
-
-      await api.admin.mutation('admin/AppsInstall', {
-        variables: { code: 'payment:bank_transfer' },
-      });
     });
 
     let checkoutId = '';
@@ -204,22 +186,23 @@ test.describe('checkout-api: payment method', () => {
     await test.step('attempt to select non-existent payment method', async () => {
       const nonExistentCode = 'non_existent_payment_method_code';
 
-      await expect(
-        api.client.checkout.updatePaymentMethod({
-          checkoutId,
-          paymentMethodCode: nonExistentCode,
-        }),
-      ).rejects.toThrow();
+      const { errors } = await api.client.mutation('checkout/CheckoutPaymentMethodUpdate', {
+        throwOnError: false,
+        variables: {
+          input: {
+            checkoutId,
+            paymentMethodCode: nonExistentCode,
+          },
+        },
+      });
+
+      expect(errors?.[0]?.message).toContain('Domain validation failed');
     });
   });
 
   test('should update payableAmount correctly', async ({ api }) => {
-    await test.step('setup client and install payment apps', async () => {
+    await test.step('setup client', async () => {
       await api.session.setupClient();
-
-      await api.admin.mutation('admin/AppsInstall', {
-        variables: { code: 'payment:bank_transfer' },
-      });
     });
 
     let checkoutId = '';
@@ -262,12 +245,8 @@ test.describe('checkout-api: payment method', () => {
   });
 
   test('should verify payment method metadata and constraints', async ({ api }) => {
-    await test.step('setup client and install payment apps', async () => {
+    await test.step('setup client', async () => {
       await api.session.setupClient();
-
-      await api.admin.mutation('admin/AppsInstall', {
-        variables: { code: 'payment:bank_transfer' },
-      });
     });
 
     let checkoutId = '';
@@ -307,12 +286,8 @@ test.describe('checkout-api: payment method', () => {
   });
 
   test('should verify payment flow enum values', async ({ api }) => {
-    await test.step('setup client and install payment apps', async () => {
+    await test.step('setup client', async () => {
       await api.session.setupClient();
-
-      await api.admin.mutation('admin/AppsInstall', {
-        variables: { code: 'payment:bank_transfer' },
-      });
     });
 
     let checkoutId = '';

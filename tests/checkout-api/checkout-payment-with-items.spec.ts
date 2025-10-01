@@ -14,12 +14,6 @@ test.describe('checkout-api: payment with items', () => {
     const quantity = 2;
     const expectedTotal = ((unitPrice / 100) * quantity).toFixed(2);
 
-    await test.step('install payment apps', async () => {
-      await api.admin.mutation('admin/AppsInstall', {
-        variables: { code: 'payment:bank_transfer' },
-      });
-    });
-
     await test.step('create product variant', async () => {
       api.session.setTenantScope();
       const handle = `test-payment-product-${Date.now()}`;
@@ -109,12 +103,6 @@ test.describe('checkout-api: payment with items', () => {
 
     let purchasableId = '';
     const unitPrice = 3000; // $30.00
-
-    await test.step('install payment apps', async () => {
-      await api.admin.mutation('admin/AppsInstall', {
-        variables: { code: 'payment:bank_transfer' },
-      });
-    });
 
     await test.step('create product variant', async () => {
       api.session.setTenantScope();
@@ -226,12 +214,6 @@ test.describe('checkout-api: payment with items', () => {
     let purchasableId = '';
     const unitPrice = 2500; // $25.00
 
-    await test.step('install payment apps', async () => {
-      await api.admin.mutation('admin/AppsInstall', {
-        variables: { code: 'payment:bank_transfer' },
-      });
-    });
-
     await test.step('create product variant', async () => {
       api.session.setTenantScope();
       const handle = `test-payment-qty-${Date.now()}`;
@@ -309,7 +291,7 @@ test.describe('checkout-api: payment with items', () => {
         checkoutId,
         lines: [
           {
-            id: lineId,
+            lineId,
             quantity: 5,
           },
         ],

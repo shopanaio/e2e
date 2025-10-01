@@ -4,16 +4,8 @@ import { expect } from '@playwright/test';
 
 test.describe('checkout-api: delivery method update', () => {
   test('should select delivery method for first delivery group', async ({ api }) => {
-    await test.step('setup client and install shipping apps', async () => {
+    await test.step('setup client', async () => {
       await api.session.setupClient();
-
-      // Install shipping apps to get shipping methods
-      await api.admin.mutation('admin/AppsInstall', {
-        variables: { code: 'shipping:novaposhta' },
-      });
-      await api.admin.mutation('admin/AppsInstall', {
-        variables: { code: 'shipping:meest' },
-      });
     });
 
     let checkoutId = '';
@@ -36,6 +28,7 @@ test.describe('checkout-api: delivery method update', () => {
       const { data } = await api.client.checkout.readFull(checkoutId);
 
       const checkout = data.checkoutQuery.checkout;
+
       expect(checkout?.deliveryGroups).toBeTruthy();
       expect(checkout?.deliveryGroups.length).toBeGreaterThan(0);
 
@@ -44,6 +37,7 @@ test.describe('checkout-api: delivery method update', () => {
 
       expect(group.deliveryMethods.length).toBeGreaterThan(0);
       shippingMethodCode = group.deliveryMethods[0].code;
+      console.log('shippingMethodCode', shippingMethodCode);
       expect(shippingMethodCode).toBeTruthy();
     });
 
@@ -94,12 +88,8 @@ test.describe('checkout-api: delivery method update', () => {
   });
 
   test('should clear delivery method selection', async ({ api }) => {
-    await test.step('setup client and install shipping apps', async () => {
+    await test.step('setup client', async () => {
       await api.session.setupClient();
-
-      await api.admin.mutation('admin/AppsInstall', {
-        variables: { code: 'shipping:novaposhta' },
-      });
     });
 
     let checkoutId = '';

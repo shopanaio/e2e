@@ -7,10 +7,6 @@ test.describe('checkout-api: promo codes management', () => {
   test('should handle promo code addition with validation', async ({ api }) => {
     await test.step('setup client (tenant, project, apiKey) and customer scope', async () => {
       await api.session.setupClient();
-      // Install shipping apps to get shipping methods
-      await api.admin.mutation('admin/AppsInstall', {
-        variables: { code: 'pricing:simple-promo' },
-      });
       api.session.setCustomerScope();
     });
 
@@ -21,7 +17,7 @@ test.describe('checkout-api: promo codes management', () => {
       // First create a product to have something in the checkout
       api.session.setTenantScope();
       const handle = `test-product-promo-${Date.now()}`;
-      const product = await api.admin.product.create({
+      await api.admin.product.create({
         input: {
           title: 'Promo Test Product',
           status: EntityStatus.Published,
@@ -120,10 +116,6 @@ test.describe('checkout-api: promo codes management', () => {
   test('should recalculate promo code discount when adding new items', async ({ api }) => {
     await test.step('setup client (tenant, project, apiKey) and customer scope', async () => {
       await api.session.setupClient();
-      // Install shipping apps to get shipping methods
-      await api.admin.mutation('admin/AppsInstall', {
-        variables: { code: 'pricing:simple-promo' },
-      });
       api.session.setCustomerScope();
     });
 
@@ -136,7 +128,7 @@ test.describe('checkout-api: promo codes management', () => {
 
       // Create first product
       const handle1 = `test-product-promo-1-${Date.now()}`;
-      const product1 = await api.admin.product.create({
+      await api.admin.product.create({
         input: {
           title: 'Promo Test Product 1',
           status: EntityStatus.Published,
@@ -250,10 +242,6 @@ test.describe('checkout-api: promo codes management', () => {
   test('should recalculate promo code discount when updating item quantities', async ({ api }) => {
     await test.step('setup client (tenant, project, apiKey) and customer scope', async () => {
       await api.session.setupClient();
-      // Install shipping apps to get shipping methods
-      await api.admin.mutation('admin/AppsInstall', {
-        variables: { code: 'pricing:simple-promo' },
-      });
       api.session.setCustomerScope();
     });
 
@@ -264,7 +252,7 @@ test.describe('checkout-api: promo codes management', () => {
     await test.step('create checkout with items and apply promo code', async () => {
       api.session.setTenantScope();
       const handle = `test-product-update-qty-${Date.now()}`;
-      const product = await api.admin.product.create({
+      await api.admin.product.create({
         input: {
           title: 'Promo Test Product for Quantity Update',
           status: EntityStatus.Published,
@@ -381,10 +369,6 @@ test.describe('checkout-api: promo codes management', () => {
   test('should recalculate promo code discount when removing items', async ({ api }) => {
     await test.step('setup client (tenant, project, apiKey) and customer scope', async () => {
       await api.session.setupClient();
-      // Install shipping apps to get shipping methods
-      await api.admin.mutation('admin/AppsInstall', {
-        variables: { code: 'pricing:simple-promo' },
-      });
       api.session.setCustomerScope();
     });
 
@@ -399,7 +383,7 @@ test.describe('checkout-api: promo codes management', () => {
 
       // Create first product
       const handle1 = `test-product-remove-1-${Date.now()}`;
-      const product1 = await api.admin.product.create({
+      await api.admin.product.create({
         input: {
           title: 'Promo Test Product 1 for Removal',
           status: EntityStatus.Published,
@@ -552,10 +536,6 @@ test.describe('checkout-api: promo codes management', () => {
   test('should handle complex item operations with promo code correctly', async ({ api }) => {
     await test.step('setup client (tenant, project, apiKey) and customer scope', async () => {
       await api.session.setupClient();
-      // Install shipping apps to get shipping methods
-      await api.admin.mutation('admin/AppsInstall', {
-        variables: { code: 'pricing:simple-promo' },
-      });
       api.session.setCustomerScope();
     });
 

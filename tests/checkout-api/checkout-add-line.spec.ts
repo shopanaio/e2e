@@ -10,6 +10,7 @@ test.describe('checkout-api: lines add', () => {
   }) => {
     await test.step('setup client (tenant, project, apiKey) and customer scope', async () => {
       await api.session.setupClient();
+      api.session.setCustomerScope();
     });
 
     let checkoutId = '';
