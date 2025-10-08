@@ -79,10 +79,12 @@ test.describe('checkout-api: payment read operations', () => {
       const { data: readData } = await api.client.checkout.readFull(checkoutId);
       const payment = readData.checkoutQuery.checkout?.payment as ApiCheckoutPayment;
       paymentMethodCode = payment.paymentMethods[0].code;
+      const provider = payment.paymentMethods[0].provider?.code || '';
 
       await api.client.checkout.updatePaymentMethod({
         checkoutId,
         paymentMethodCode,
+        provider,
       });
     });
 
@@ -135,10 +137,12 @@ test.describe('checkout-api: payment read operations', () => {
       const { data: readData } = await api.client.checkout.readFull(checkoutId);
       const payment = readData.checkoutQuery.checkout?.payment as ApiCheckoutPayment;
       const paymentMethodCode = payment.paymentMethods[0].code;
+      const provider = payment.paymentMethods[0].provider?.code || '';
 
       const { data: updateData } = await api.client.checkout.updatePaymentMethod({
         checkoutId,
         paymentMethodCode,
+        provider,
       });
 
       const mutationResponse = updateData.checkoutMutation.checkoutPaymentMethodUpdate;

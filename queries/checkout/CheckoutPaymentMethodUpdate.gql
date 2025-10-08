@@ -5,21 +5,15 @@ mutation CheckoutPaymentMethodUpdate($input: CheckoutPaymentMethodUpdateInput!) 
       payment {
         paymentMethods {
           code
-          provider
+          provider { code }
           flow
-          metadata
-          constraints {
-            shippingMethods
-          }
+          data
         }
         selectedPaymentMethod {
           code
-          provider
+          provider { code }
           flow
-          metadata
-          constraints {
-            shippingMethods
-          }
+          data
         }
         payableAmount {
           amount

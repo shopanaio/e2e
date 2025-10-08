@@ -35,7 +35,7 @@ test.describe('checkout-api: payment method', () => {
       // Verify payment method structure
       const firstMethod = payment.paymentMethods[0];
       expect(firstMethod.code).toBeTruthy();
-      expect(firstMethod.provider).toBeTruthy();
+      expect(firstMethod.provider?.code).toBeTruthy();
       expect(firstMethod.flow).toBeTruthy();
 
       // Verify payableAmount exists
@@ -55,6 +55,7 @@ test.describe('checkout-api: payment method', () => {
 
     let checkoutId = '';
     let paymentMethodCode = '';
+    let provider = '';
 
     await test.step('create checkout and get available payment methods', async () => {
       api.session.setCustomerScope();
@@ -73,13 +74,16 @@ test.describe('checkout-api: payment method', () => {
       expect(payment.paymentMethods.length).toBeGreaterThan(0);
 
       paymentMethodCode = payment.paymentMethods[0].code;
+      provider = payment.paymentMethods[0].provider?.code || '';
       expect(paymentMethodCode).toBeTruthy();
+      expect(provider).toBeTruthy();
     });
 
     await test.step('select payment method', async () => {
       const { data } = await api.client.checkout.updatePaymentMethod({
         checkoutId,
         paymentMethodCode,
+        provider,
       });
 
       const updatedCheckout = data.checkoutMutation.checkoutPaymentMethodUpdate;
@@ -125,11 +129,13 @@ test.describe('checkout-api: payment method', () => {
 
       expect(methods.length).toBeGreaterThan(0);
       firstMethodCode = methods[0].code;
+      const firstProvider = methods[0].provider?.code || '';
 
       // Select first method
       await api.client.checkout.updatePaymentMethod({
         checkoutId,
         paymentMethodCode: firstMethodCode,
+        provider: firstProvider,
       });
     });
 
@@ -142,10 +148,12 @@ test.describe('checkout-api: payment method', () => {
 
       if (differentMethod) {
         secondMethodCode = differentMethod.code;
+        const secondProvider = differentMethod.provider?.code || '';
 
         const { data: updateData } = await api.client.checkout.updatePaymentMethod({
           checkoutId,
           paymentMethodCode: secondMethodCode,
+          provider: secondProvider,
         });
 
         const updatedPayment = updateData.checkoutMutation.checkoutPaymentMethodUpdate.payment;
@@ -192,6 +200,7 @@ test.describe('checkout-api: payment method', () => {
           input: {
             checkoutId,
             paymentMethodCode: nonExistentCode,
+            provider: 'non_existent_provider',
           },
         },
       });
@@ -232,10 +241,12 @@ test.describe('checkout-api: payment method', () => {
 
       const payment = data.checkoutQuery.checkout?.payment as ApiCheckoutPayment;
       const paymentMethodCode = payment.paymentMethods[0].code;
+      const provider = payment.paymentMethods[0].provider?.code || '';
 
       const { data: updateData } = await api.client.checkout.updatePaymentMethod({
         checkoutId,
         paymentMethodCode,
+        provider,
       });
 
       const updatedPayment = updateData.checkoutMutation.checkoutPaymentMethodUpdate.payment;
@@ -244,7 +255,7 @@ test.describe('checkout-api: payment method', () => {
     });
   });
 
-  test('should verify payment method metadata and constraints', async ({ api }) => {
+  test('should verify payment method data and provider', async ({ api }) => {
     await test.step('setup client', async () => {
       await api.session.setupClient();
     });
@@ -262,7 +273,7 @@ test.describe('checkout-api: payment method', () => {
       checkoutId = data.checkoutMutation.checkoutCreate.id;
     });
 
-    await test.step('verify payment method has metadata and constraints', async () => {
+    await test.step('verify payment method has data and provider', async () => {
       const { data } = await api.client.checkout.readFull(checkoutId);
 
       const payment = data.checkoutQuery.checkout?.payment as ApiCheckoutPayment;
@@ -270,18 +281,11 @@ test.describe('checkout-api: payment method', () => {
 
       // Verify all required fields exist
       expect(firstMethod.code).toBeTruthy();
-      expect(firstMethod.provider).toBeTruthy();
+      expect(firstMethod.provider?.code).toBeTruthy();
       expect(firstMethod.flow).toBeTruthy();
 
-      // Metadata and constraints are optional but should be defined
-      expect(firstMethod.metadata).toBeDefined();
-      expect(firstMethod.constraints).toBeDefined();
-
-      // If constraints exist, verify structure
-      if (firstMethod.constraints) {
-        expect(firstMethod.constraints.shippingMethods).toBeDefined();
-        expect(Array.isArray(firstMethod.constraints.shippingMethods)).toBe(true);
-      }
+      // Data is optional but should be defined
+      expect(firstMethod.data).toBeDefined();
     });
   });
 

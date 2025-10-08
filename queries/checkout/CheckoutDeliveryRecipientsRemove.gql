@@ -1,6 +1,6 @@
-mutation CheckoutDeliveryAddressesRemove($input: CheckoutDeliveryAddressesRemoveInput!) {
+mutation CheckoutDeliveryRecipientsRemove($input: CheckoutDeliveryRecipientsRemoveInput!) {
   checkoutMutation {
-    checkoutDeliveryAddressesRemove(input: $input) {
+    checkoutDeliveryRecipientsRemove(input: $input) {
       id
       createdAt
       updatedAt

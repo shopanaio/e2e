@@ -42,10 +42,15 @@ test.describe('checkout-api: delivery method update', () => {
     });
 
     await test.step('select delivery method for entire checkout', async () => {
+      const { data: readData } = await api.client.checkout.readFull(checkoutId);
+      const group = readData.checkoutQuery.checkout?.deliveryGroups[0];
+      const provider = group?.deliveryMethods[0]?.provider?.code || '';
+
       const { data } = await api.client.checkout.updateDeliveryMethod({
         checkoutId,
         shippingMethodCode,
         deliveryGroupId,
+        provider,
       });
 
       const updatedCheckout = data.checkoutMutation.checkoutDeliveryMethodUpdate;
@@ -74,10 +79,12 @@ test.describe('checkout-api: delivery method update', () => {
       const differentMethod = availableMethods?.find((m) => m.code !== shippingMethodCode);
 
       if (differentMethod) {
+        const provider = differentMethod.provider?.code || '';
         const { data } = await api.client.checkout.updateDeliveryMethod({
           checkoutId,
           shippingMethodCode: differentMethod.code,
           deliveryGroupId,
+          provider,
         });
 
         const updatedCheckout = data.checkoutMutation.checkoutDeliveryMethodUpdate;
@@ -112,11 +119,13 @@ test.describe('checkout-api: delivery method update', () => {
       const group = readData.checkoutQuery.checkout?.deliveryGroups[0];
       deliveryGroupId = group?.id || '';
       shippingMethodCode = group?.deliveryMethods[0]?.code || '';
+      const provider = group?.deliveryMethods[0]?.provider?.code || '';
 
       await api.client.checkout.updateDeliveryMethod({
         checkoutId,
         shippingMethodCode,
         deliveryGroupId,
+        provider,
       });
     });
 
@@ -141,10 +150,12 @@ test.describe('checkout-api: delivery method update', () => {
       const differentMethod = availableMethods?.find((m) => m.code !== shippingMethodCode);
 
       if (differentMethod) {
+        const provider = differentMethod.provider?.code || '';
         const { data } = await api.client.checkout.updateDeliveryMethod({
           checkoutId,
           shippingMethodCode: differentMethod.code,
           deliveryGroupId,
+          provider,
         });
 
         const updatedGroup = data.checkoutMutation.checkoutDeliveryMethodUpdate.deliveryGroups.find(

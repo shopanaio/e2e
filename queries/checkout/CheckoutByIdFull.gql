@@ -37,6 +37,9 @@ query CheckoutByIdFull($id: ID!) {
         email
         phone
         countryCode
+        firstName
+        lastName
+        middleName
         customer { id }
       }
       customerNote
@@ -88,20 +91,26 @@ query CheckoutByIdFull($id: ID!) {
           countryCode
           provinceCode
           postalCode
-          email
+          data
+        }
+        recipient {
           firstName
           lastName
-          data
+          middleName
+          email
+          phone
         }
         deliveryMethods {
           code
           deliveryMethodType
-          provider { code data }
+          provider { code }
+          data
         }
         selectedDeliveryMethod {
           code
           deliveryMethodType
-          provider { code data }
+          provider { code }
+          data
         }
         estimatedCost {
           amount { amount currencyCode }
@@ -115,21 +124,15 @@ query CheckoutByIdFull($id: ID!) {
       payment {
         paymentMethods {
           code
-          provider
+          provider { code }
           flow
-          metadata
-          constraints {
-            shippingMethods
-          }
+          data
         }
         selectedPaymentMethod {
           code
-          provider
+          provider { code }
           flow
-          metadata
-          constraints {
-            shippingMethods
-          }
+          data
         }
         payableAmount {
           amount

@@ -12,6 +12,9 @@ import {
   ApiCheckoutDeliveryAddressesAddInput,
   ApiCheckoutDeliveryAddressesUpdateInput,
   ApiCheckoutDeliveryAddressesRemoveInput,
+  ApiCheckoutDeliveryRecipientsAddInput,
+  ApiCheckoutDeliveryRecipientsUpdateInput,
+  ApiCheckoutDeliveryRecipientsRemoveInput,
   ApiCheckoutPaymentMethodUpdateInput,
 } from '@codegen/client-gql';
 import { ClientApiFixture } from '@fixtures/client/api';
@@ -106,6 +109,24 @@ export class Checkout {
 
   async removeDeliveryAddresses(input: ApiCheckoutDeliveryAddressesRemoveInput) {
     return this.client.mutation('checkout/CheckoutDeliveryAddressesRemove', {
+      variables: { input },
+    });
+  }
+
+  async addDeliveryRecipients(input: ApiCheckoutDeliveryRecipientsAddInput) {
+    return this.client.mutation('checkout/CheckoutDeliveryRecipientsAdd', {
+      variables: { input },
+    });
+  }
+
+  async updateDeliveryRecipients(input: ApiCheckoutDeliveryRecipientsUpdateInput) {
+    return this.client.mutation('checkout/CheckoutDeliveryRecipientsUpdate', {
+      variables: { input },
+    });
+  }
+
+  async removeDeliveryRecipients(input: ApiCheckoutDeliveryRecipientsRemoveInput) {
+    return this.client.mutation('checkout/CheckoutDeliveryRecipientsRemove', {
       variables: { input },
     });
   }

@@ -83,10 +83,12 @@ test.describe('checkout-api: payment with items', () => {
 
       const payment = data.checkoutQuery.checkout?.payment as ApiCheckoutPayment;
       const paymentMethodCode = payment.paymentMethods[0].code;
+      const provider = payment.paymentMethods[0].provider?.code || '';
 
       const { data: updateData } = await api.client.checkout.updatePaymentMethod({
         checkoutId,
         paymentMethodCode,
+        provider,
       });
 
       const updatedPayment = updateData.checkoutMutation.checkoutPaymentMethodUpdate.payment;
@@ -181,10 +183,12 @@ test.describe('checkout-api: payment with items', () => {
 
       const payment = data.checkoutQuery.checkout?.payment as ApiCheckoutPayment;
       const paymentMethodCode = payment.paymentMethods[0].code;
+      const provider = payment.paymentMethods[0].provider?.code || '';
 
       await api.client.checkout.updatePaymentMethod({
         checkoutId,
         paymentMethodCode,
+        provider,
       });
     });
 
@@ -279,10 +283,12 @@ test.describe('checkout-api: payment with items', () => {
 
       const payment = data.checkoutQuery.checkout?.payment as ApiCheckoutPayment;
       const paymentMethodCode = payment.paymentMethods[0].code;
+      const provider = payment.paymentMethods[0].provider?.code || '';
 
       await api.client.checkout.updatePaymentMethod({
         checkoutId,
         paymentMethodCode,
+        provider,
       });
     });
 

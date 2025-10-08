@@ -4,7 +4,7 @@ import { test } from '@fixtures/api/api';
 import { expect } from '@playwright/test';
 
 test.describe('checkout-api: payment method constraints', () => {
-  test('should verify payment method constraints structure', async ({ api }) => {
+  test('should verify payment method structure', async ({ api }) => {
     await api.session.setupClient();
 
     let checkoutId = '';
@@ -27,14 +27,11 @@ test.describe('checkout-api: payment method constraints', () => {
 
     expect(payment.paymentMethods.length).toBeGreaterThan(0);
     payment.paymentMethods.forEach((method) => {
-      // Constraints should be defined (even if null)
-      expect(method.constraints).toBeDefined();
-
-      // If constraints exist, verify structure
-      if (method.constraints) {
-        expect(method.constraints.shippingMethods).toBeDefined();
-        expect(Array.isArray(method.constraints.shippingMethods)).toBe(true);
-      }
+      // Verify payment method has required fields
+      expect(method.code).toBeTruthy();
+      expect(method.provider?.code).toBeTruthy();
+      expect(method.flow).toBeTruthy();
+      expect(method.data).toBeDefined();
     });
   });
 
@@ -102,10 +99,12 @@ test.describe('checkout-api: payment method constraints', () => {
 
       const payment = data.checkoutQuery.checkout?.payment as ApiCheckoutPayment;
       paymentMethodCode = payment.paymentMethods[0].code;
+      const provider = payment.paymentMethods[0].provider?.code || '';
 
       await api.client.checkout.updatePaymentMethod({
         checkoutId,
         paymentMethodCode,
+        provider,
       });
     });
 
@@ -116,12 +115,14 @@ test.describe('checkout-api: payment method constraints', () => {
         (g) => g.id === deliveryGroupId,
       );
       const shippingMethodCode = deliveryGroup?.deliveryMethods[0]?.code;
+      const provider = deliveryGroup?.deliveryMethods[0]?.provider?.code;
 
-      if (shippingMethodCode) {
+      if (shippingMethodCode && provider) {
         await api.client.checkout.updateDeliveryMethod({
           checkoutId,
           deliveryGroupId,
           shippingMethodCode,
+          provider,
         });
       }
     });
@@ -161,25 +162,26 @@ test.describe('checkout-api: payment method constraints', () => {
       expect(method.code).toBeTruthy();
       expect(typeof method.code).toBe('string');
 
-      expect(method.provider).toBeTruthy();
-      expect(typeof method.provider).toBe('string');
+      expect(method.provider?.code).toBeTruthy();
+      expect(typeof method.provider?.code).toBe('string');
 
       expect(method.flow).toBeTruthy();
       expect(['ONLINE', 'OFFLINE', 'ON_DELIVERY']).toContain(method.flow);
 
       // Optional fields should be defined (even if null)
-      expect(method.metadata).toBeDefined();
-      expect(method.constraints).toBeDefined();
+      expect(method.data).toBeDefined();
     });
 
     await test.step('select payment method and verify all fields are preserved', async () => {
       const { data: readData } = await api.client.checkout.readFull(checkoutId);
       const payment = readData.checkoutQuery.checkout?.payment as ApiCheckoutPayment;
       const methodCode = payment.paymentMethods[0].code;
+      const provider = payment.paymentMethods[0].provider?.code || '';
 
       const { data: updateData } = await api.client.checkout.updatePaymentMethod({
         checkoutId,
         paymentMethodCode: methodCode,
+        provider,
       });
 
       const selectedMethod =
@@ -187,10 +189,9 @@ test.describe('checkout-api: payment method constraints', () => {
 
       expect(selectedMethod).toBeTruthy();
       expect(selectedMethod?.code).toBe(methodCode);
-      expect(selectedMethod?.provider).toBeTruthy();
+      expect(selectedMethod?.provider?.code).toBeTruthy();
       expect(selectedMethod?.flow).toBeTruthy();
-      expect(selectedMethod?.metadata).toBeDefined();
-      expect(selectedMethod?.constraints).toBeDefined();
+      expect(selectedMethod?.data).toBeDefined();
     });
   });
 
@@ -231,10 +232,12 @@ test.describe('checkout-api: payment method constraints', () => {
       const { data: readData } = await api.client.checkout.readFull(checkoutId);
       const payment = readData.checkoutQuery.checkout?.payment as ApiCheckoutPayment;
       const methodCode = payment.paymentMethods[0].code;
+      const provider = payment.paymentMethods[0].provider?.code || '';
 
       await api.client.checkout.updatePaymentMethod({
         checkoutId,
         paymentMethodCode: methodCode,
+        provider,
       });
 
       const { data: afterData } = await api.client.checkout.readFull(checkoutId);
