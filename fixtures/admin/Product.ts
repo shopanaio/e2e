@@ -27,6 +27,7 @@ import {
 import { TenantApiFixture } from '@fixtures/admin/api';
 import _ from 'lodash';
 import { DeepPartial } from 'types';
+import { slugify } from '@utils/transliterate';
 
 export class Product {
   constructor(private api: TenantApiFixture) {}
@@ -211,10 +212,10 @@ export class Product {
     };
 
     const featuresMatrix: FeatureEntity[][] = options.map((option) => {
-      const groupSlug = option.slug ?? option.title.toLowerCase().replace(/\s+/g, '-');
+      const groupSlug = option.slug ?? slugify(option.title);
       return option.values.map((value) => ({
         title: value,
-        slug: `${groupSlug}.${value.toLowerCase().replace(/\s+/g, '-')}`,
+        slug: `${groupSlug}.${slugify(value)}`,
         groupTitle: option.title,
         groupSlug,
       }));

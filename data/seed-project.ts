@@ -10,6 +10,51 @@ import {
 } from '@codegen/admin-gql';
 import { TenantApiFixture } from '@fixtures/admin/api';
 import { CATEGORIES, TAGS, PRODUCTS, REVIEW_TEMPLATES } from './seed-config';
+import { slugify } from '@utils/transliterate';
+import path from 'path';
+import fs from 'fs';
+
+/**
+ * Upload images from seed-json/images directory.
+ * Returns a map of image filename to file ID.
+ */
+export async function uploadImages(api: TenantApiFixture): Promise<Record<string, string>> {
+  console.log('🖼️  Starting to upload images...');
+  const imageMap: Record<string, string> = {};
+
+  const imagesDir = path.resolve(process.cwd(), 'data', 'seed-json', 'images');
+
+  if (!fs.existsSync(imagesDir)) {
+    console.log('⚠️  Images directory not found, skipping image upload');
+    return imageMap;
+  }
+
+  const imageFiles = fs.readdirSync(imagesDir).filter((file) => {
+    const ext = path.extname(file).toLowerCase();
+    return ['.jpg', '.jpeg', '.png', '.gif', '.webp'].includes(ext);
+  });
+
+  console.log(`Found ${imageFiles.length} images to upload`);
+
+  for (const fileName of imageFiles) {
+    try {
+      const filePath = path.join(imagesDir, fileName);
+      const fileId = await api.file.createFromFile(filePath);
+
+      // Store by filename without extension (to match with product slugs)
+      const baseName = path.basename(fileName, path.extname(fileName));
+      imageMap[baseName] = fileId;
+
+      console.log(`✓ Uploaded image: ${fileName} -> ${fileId}`);
+    } catch (error: any) {
+      console.log(`Failed to upload image ${fileName}, continuing...`, error.message);
+      continue;
+    }
+  }
+
+  console.log(`🖼️  Finished uploading images. Uploaded: ${Object.keys(imageMap).length}`);
+  return imageMap;
+}
 
 export async function seedCategories(api: TenantApiFixture): Promise<Record<string, string>> {
   console.log('🏷️ Starting to seed categories...');
@@ -44,7 +89,7 @@ export async function seedCategories(api: TenantApiFixture): Promise<Record<stri
 
     if (categoryData.children && categoryMap[categoryData.slug]) {
       for (const childTitle of categoryData.children) {
-        const childSlug = `${categoryData.slug}-${childTitle.toLowerCase().replace(/\s+/g, '-')}`;
+        const childSlug = `${categoryData.slug}-${slugify(childTitle)}`;
         try {
           const childCategory = await api.category.create({
             input: {
@@ -103,15 +148,37 @@ export async function seedProducts(
   api: TenantApiFixture,
   categoryMap: Record<string, string>,
   tagMap: Record<string, string>,
+  imageMap: Record<string, string>,
 ): Promise<Record<string, ApiProduct>> {
   console.log('📦 Starting to seed products...');
   const productMap: Record<string, ApiProduct> = {};
+
+  // Convert imageMap to array for random selection
+  const availableImageIds = Object.values(imageMap);
+  let imageIndex = 0;
+
+  // Helper to get next image ID
+  const getNextImageId = (): string | null => {
+    if (availableImageIds.length === 0) return null;
+    const imageId = availableImageIds[imageIndex % availableImageIds.length];
+    imageIndex++;
+    return imageId;
+  };
 
   for (const productData of PRODUCTS) {
     const tagIds = (productData.tags ?? []).map((tagSlug) => tagMap[tagSlug]).filter(Boolean);
     const basePriceCents = Math.round((productData.price || 0) * 100);
     const categoryId = categoryMap[productData.category];
     const categoriesForVariant = categoryId ? [categoryId] : [];
+
+    // Try to find image by product slug, otherwise use next available image
+    let coverId: string | null = null;
+    const slugBasedImageId = imageMap[productData.slug];
+    if (slugBasedImageId) {
+      coverId = slugBasedImageId;
+    } else {
+      coverId = getNextImageId();
+    }
 
     let product: ApiProduct;
 
@@ -132,16 +199,28 @@ export async function seedProducts(
           options: options,
         });
 
-        // Добавляем категории к вариантам если они есть
-        if (categoriesForVariant.length > 0) {
+        // Добавляем категории и изображения к вариантам
+        const hasCategories = categoriesForVariant.length > 0;
+        const hasImages = coverId !== null;
+
+        if (hasCategories || hasImages) {
           await api.product.update({
             input: {
               id: product.id,
               variants: {
-                update: product.variants.map((variant) => ({
-                  id: variant.id,
-                  categories: categoriesForVariant,
-                })),
+                update: product.variants.map((variant, index) => {
+                  // Для первого варианта используем основное изображение, для остальных - следующие
+                  const variantCoverId = index === 0 ? coverId : getNextImageId();
+
+                  return {
+                    id: variant.id,
+                    ...(hasCategories ? { categories: categoriesForVariant } : {}),
+                    ...(variantCoverId ? {
+                      coverId: variantCoverId,
+                      gallery: [variantCoverId],
+                    } : {}),
+                  };
+                }),
               },
             },
           });
@@ -207,8 +286,8 @@ export async function seedProducts(
                   height: 0,
                   length: 0,
                   dimensionUnit: DimensionUnit.Cm,
-                  gallery: [],
-                  coverId: null,
+                  gallery: coverId ? [coverId] : [],
+                  coverId: coverId,
                 },
               ],
             },
@@ -434,9 +513,16 @@ export async function seedReviews(
 export async function seedProject(adminApi: TenantApiFixture): Promise<void> {
   let categoryMap: Record<string, string> = {};
   let tagMap: Record<string, string> = {};
+  let imageMap: Record<string, string> = {};
   let productMap: Record<string, ApiProduct> = {};
   let productIds: string[] = [];
   let customerIds: string[] = [];
+
+  try {
+    imageMap = await uploadImages(adminApi);
+  } catch (error) {
+    console.log('Error uploading images, continuing...', error);
+  }
 
   try {
     categoryMap = await seedCategories(adminApi);
@@ -451,7 +537,7 @@ export async function seedProject(adminApi: TenantApiFixture): Promise<void> {
   }
 
   try {
-    productMap = await seedProducts(adminApi, categoryMap, tagMap);
+    productMap = await seedProducts(adminApi, categoryMap, tagMap, imageMap);
     productIds = Object.values(productMap).map((p) => p.id);
     console.log(`Created ${productIds.length} products`);
   } catch (error) {
