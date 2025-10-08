@@ -41,6 +41,7 @@ export class FileFixture {
    * Upload local file (driver = LOCAL). Returns created file ID.
    */
   async createFromFile(filePath: string): Promise<string> {
+    console.log('createFromFile',this.baseUrl, filePath);
     const endpoint = `${this.baseUrl}/v1/file/upload`;
     const { projectSlug, accessToken } = this.session;
 

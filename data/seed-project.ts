@@ -165,6 +165,20 @@ export async function seedProducts(
     return imageId;
   };
 
+  // Helper to get random images for gallery (cover + 4 random images)
+  const getGalleryImages = (coverId: string | null): string[] => {
+    if (!coverId || availableImageIds.length === 0) return [];
+
+    const gallery = [coverId];
+    const remainingImages = availableImageIds.filter((id) => id !== coverId);
+
+    // Add up to 4 random images
+    const shuffled = [...remainingImages].sort(() => Math.random() - 0.5);
+    const additionalImages = shuffled.slice(0, Math.min(4, shuffled.length));
+
+    return [...gallery, ...additionalImages];
+  };
+
   for (const productData of PRODUCTS) {
     const tagIds = (productData.tags ?? []).map((tagSlug) => tagMap[tagSlug]).filter(Boolean);
     const basePriceCents = Math.round((productData.price || 0) * 100);
@@ -217,7 +231,7 @@ export async function seedProducts(
                     ...(hasCategories ? { categories: categoriesForVariant } : {}),
                     ...(variantCoverId ? {
                       coverId: variantCoverId,
-                      gallery: [variantCoverId],
+                      gallery: getGalleryImages(variantCoverId),
                     } : {}),
                   };
                 }),
@@ -286,7 +300,7 @@ export async function seedProducts(
                   height: 0,
                   length: 0,
                   dimensionUnit: DimensionUnit.Cm,
-                  gallery: coverId ? [coverId] : [],
+                  gallery: getGalleryImages(coverId),
                   coverId: coverId,
                 },
               ],
