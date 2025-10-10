@@ -17,6 +17,18 @@
         "Черная",
         "Крафт"
       ]
+    },
+    {
+      "slug": "design",
+      "values": [
+        "Gift Box",
+        "Gift Box Premium",
+        "Good Morning",
+        "Happy Birthday",
+        "Special Delivery",
+        "Special For You",
+        "Thank You"
+      ]
     }
   ]
 }
