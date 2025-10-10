@@ -1,6 +1,7 @@
 import { test } from '@fixtures/base.extend';
 import { seedProject } from '@data/seed-project';
 import { updateSeedConfig } from '@data/seedConfig';
+import path from 'path';
 
 test.describe('Seed Project', () => {
   test('Initialize project with test data', async ({ api }) => {
@@ -43,7 +44,16 @@ test.describe('Seed Project', () => {
     console.log('📦 Step 2: Seeding project with test data...');
     // Убедимся что мы в tenant scope для создания продуктов
     api.session.setTenantScope();
-    await seedProject(api.admin);
+
+    // Seed boxing data first (without reviews and customers)
+    const boxingDataDir = path.resolve(process.cwd(), 'data', 'seed-boxing');
+    console.log('\n🎁 Seeding BOXING data...');
+    await seedProject(api.admin, boxingDataDir, { seedReviews: false, seedCustomers: false });
+
+    // Then seed main json data (with reviews and customers)
+    const jsonDataDir = path.resolve(process.cwd(), 'data', 'seed-json');
+    console.log('\n📦 Seeding MAIN (JSON) data...');
+    await seedProject(api.admin, jsonDataDir, { seedReviews: true, seedCustomers: true });
 
     console.log('\n');
     console.log('╔══════════════════════════════════════════════════════════════╗');

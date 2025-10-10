@@ -9,45 +9,71 @@ import {
   WeightUnit,
 } from '@codegen/admin-gql';
 import { TenantApiFixture } from '@fixtures/admin/api';
-import { CATEGORIES, TAGS, PRODUCTS, REVIEW_TEMPLATES } from './seed-config';
+import { CategoryData, TagData, ProductDataWithFeatures } from './seed-data';
 import { slugify } from '@utils/transliterate';
 import path from 'path';
 import fs from 'fs';
 
+export interface ReviewTemplate {
+  rating: number;
+  title: string;
+  message: string;
+  pros: string;
+  cons: string;
+}
+
 /**
- * Upload images from seed-json/images directory.
+ * Upload images from images directory recursively.
  * Returns a map of image filename to file ID.
  */
-export async function uploadImages(api: TenantApiFixture): Promise<Record<string, string>> {
+export async function uploadImages(api: TenantApiFixture, dataDir: string): Promise<Record<string, string>> {
   console.log('🖼️  Starting to upload images...');
   const imageMap: Record<string, string> = {};
 
-  const imagesDir = path.resolve(process.cwd(), 'data', 'seed-json', 'images');
+  const imagesDir = path.join(dataDir, 'images');
 
   if (!fs.existsSync(imagesDir)) {
     console.log('⚠️  Images directory not found, skipping image upload');
     return imageMap;
   }
 
-  const imageFiles = fs.readdirSync(imagesDir).filter((file) => {
-    const ext = path.extname(file).toLowerCase();
-    return ['.jpg', '.jpeg', '.png', '.gif', '.webp'].includes(ext);
-  });
+  // Recursively find all image files
+  const findImages = (dir: string): string[] => {
+    const results: string[] = [];
+    const files = fs.readdirSync(dir);
 
+    for (const file of files) {
+      const filePath = path.join(dir, file);
+      const stat = fs.statSync(filePath);
+
+      if (stat.isDirectory()) {
+        results.push(...findImages(filePath));
+      } else {
+        const ext = path.extname(file).toLowerCase();
+        if (['.jpg', '.jpeg', '.png', '.gif', '.webp'].includes(ext)) {
+          results.push(filePath);
+        }
+      }
+    }
+
+    return results;
+  };
+
+  const imageFiles = findImages(imagesDir);
   console.log(`Found ${imageFiles.length} images to upload`);
 
-  for (const fileName of imageFiles) {
+  for (const filePath of imageFiles) {
     try {
-      const filePath = path.join(imagesDir, fileName);
       const fileId = await api.file.createFromFile(filePath);
 
       // Store by filename without extension (to match with product slugs)
+      const fileName = path.basename(filePath);
       const baseName = path.basename(fileName, path.extname(fileName));
       imageMap[baseName] = fileId;
 
       console.log(`✓ Uploaded image: ${fileName} -> ${fileId}`);
     } catch (error: any) {
-      console.log(`Failed to upload image ${fileName}, continuing...`, error.message);
+      console.log(`Failed to upload image ${path.basename(filePath)}, continuing...`, error.message);
       continue;
     }
   }
@@ -56,11 +82,11 @@ export async function uploadImages(api: TenantApiFixture): Promise<Record<string
   return imageMap;
 }
 
-export async function seedCategories(api: TenantApiFixture): Promise<Record<string, string>> {
+export async function seedCategories(api: TenantApiFixture, categories: CategoryData[]): Promise<Record<string, string>> {
   console.log('🏷️ Starting to seed categories...');
   const categoryMap: Record<string, string> = {};
 
-  for (const categoryData of CATEGORIES) {
+  for (const categoryData of categories) {
     try {
       const category = await api.category.create({
         input: {
@@ -119,11 +145,11 @@ export async function seedCategories(api: TenantApiFixture): Promise<Record<stri
   return categoryMap;
 }
 
-export async function seedTags(api: TenantApiFixture): Promise<Record<string, string>> {
+export async function seedTags(api: TenantApiFixture, tags: TagData[]): Promise<Record<string, string>> {
   console.log('🏷️ Starting to seed tags...');
   const tagMap: Record<string, string> = {};
 
-  for (const tagData of TAGS) {
+  for (const tagData of tags) {
     try {
       const tag = await api.tag.create({
         input: {
@@ -149,6 +175,7 @@ export async function seedProducts(
   categoryMap: Record<string, string>,
   tagMap: Record<string, string>,
   imageMap: Record<string, string>,
+  products: ProductDataWithFeatures[],
 ): Promise<Record<string, ApiProduct>> {
   console.log('📦 Starting to seed products...');
   const productMap: Record<string, ApiProduct> = {};
@@ -179,7 +206,7 @@ export async function seedProducts(
     return [...gallery, ...additionalImages];
   };
 
-  for (const productData of PRODUCTS) {
+  for (const productData of products) {
     const tagIds = (productData.tags ?? []).map((tagSlug) => tagMap[tagSlug]).filter(Boolean);
     const basePriceCents = Math.round((productData.price || 0) * 100);
     const categoryId = categoryMap[productData.category];
@@ -317,7 +344,7 @@ export async function seedProducts(
     }
   }
 
-  for (const productData of PRODUCTS) {
+  for (const productData of products) {
     if (!productData.groups || productData.groups.length === 0) {
       continue;
     }
@@ -438,6 +465,7 @@ export async function seedReviews(
   adminApi: TenantApiFixture,
   productIds: string[],
   customerIds: string[],
+  reviewTemplates: ReviewTemplate[],
 ): Promise<void> {
   console.log(`⭐ Starting to seed reviews. Products: ${productIds.length}, Customers: ${customerIds.length}`);
 
@@ -481,12 +509,12 @@ export async function seedReviews(
         continue;
       }
 
-    const reviewCount = REVIEW_TEMPLATES.length;
+    const reviewCount = reviewTemplates.length;
 
     for (let j = 0; j < reviewCount; j++) {
       const customerId = customerIds[j];
       const reviewerName = reviewerNames[j];
-      const reviewTemplate = REVIEW_TEMPLATES[j];
+      const reviewTemplate = reviewTemplates[j];
 
       try {
         const id = await adminApi.review.create({
@@ -524,7 +552,43 @@ export async function seedReviews(
   console.log(`⭐ Finished seeding reviews`);
 }
 
-export async function seedProject(adminApi: TenantApiFixture): Promise<void> {
+/**
+ * Load data from specified directory
+ */
+function loadSeedData(dataDir: string) {
+  const readJsonFile = <T = unknown>(filePath: string): T => {
+    const raw = fs.readFileSync(filePath, 'utf-8');
+    return JSON.parse(raw) as T;
+  };
+
+  const readJsonDir = <T>(subDir: string): T[] => {
+    const dirPath = path.join(dataDir, subDir);
+    if (!fs.existsSync(dirPath)) {
+      return [];
+    }
+    const files = fs.readdirSync(dirPath).filter((f) => f.endsWith('.json'));
+    return files.map((file) => readJsonFile<T>(path.join(dirPath, file)));
+  };
+
+  const categories = readJsonDir<CategoryData>('categories');
+  const tags = readJsonDir<TagData>('tags');
+  const products = readJsonDir<ProductDataWithFeatures>('products');
+  const reviewTemplates = readJsonDir<ReviewTemplate>('review-templates');
+
+  return { categories, tags, products, reviewTemplates };
+}
+
+export async function seedProject(
+  adminApi: TenantApiFixture,
+  dataDir: string,
+  options: { seedReviews?: boolean; seedCustomers?: boolean } = {},
+): Promise<void> {
+  const { seedReviews: shouldSeedReviews = true, seedCustomers: shouldSeedCustomers = true } = options;
+
+  console.log(`\n📂 Loading data from: ${dataDir}`);
+  const { categories, tags, products, reviewTemplates } = loadSeedData(dataDir);
+  console.log(`   Categories: ${categories.length}, Tags: ${tags.length}, Products: ${products.length}`);
+
   let categoryMap: Record<string, string> = {};
   let tagMap: Record<string, string> = {};
   let imageMap: Record<string, string> = {};
@@ -533,41 +597,45 @@ export async function seedProject(adminApi: TenantApiFixture): Promise<void> {
   let customerIds: string[] = [];
 
   try {
-    imageMap = await uploadImages(adminApi);
+    imageMap = await uploadImages(adminApi, dataDir);
   } catch (error) {
     console.log('Error uploading images, continuing...', error);
   }
 
   try {
-    categoryMap = await seedCategories(adminApi);
+    categoryMap = await seedCategories(adminApi, categories);
   } catch (error) {
     console.log('Error seeding categories, continuing...', error);
   }
 
   try {
-    tagMap = await seedTags(adminApi);
+    tagMap = await seedTags(adminApi, tags);
   } catch (error) {
     console.log('Error seeding tags, continuing...', error);
   }
 
   try {
-    productMap = await seedProducts(adminApi, categoryMap, tagMap, imageMap);
+    productMap = await seedProducts(adminApi, categoryMap, tagMap, imageMap, products);
     productIds = Object.values(productMap).map((p) => p.id);
     console.log(`Created ${productIds.length} products`);
   } catch (error) {
     console.log('Error seeding products, continuing...', error);
   }
 
-  try {
-    customerIds = await seedCustomers(adminApi);
-    console.log(`Created ${customerIds.length} customers`);
-  } catch (error) {
-    console.log('Error seeding customers, continuing...', error);
+  if (shouldSeedCustomers) {
+    try {
+      customerIds = await seedCustomers(adminApi);
+      console.log(`Created ${customerIds.length} customers`);
+    } catch (error) {
+      console.log('Error seeding customers, continuing...', error);
+    }
   }
 
-  try {
-    await seedReviews(adminApi, productIds, customerIds);
-  } catch (error) {
-    console.log('Error seeding reviews, continuing...', error);
+  if (shouldSeedReviews && reviewTemplates.length > 0 && productIds.length > 0 && customerIds.length > 0) {
+    try {
+      await seedReviews(adminApi, productIds, customerIds, reviewTemplates);
+    } catch (error) {
+      console.log('Error seeding reviews, continuing...', error);
+    }
   }
 }
