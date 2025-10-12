@@ -70,7 +70,7 @@ test.describe('checkout-api: payment method constraints', () => {
       });
 
       api.session.setCustomerScope();
-      const variant = await api.client.product.get(handle);
+      const variant = await api.client.variant.get(handle);
       purchasableId = variant.id;
     });
 

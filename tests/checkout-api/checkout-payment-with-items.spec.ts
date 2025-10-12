@@ -44,7 +44,7 @@ test.describe('checkout-api: payment with items', () => {
 
       // Get purchasable ID from client API
       api.session.setCustomerScope();
-      const variant = await api.client.product.get(handle);
+      const variant = await api.client.variant.get(handle);
       purchasableId = variant.id;
       expect(purchasableId).toBeTruthy();
     });
@@ -135,7 +135,7 @@ test.describe('checkout-api: payment with items', () => {
       });
 
       api.session.setCustomerScope();
-      const variant = await api.client.product.get(handle);
+      const variant = await api.client.variant.get(handle);
       purchasableId = variant.id;
     });
 
@@ -247,7 +247,7 @@ test.describe('checkout-api: payment with items', () => {
       });
 
       api.session.setCustomerScope();
-      const variant = await api.client.product.get(handle);
+      const variant = await api.client.variant.get(handle);
       purchasableId = variant.id;
     });
 

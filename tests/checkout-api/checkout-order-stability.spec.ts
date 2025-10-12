@@ -43,8 +43,8 @@ test.describe('checkout-api: lines order stability', () => {
 
     // Fetch products from client API to get correct purchasable IDs (base64 encoded)
     api.session.setCustomerScope();
-    const variantA = await api.client.product.get(`${handle}-a`);
-    const variantB = await api.client.product.get(`${handle}-b`);
+    const variantA = await api.client.variant.get(`${handle}-a`);
+    const variantB = await api.client.variant.get(`${handle}-b`);
     const productIdA = variantA.id;
     const productIdB = variantB.id;
     const { data: createdResp } = await api.client.checkout.create({

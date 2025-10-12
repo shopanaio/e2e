@@ -66,8 +66,8 @@ test.describe('checkout-api: create order from checkout', () => {
 
     api.session.setCustomerScope();
     // Fetch products from client API to get correct purchasable IDs (base64 encoded)
-    const variant1 = await api.client.product.get(`${handle}-v1`);
-    const variant2 = await api.client.product.get(`${handle}-v2`);
+    const variant1 = await api.client.variant.get(`${handle}-v1`);
+    const variant2 = await api.client.variant.get(`${handle}-v2`);
 
     await api.client.checkout.addLines({
       checkoutId,

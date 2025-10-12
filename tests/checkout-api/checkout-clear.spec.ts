@@ -51,7 +51,7 @@ test.describe('checkout-api: lines clear', () => {
 
       // Fetch product from client API to get correct purchasable ID (base64 encoded)
       api.session.setCustomerScope();
-      const variant = await api.client.product.get(handle);
+      const variant = await api.client.variant.get(handle);
       purchasableId = variant.id;
       expect(purchasableId).toBeTruthy();
     });

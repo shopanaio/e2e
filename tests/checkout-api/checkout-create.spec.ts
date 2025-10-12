@@ -72,7 +72,7 @@ test.describe('checkout-api: create checkout', () => {
 
       // Get purchasable ID from client API
       api.session.setCustomerScope();
-      const variant = await api.client.product.get(handle);
+      const variant = await api.client.variant.get(handle);
       purchasableId = variant.id;
       expect(purchasableId).toBeTruthy();
     });

@@ -43,7 +43,7 @@ test.describe('checkout-api: promo codes management', () => {
 
       // Fetch product from client API to get correct purchasable ID (base64 encoded)
       api.session.setCustomerScope();
-      const variant = await api.client.product.get(handle);
+      const variant = await api.client.variant.get(handle);
       purchasableId = variant.id;
 
       const { data } = await api.client.checkout.create({
@@ -180,8 +180,8 @@ test.describe('checkout-api: promo codes management', () => {
 
       // Fetch products from client API to get correct purchasable IDs (base64 encoded)
       api.session.setCustomerScope();
-      const variant1 = await api.client.product.get(handle1);
-      const variant2 = await api.client.product.get(handle2);
+      const variant1 = await api.client.variant.get(handle1);
+      const variant2 = await api.client.variant.get(handle2);
       purchasableId1 = variant1.id;
       purchasableId2 = variant2.id;
 
@@ -278,7 +278,7 @@ test.describe('checkout-api: promo codes management', () => {
 
       // Fetch product from client API to get correct purchasable ID (base64 encoded)
       api.session.setCustomerScope();
-      const variant = await api.client.product.get(handle);
+      const variant = await api.client.variant.get(handle);
       purchasableId = variant.id;
       const { data } = await api.client.checkout.create({
         localeCode: 'en',
@@ -435,8 +435,8 @@ test.describe('checkout-api: promo codes management', () => {
 
       // Fetch products from client API to get correct purchasable IDs (base64 encoded)
       api.session.setCustomerScope();
-      const variant1 = await api.client.product.get(handle1);
-      const variant2 = await api.client.product.get(handle2);
+      const variant1 = await api.client.variant.get(handle1);
+      const variant2 = await api.client.variant.get(handle2);
       purchasableId1 = variant1.id;
       purchasableId2 = variant2.id;
 
@@ -630,9 +630,9 @@ test.describe('checkout-api: promo codes management', () => {
 
       // Fetch products from client API to get correct purchasable IDs (base64 encoded)
       api.session.setCustomerScope();
-      const variantA = await api.client.product.get(handleA);
-      const variantB = await api.client.product.get(handleB);
-      const variantC = await api.client.product.get(handleC);
+      const variantA = await api.client.variant.get(handleA);
+      const variantB = await api.client.variant.get(handleB);
+      const variantC = await api.client.variant.get(handleC);
 
       purchasableId1 = variantA.id;
       purchasableId2 = variantB.id;

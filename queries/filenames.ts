@@ -95,6 +95,7 @@ export type GraphQLFileName =
   | 'checkout/CheckoutLinesAdd'
   | 'checkout/CheckoutLinesClear'
   | 'checkout/CheckoutLinesDelete'
+  | 'checkout/CheckoutLinesReplace'
   | 'checkout/CheckoutLinesUpdate'
   | 'checkout/CheckoutPaymentMethodUpdate'
   | 'checkout/CheckoutPromoCodeAdd'
@@ -151,4 +152,5 @@ export type GraphQLFileName =
   | 'client/SignOut'
   | 'client/UpdateCartLineQuantity'
   | 'client/UpdateUserProfile'
+  | 'client/Variant'
   | 'client/VerifyEmail';

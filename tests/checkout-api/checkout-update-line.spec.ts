@@ -84,8 +84,8 @@ test.describe('checkout-api: lines update', () => {
 
       // Fetch products from client API to get correct purchasable IDs (base64 encoded)
       api.session.setCustomerScope();
-      const variant1 = await api.client.product.get(handle1);
-      const variant2 = await api.client.product.get(handle2);
+      const variant1 = await api.client.variant.get(handle1);
+      const variant2 = await api.client.variant.get(handle2);
 
       purchasableId = variant1.id as string;
       purchasableId2 = variant2.id as string;

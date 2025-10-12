@@ -61,7 +61,7 @@ test.describe('checkout-api: lines add', () => {
 
     await test.step('add one line to checkout', async () => {
       api.session.setCustomerScope();
-      variant = await api.client.product.get(purchasableSlug);
+      variant = await api.client.variant.get(purchasableSlug);
       const { data } = await api.client.checkout.addLines({
         checkoutId,
         lines: [
