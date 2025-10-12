@@ -96,8 +96,8 @@ test.describe('checkout-api: lines replace', () => {
         variables: {
           checkoutId,
           lines: [
-            { lineIdFrom: lineId1, lineIdTo: lineId2, quantity: 2 },
-            { lineIdFrom: lineId3, lineIdTo: lineId2 }, // move full qty (2)
+            { lineId: lineId1, purchasableId: purchasableId2, quantity: 2 },
+            { lineId: lineId3, purchasableId: purchasableId2 }, // move full qty (2)
           ],
         },
       });
