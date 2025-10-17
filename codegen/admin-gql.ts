@@ -1122,6 +1122,7 @@ export enum EntityType {
 export enum FeatureStyleType {
   ApparelSize = 'APPAREL_SIZE',
   Dropdown = 'DROPDOWN',
+  DropdownVariantCover = 'DROPDOWN_VARIANT_COVER',
   Radio = 'RADIO',
   Swatch = 'SWATCH',
   VariantCover = 'VARIANT_COVER'
@@ -1389,6 +1390,7 @@ export type ApiInstalledApp = {
   __typename?: 'InstalledApp';
   appCode: Scalars['String']['output'];
   baseURL: Scalars['String']['output'];
+  domain: Scalars['String']['output'];
   enabled: Scalars['Boolean']['output'];
   id: Scalars['String']['output'];
   meta?: Maybe<Scalars['JSON']['output']>;

@@ -846,6 +846,7 @@ enum FeatureStyleType {
   VARIANT_COVER
   SWATCH
   APPAREL_SIZE
+  DROPDOWN_VARIANT_COVER
 }
 
 type FeatureSwatch {
@@ -1032,6 +1033,7 @@ type InstalledApp {
   id: String!
   projectID: String!
   appCode: String!
+  domain: String!
   baseURL: String!
   enabled: Boolean!
   meta: JSON

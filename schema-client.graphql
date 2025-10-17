@@ -795,10 +795,10 @@ type CheckoutLineCost {
 """Single replacement operation."""
 input CheckoutLineReplaceInput {
   """Source line ID to replace (quantity will be moved from this line)."""
-  lineIdFrom: ID!
+  lineId: ID!
 
-  """Target line ID to receive the quantity."""
-  lineIdTo: ID!
+  """Target purchasable ID to receive the quantity."""
+  purchasableId: ID!
 
   """
   Quantity to move; if not set, moves full quantity from source line.
@@ -2943,6 +2943,7 @@ input MoneyInput {
 
 type Mutation {
   checkoutMutation: CheckoutMutation!
+  orderMutation: OrderMutation!
 
   """Create a review."""
   createReview(input: CreateReviewInput!): ProductReview!
@@ -3006,7 +3007,6 @@ type Mutation {
     """Input for updating user profile."""
     input: UpdateUserProfileInput!
   ): UpdateUserProfilePayload!
-  orderMutation: OrderMutation!
 }
 
 interface Node {
@@ -3062,15 +3062,14 @@ type OrderLine {
   """A globally-unique ID."""
   id: ID!
 
-  """ID of the purchasable."""
-  purchasableId: ID!
-  purchasable: ProductVariant!
-
   """Quantity of the item being purchased."""
   quantity: Int!
 
   """Cost breakdown for the order line."""
   cost: OrderLineCost!
+
+  """ID of the purchasable."""
+  purchasableId: ID!
 
   """Purchasable snapshot data at the time of adding to checkout."""
   purchasableSnapshot: JSON!
@@ -3080,6 +3079,7 @@ type OrderLine {
 
   """Last updated date."""
   updatedAt: DateTime!
+  purchasable: ProductVariant!
 }
 
 type OrderLineCost {
@@ -3561,6 +3561,9 @@ enum ProductOptionDisplayType {
 
   """Display options in a dropdown select."""
   DROPDOWN
+
+  """Display dropdown with variant cover image per value."""
+  DROPDOWN_VARIANT_COVER
 
   """Apparel size control (e.g., S, M, L, XL)."""
   APPAREL_SIZE
@@ -4291,6 +4294,9 @@ type User implements Node {
   """Global unique identifier for the address."""
   id: ID!
 
+  """List of the user's orders."""
+  orders: [Order!]!
+
   """Object identifier (Internal)."""
   iid: Uuid!
 
@@ -4308,9 +4314,6 @@ type User implements Node {
 
   """Phone number in E.164 format."""
   phone: Phone
-
-  """List of the user's orders."""
-  orders: [Order!]!
 }
 
 """Customer's first, middle, and last name."""
