@@ -17,7 +17,7 @@ test.describe('checkout-api: create order from checkout', () => {
 
     api.session.setTenantScope();
     const handle = `order-from-checkout-${Date.now()}`;
-    const p1 = await api.admin.product.create({
+    await api.admin.product.create({
       input: {
         title: 'Order From Checkout P1',
         status: EntityStatus.Published,
@@ -40,7 +40,7 @@ test.describe('checkout-api: create order from checkout', () => {
         },
       },
     });
-    const p2 = await api.admin.product.create({
+    await api.admin.product.create({
       input: {
         title: 'Order From Checkout P2',
         status: EntityStatus.Published,
@@ -86,6 +86,6 @@ test.describe('checkout-api: create order from checkout', () => {
 
     expect(orderId).toBeTruthy();
     expect(data.orderMutation.orderCreate.status).toBe('DRAFT');
-    expect(data.orderMutation.orderCreate.cost.totalAmount.amount).toBe('50.00');
+    expect(data.orderMutation.orderCreate.cost.totalAmount.amount).toBe(50);
   });
 });
