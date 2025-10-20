@@ -225,7 +225,7 @@ test.describe('checkout-api: payment read operations', () => {
 
       expect(payment.selectedPaymentMethod).toBeDefined();
       expect(payment.payableAmount).toBeTruthy();
-      expect(payment.payableAmount.amount).toBe('0.00');
+      expect(payment.payableAmount.amount).toBe(0);
     });
   });
 });

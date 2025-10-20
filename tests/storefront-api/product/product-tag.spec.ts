@@ -72,10 +72,10 @@ test.describe('client product container tag', () => {
       },
     });
 
-    const clientProduct = clientData.product;
-    expect(clientProduct).not.toBeNull();
+    const clientVariant = clientData.variant;
+    expect(clientVariant).not.toBeNull();
 
-    const edges = clientProduct?.product?.tags.edges || [];
+    const edges = clientVariant?.product?.tags.edges || [];
     expect(edges.map((e: any) => e.node.handle).includes(tag.slug)).toBe(true);
   });
 
@@ -131,7 +131,7 @@ test.describe('client product container tag', () => {
           const { data } = await api.client.query('client/ProductContainerTagsConnection' as any, {
             variables: { handle, sort, ...vars },
           });
-          return (data as any).product.product.tags;
+          return (data as any).variant.product.tags;
         };
 
         const sortedTitles = expectedOrder(titles, sort);
@@ -212,7 +212,7 @@ test.describe('client product container tag', () => {
           const { data } = await api.client.query('client/ProductContainerTagsConnection' as any, {
             variables: { handle, sort, ...vars },
           });
-          return (data as any).product.product.tags;
+          return (data as any).variant.product.tags;
         };
 
         const sortedTitles = expectedOrder(titles, sort);

@@ -74,9 +74,9 @@ test.describe('checkout-api: promo codes management', () => {
       const initialCost = checkout.cost;
 
       // Initial amounts: 5 items × $100 = $500 subtotal
-      expect(initialCost.subtotalAmount.amount).toBe('500.00'); // $500.00 in cents
-      expect(initialCost.totalDiscountAmount.amount).toBe('0.00'); // No discount initially
-      expect(initialCost.totalAmount.amount).toBe('500.00'); // $500.00 total initially
+      expect(initialCost.subtotalAmount.amount).toBe(500); // $500.00 in cents
+      expect(initialCost.totalDiscountAmount.amount).toBe(0); // No discount initially
+      expect(initialCost.totalAmount.amount).toBe(500); // $500.00 total initially
     });
 
     await test.step('add promo code', async () => {
@@ -92,9 +92,9 @@ test.describe('checkout-api: promo codes management', () => {
       expect(updatedCheckout.appliedPromoCodes[0].code).toBe(promoCode);
 
       // Check amounts after applying 50% discount promo code
-      expect(updatedCheckout.cost.subtotalAmount.amount).toBe('500.00'); // Subtotal stays $500.00
-      expect(updatedCheckout.cost.totalDiscountAmount.amount).toBe('250.00'); // 50% discount = $250.00
-      expect(updatedCheckout.cost.totalAmount.amount).toBe('250.00'); // Final total = $500 - $250 = $250.00
+      expect(updatedCheckout.cost.subtotalAmount.amount).toBe(500); // Subtotal stays $500.00
+      expect(updatedCheckout.cost.totalDiscountAmount.amount).toBe(250); // 50% discount = $250.00
+      expect(updatedCheckout.cost.totalAmount.amount).toBe(250); // Final total = $500 - $250 = $250.00
     });
 
     await test.step('remove promo code', async () => {
@@ -107,9 +107,9 @@ test.describe('checkout-api: promo codes management', () => {
       expect(updatedCheckout.appliedPromoCodes.length).toBe(0);
 
       // Check amounts after removing promo code - should return to original values
-      expect(updatedCheckout.cost.subtotalAmount.amount).toBe('500.00'); // Subtotal stays $500.00
-      expect(updatedCheckout.cost.totalDiscountAmount.amount).toBe('0.00'); // No discount after removal
-      expect(updatedCheckout.cost.totalAmount.amount).toBe('500.00'); // Total back to $500.00
+      expect(updatedCheckout.cost.subtotalAmount.amount).toBe(500); // Subtotal stays $500.00
+      expect(updatedCheckout.cost.totalDiscountAmount.amount).toBe(0); // No discount after removal
+      expect(updatedCheckout.cost.totalAmount.amount).toBe(500); // Total back to $500.00
     });
   });
 
@@ -206,9 +206,9 @@ test.describe('checkout-api: promo codes management', () => {
       });
 
       const checkoutWithPromo = promoResponse.data.checkoutMutation.checkoutPromoCodeAdd;
-      expect(checkoutWithPromo.cost.subtotalAmount.amount).toBe('300.00'); // $300.00 subtotal
-      expect(checkoutWithPromo.cost.totalDiscountAmount.amount).toBe('150.00'); // 50% discount = $150.00
-      expect(checkoutWithPromo.cost.totalAmount.amount).toBe('150.00'); // Final total = $150.00
+      expect(checkoutWithPromo.cost.subtotalAmount.amount).toBe(300); // $300.00 subtotal
+      expect(checkoutWithPromo.cost.totalDiscountAmount.amount).toBe(150); // 50% discount = $150.00
+      expect(checkoutWithPromo.cost.totalAmount.amount).toBe(150); // Final total = $150.00
     });
 
     await test.step('add new items and verify discount recalculation', async () => {
@@ -229,9 +229,9 @@ test.describe('checkout-api: promo codes management', () => {
       }
 
       // New totals: (3 × $100) + (3 × $80) = $300 + $240 = $540 subtotal
-      expect(checkout.cost.subtotalAmount.amount).toBe('540.00'); // $540.00 subtotal
-      expect(checkout.cost.totalDiscountAmount.amount).toBe('270.00'); // 50% discount = $270.00
-      expect(checkout.cost.totalAmount.amount).toBe('270.00'); // Final total = $270.00
+      expect(checkout.cost.subtotalAmount.amount).toBe(540); // $540.00 subtotal
+      expect(checkout.cost.totalDiscountAmount.amount).toBe(270); // 50% discount = $270.00
+      expect(checkout.cost.totalAmount.amount).toBe(270); // Final total = $270.00
 
       // Verify promo code is still applied
       expect(checkout.appliedPromoCodes.length).toBe(1);
@@ -308,9 +308,9 @@ test.describe('checkout-api: promo codes management', () => {
       }
       lineId = line.id;
 
-      expect(checkoutWithPromo.cost.subtotalAmount.amount).toBe('300.00'); // $300.00 subtotal
-      expect(checkoutWithPromo.cost.totalDiscountAmount.amount).toBe('150.00'); // 50% discount = $150.00
-      expect(checkoutWithPromo.cost.totalAmount.amount).toBe('150.00'); // Final total = $150.00
+      expect(checkoutWithPromo.cost.subtotalAmount.amount).toBe(300); // $300.00 subtotal
+      expect(checkoutWithPromo.cost.totalDiscountAmount.amount).toBe(150); // 50% discount = $150.00
+      expect(checkoutWithPromo.cost.totalAmount.amount).toBe(150); // Final total = $150.00
     });
 
     await test.step('update item quantity and verify discount recalculation', async () => {
@@ -330,9 +330,9 @@ test.describe('checkout-api: promo codes management', () => {
       }
 
       // New totals: 8 × $50 = $400 subtotal
-      expect(checkout.cost.subtotalAmount.amount).toBe('400.00'); // $400.00 subtotal
-      expect(checkout.cost.totalDiscountAmount.amount).toBe('200.00'); // 50% discount = $200.00
-      expect(checkout.cost.totalAmount.amount).toBe('200.00'); // Final total = $200.00
+      expect(checkout.cost.subtotalAmount.amount).toBe(400); // $400.00 subtotal
+      expect(checkout.cost.totalDiscountAmount.amount).toBe(200); // 50% discount = $200.00
+      expect(checkout.cost.totalAmount.amount).toBe(200); // Final total = $200.00
 
       // Verify promo code is still applied
       expect(checkout.appliedPromoCodes.length).toBe(1);
@@ -356,9 +356,9 @@ test.describe('checkout-api: promo codes management', () => {
       }
 
       // New totals: 2 × $50 = $100 subtotal, which is below the $300 minimum
-      expect(checkout.cost.subtotalAmount.amount).toBe('100.00'); // $100.00 subtotal
-      expect(checkout.cost.totalDiscountAmount.amount).toBe('0.00'); // Discount removed
-      expect(checkout.cost.totalAmount.amount).toBe('100.00'); // Final total = $100.00
+      expect(checkout.cost.subtotalAmount.amount).toBe(100); // $100.00 subtotal
+      expect(checkout.cost.totalDiscountAmount.amount).toBe(0); // Discount removed
+      expect(checkout.cost.totalAmount.amount).toBe(100); // Final total = $100.00
 
       // Verify promo code is still applied but has no effect
       expect(checkout.appliedPromoCodes.length).toBe(1);
@@ -475,9 +475,9 @@ test.describe('checkout-api: promo codes management', () => {
       }
       lineId1 = lineForPurchasable1.id;
       lineId2 = lineForPurchasable2.id;
-      expect(checkoutWithPromo.cost.subtotalAmount.amount).toBe('380.00'); // $380.00 subtotal
-      expect(checkoutWithPromo.cost.totalDiscountAmount.amount).toBe('190.00'); // 50% discount = $190.00
-      expect(checkoutWithPromo.cost.totalAmount.amount).toBe('190.00'); // Final total = $190.00
+      expect(checkoutWithPromo.cost.subtotalAmount.amount).toBe(380); // $380.00 subtotal
+      expect(checkoutWithPromo.cost.totalDiscountAmount.amount).toBe(190); // 50% discount = $190.00
+      expect(checkoutWithPromo.cost.totalAmount.amount).toBe(190); // Final total = $190.00
     });
 
     await test.step('remove one item type and verify discount recalculation', async () => {
@@ -497,9 +497,9 @@ test.describe('checkout-api: promo codes management', () => {
       }
 
       // Remaining: 5 × $40 = $200 subtotal, which is below the $300 minimum
-      expect(checkout.cost.subtotalAmount.amount).toBe('200.00'); // $200.00 subtotal
-      expect(checkout.cost.totalDiscountAmount.amount).toBe('0.00'); // Discount removed
-      expect(checkout.cost.totalAmount.amount).toBe('200.00'); // Final total = $200.00
+      expect(checkout.cost.subtotalAmount.amount).toBe(200); // $200.00 subtotal
+      expect(checkout.cost.totalDiscountAmount.amount).toBe(0); // Discount removed
+      expect(checkout.cost.totalAmount.amount).toBe(200); // Final total = $200.00
 
       // Verify promo code is still applied but has no effect
       expect(checkout.appliedPromoCodes.length).toBe(1);
@@ -523,9 +523,9 @@ test.describe('checkout-api: promo codes management', () => {
       }
 
       // Empty cart totals
-      expect(checkout.cost.subtotalAmount.amount).toBe('0.00'); // $0.00 subtotal
-      expect(checkout.cost.totalDiscountAmount.amount).toBe('0.00'); // No discount on empty cart
-      expect(checkout.cost.totalAmount.amount).toBe('0.00'); // Final total = $0.00
+      expect(checkout.cost.subtotalAmount.amount).toBe(0); // $0.00 subtotal
+      expect(checkout.cost.totalDiscountAmount.amount).toBe(0); // No discount on empty cart
+      expect(checkout.cost.totalAmount.amount).toBe(0); // Final total = $0.00
 
       // Verify promo code is still applied but has no effect
       expect(checkout.appliedPromoCodes.length).toBe(1);
@@ -659,7 +659,7 @@ test.describe('checkout-api: promo codes management', () => {
       if (!checkout) {
         throw new Error('Checkout not found');
       }
-      expect(checkout?.cost.subtotalAmount.amount).toBe('200.00');
+      expect(checkout?.cost.subtotalAmount.amount).toBe(200);
 
       const line1 = checkout.lines.find((l: ApiCheckoutLine) => l.purchasableId === purchasableId1);
       expect(line1).toBeDefined();
@@ -688,9 +688,9 @@ test.describe('checkout-api: promo codes management', () => {
       lineId2 = (line2 as ApiCheckoutLine).id;
 
       // Total: (2 × $100) + (3 × $150) = $200 + $450 = $650
-      expect(checkout?.cost.subtotalAmount.amount).toBe('650.00');
-      expect(checkout?.cost.totalDiscountAmount.amount).toBe('325.00'); // 50% = $325.00
-      expect(checkout?.cost.totalAmount.amount).toBe('325.00');
+      expect(checkout?.cost.subtotalAmount.amount).toBe(650);
+      expect(checkout?.cost.totalDiscountAmount.amount).toBe(325); // 50% = $325.00
+      expect(checkout?.cost.totalAmount.amount).toBe(325);
 
       // Step 2: Update Product A quantity from 2 to 5
       await api.client.checkout.updateLines({
@@ -715,9 +715,9 @@ test.describe('checkout-api: promo codes management', () => {
       lineId3 = (line3 as ApiCheckoutLine).id;
 
       // Total: (5 × $100) + (3 × $150) + (4 × $75) = $500 + $450 + $300 = $1250
-      expect(checkout?.cost.subtotalAmount.amount).toBe('1250.00');
-      expect(checkout?.cost.totalDiscountAmount.amount).toBe('625.00'); // 50% = $625.00
-      expect(checkout?.cost.totalAmount.amount).toBe('625.00');
+      expect(checkout?.cost.subtotalAmount.amount).toBe(1250);
+      expect(checkout?.cost.totalDiscountAmount.amount).toBe(625); // 50% = $625.00
+      expect(checkout?.cost.totalAmount.amount).toBe(625);
 
       // Step 4: Remove Product B entirely
       await api.client.checkout.deleteLines({
@@ -729,9 +729,9 @@ test.describe('checkout-api: promo codes management', () => {
       checkout = checkoutResponse.data.checkoutQuery.checkout;
 
       // Total: (5 × $100) + (4 × $75) = $500 + $300 = $800
-      expect(checkout?.cost.subtotalAmount.amount).toBe('800.00');
-      expect(checkout?.cost.totalDiscountAmount.amount).toBe('400.00'); // 50% = $400.00
-      expect(checkout?.cost.totalAmount.amount).toBe('400.00');
+      expect(checkout?.cost.subtotalAmount.amount).toBe(800);
+      expect(checkout?.cost.totalDiscountAmount.amount).toBe(400); // 50% = $400.00
+      expect(checkout?.cost.totalAmount.amount).toBe(400);
 
       // Step 5: Update Product C quantity from 4 to 1
       await api.client.checkout.updateLines({
@@ -743,9 +743,9 @@ test.describe('checkout-api: promo codes management', () => {
       checkout = checkoutResponse.data.checkoutQuery.checkout;
 
       // Total: (5 × $100) + (1 × $75) = $500 + $75 = $575
-      expect(checkout?.cost.subtotalAmount.amount).toBe('575.00');
-      expect(checkout?.cost.totalDiscountAmount.amount).toBe('287.50'); // 50% = $287.50
-      expect(checkout?.cost.totalAmount.amount).toBe('287.50');
+      expect(checkout?.cost.subtotalAmount.amount).toBe(575);
+      expect(checkout?.cost.totalDiscountAmount.amount).toBe(287.5); // 50% = $287.50
+      expect(checkout?.cost.totalAmount.amount).toBe(287.5);
 
       // Verify promo code is still applied throughout all operations
       expect(checkout?.appliedPromoCodes.length).toBe(1);

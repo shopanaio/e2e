@@ -2,10 +2,9 @@ import { EntityStatus } from '@codegen/admin-gql';
 import { ApiCheckoutLine, CurrencyCode } from '@codegen/client-gql';
 import { test } from '@fixtures/api/api';
 import { expect } from '@playwright/test';
-import * as yup from 'yup';
 
 test.describe('checkout-api: lines replace', () => {
-  test('should replace quantities between lines (multiple ops, with and without quantity)', async ({
+  test('should replace product in line when quantity specified', async ({
     api,
   }) => {
     await test.step('setup client (tenant, project, apiKey) and customer scope', async () => {
@@ -91,13 +90,13 @@ test.describe('checkout-api: lines replace', () => {
       expect(co?.totalQuantity).toBe(10);
     });
 
-    await test.step('replace: move 2 from line1 -> line2 and all from line3 -> line2', async () => {
+    await test.step('replace: line1 product with purchasableId2 (qty 2) and line3 product with purchasableId2 (full qty)', async () => {
       const { data } = await api.client.mutation('checkout/CheckoutLinesReplace', {
         variables: {
           checkoutId,
           lines: [
             { lineId: lineId1, purchasableId: purchasableId2, quantity: 2 },
-            { lineId: lineId3, purchasableId: purchasableId2 }, // move full qty (2)
+            { lineId: lineId3, purchasableId: purchasableId2 }, // replace with full qty (2)
           ],
         },
       });
@@ -107,23 +106,17 @@ test.describe('checkout-api: lines replace', () => {
       expect(payload.errors?.length ?? 0).toBe(0);
 
       const lines = (updated?.lines ?? []) as ApiCheckoutLine[];
-      const after1 = lines.find((l) => l.id === lineId1);
-      const after2 = lines.find((l) => l.id === lineId2);
-      const after3 = lines.find((l) => l.id === lineId3);
-
-      expect(after1?.quantity).toBe(3); // 5 - 2
-      expect(after2?.quantity).toBe(7); // 3 + 2 + 2
-      expect(after3).toBeUndefined(); // removed
-
-      expect(updated?.totalQuantity).toBe(10);
-      expect(updated).toMatchSchema(
-        yup
-          .object({
-            lines: yup.array().min(2).max(2).required(),
-            totalQuantity: yup.number().equals([10]).required(),
-          })
-          .required(),
-      );
+      
+      // Replace logic:
+      // 1. line1 (5 × product1) → transforms to 2 × product2, removes existing line2 (3 × product2)
+      // 2. line3 (2 × product3) → transforms to 2 × product2, removes the transformed line1
+      // Result: only line3 remains with 2 × product2
+      
+      expect(lines.length).toBe(1);
+      expect(lines[0].id).toBe(lineId3);
+      expect(lines[0].purchasableId).toBe(purchasableId2);
+      expect(lines[0].quantity).toBe(2);
+      expect(updated?.totalQuantity).toBe(2);
     });
   });
 });

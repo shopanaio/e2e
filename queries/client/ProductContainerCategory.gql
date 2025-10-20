@@ -1,5 +1,5 @@
 query ProductContainerCategory($handle: String!) {
-  product(handle: $handle) {
+  variant(handle: $handle) {
     id
     handle
     product {

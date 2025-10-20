@@ -51,9 +51,9 @@ test.describe('product container variants', () => {
       variables: { handle: variantSlug },
     });
 
-    expect(data.product).not.toBeNull();
+    expect(data.variant).not.toBeNull();
 
-    const variants = data.product?.product?.variants ?? [];
+    const variants = data.variant?.product?.variants ?? [];
     const totalVariants = options.reduce<number>((acc, g) => acc * g.values.length, 1);
     expect(variants.length).toBe(totalVariants);
     expect(adminProduct.variants.map((it) => it.slug)).toEqual(variants.map((it) => it.handle));
@@ -71,19 +71,19 @@ test.describe('product container variants', () => {
       variables: { handle: firstVariantSlug },
     });
 
-    const product = data.product;
-    if (!product) {
-      throw new Error('Product not found');
+    const variant = data.variant;
+    if (!variant) {
+      throw new Error('Variant not found');
     }
 
-    expect(product).not.toBeNull();
-    const variants = product.product.variants;
+    expect(variant).not.toBeNull();
+    const variants = variant.product.variants;
     const totalVariants = options.reduce<number>((acc, g) => acc * g.values.length, 1);
     expect(variants.length).toBe(totalVariants);
 
     
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const productOptions = (product.product as any).options as any[];
+    const productOptions = (variant.product as any).options as any[];
     expect(productOptions.length).toBe(options.length);
 
     options.forEach((group, idx) => {

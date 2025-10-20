@@ -79,8 +79,8 @@ test.describe('checkout-api: lines clear', () => {
       const afterClear = data.checkoutMutation.checkoutLinesClear.checkout;
       expect(afterClear?.lines.length).toBe(0);
       expect(afterClear?.totalQuantity).toBe(0);
-      expect(Number(afterClear?.cost.subtotalAmount.amount)).toBe(0);
-      expect(Number(afterClear?.cost.totalAmount.amount)).toBe(0);
+      expect(afterClear?.cost.subtotalAmount.amount).toBe(0);
+      expect(afterClear?.cost.totalAmount.amount).toBe(0);
     });
 
     await test.step('read checkout by id and verify empty state', async () => {
@@ -89,8 +89,8 @@ test.describe('checkout-api: lines clear', () => {
       expect(read?.id).toBe(checkoutId);
       expect(read?.lines.length).toBe(0);
       expect(read?.totalQuantity).toBe(0);
-      expect(Number(read?.cost.subtotalAmount.amount)).toBe(0);
-      expect(Number(read?.cost.totalAmount.amount)).toBe(0);
+      expect(read?.cost.subtotalAmount.amount).toBe(0);
+      expect(read?.cost.totalAmount.amount).toBe(0);
     });
   });
 });

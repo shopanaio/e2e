@@ -92,17 +92,12 @@ test.describe('checkout-api: lines add', () => {
       const moneySchema = yup
         .object({
           currencyCode: yup.string().equals(['USD']).required(),
-          amount: yup
-            .string()
-            .matches(/^[-+]?\d+\.\d{2}$/)
-            .required(),
+          amount: yup.number().required(),
         })
         .required();
 
-      const unitAmount = parseFloat(String(line.cost.unitPrice.amount));
-      const expectedTotalRounded = (
-        Math.round((unitAmount * 2 + Number.EPSILON) * 100) / 100
-      ).toFixed(2);
+      const unitAmount = line.cost.unitPrice.amount;
+      const expectedTotalRounded = Math.round((unitAmount * 2 + Number.EPSILON) * 100) / 100;
 
       const lineSchema = yup
         .object({
@@ -117,7 +112,7 @@ test.describe('checkout-api: lines add', () => {
               totalAmount: yup
                 .object({
                   currencyCode: yup.string().equals(['USD']).required(),
-                  amount: yup.string().equals([expectedTotalRounded]).required(),
+                  amount: yup.number().equals([expectedTotalRounded]).required(),
                 })
                 .required(),
               subtotalAmount: moneySchema,
@@ -143,7 +138,7 @@ test.describe('checkout-api: lines add', () => {
               totalAmount: yup
                 .object({
                   currencyCode: yup.string().equals(['USD']).required(),
-                  amount: yup.string().equals([expectedTotalRounded]).required(),
+                  amount: yup.number().equals([expectedTotalRounded]).required(),
                 })
                 .required(),
             })

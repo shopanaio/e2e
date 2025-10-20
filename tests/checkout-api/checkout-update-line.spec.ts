@@ -169,8 +169,8 @@ test.describe('checkout-api: lines update', () => {
         })
         .required();
 
-      const unitAmount1 = Number(line1.cost.unitPrice.amount);
-      const unitAmount2 = Number(line2.cost.unitPrice.amount);
+      const unitAmount1 = line1.cost.unitPrice.amount;
+      const unitAmount2 = line2.cost.unitPrice.amount;
       const expectedLine1TotalRounded = Math.round((unitAmount1 * 5 + Number.EPSILON) * 100) / 100;
       const expectedLine2TotalRounded = Math.round((unitAmount2 * 7 + Number.EPSILON) * 100) / 100;
       const expectedCheckoutTotalRounded = Math.round(
@@ -260,7 +260,7 @@ test.describe('checkout-api: lines update', () => {
       if (!checkout) {
         throw new Error('checkout is null');
       }
-      expect(Number(checkout.cost.totalAmount.amount)).toBe(expectedCheckoutTotalRounded);
+      expect(checkout.cost.totalAmount.amount).toBe(expectedCheckoutTotalRounded);
     });
   });
 });

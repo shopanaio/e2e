@@ -9,7 +9,7 @@ query Categories($first: Int, $after: Cursor, $last: Int, $before: Cursor, $sort
         handle
         description
         excerpt
-        listingType
+        # listingType
         createdAt
         updatedAt
         seoTitle

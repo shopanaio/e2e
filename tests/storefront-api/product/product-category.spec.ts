@@ -84,9 +84,9 @@ test.describe('client product category', () => {
       },
     });
 
-    const clientProduct = clientData.product;
-    expect(clientProduct?.product).not.toBeNull();
-    expect(clientProduct?.product?.category?.handle).toBe(category.slug);
+    const clientVariant = clientData.variant;
+    expect(clientVariant?.product).not.toBeNull();
+    expect(clientVariant?.product?.category?.handle).toBe(category.slug);
   });
 
   test('primary category should appear in categories connection', async ({ api }) => {
@@ -108,10 +108,10 @@ test.describe('client product category', () => {
       },
     });
 
-    const clientProduct = clientData.product;
-    expect(clientProduct).not.toBeNull();
+    const clientVariant = clientData.variant;
+    expect(clientVariant).not.toBeNull();
 
-    const edges = clientProduct?.categories.edges || [];
+    const edges = clientVariant?.categories.edges || [];
     expect(edges.map((e) => e.node.handle).includes(category.slug)).toBe(true);
   });
 });

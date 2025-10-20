@@ -28,8 +28,8 @@ test.describe('checkout-api: create checkout', () => {
 
     expect(created.id).toBeTruthy();
     expect(created.totalQuantity).toBe(0);
-    expect(created.cost.subtotalAmount.amount).toBe('0.00');
-    expect(created.cost.totalAmount.amount).toBe('0.00');
+    expect(created.cost.subtotalAmount.amount).toBe(0.0);
+    expect(created.cost.totalAmount.amount).toBe(0.0);
     expect(created.cost.totalAmount.currencyCode).toBe('USD');
   });
 
@@ -154,7 +154,7 @@ test.describe('checkout-api: create checkout', () => {
       expect(checkoutWithSeparateAdd.cost.totalAmount.currencyCode).toBe('USD');
 
       // Verify expected total amount
-      const expectedTotal = ((unitPrice / 100) * 2).toFixed(2);
+      const expectedTotal = (unitPrice / 100) * 2;
       expect(checkoutWithItemsInCreate.cost.totalAmount.amount).toBe(expectedTotal);
       expect(checkoutWithSeparateAdd.cost.totalAmount.amount).toBe(expectedTotal);
     });

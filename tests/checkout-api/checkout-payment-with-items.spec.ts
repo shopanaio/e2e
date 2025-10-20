@@ -12,7 +12,7 @@ test.describe('checkout-api: payment with items', () => {
     let purchasableId = '';
     const unitPrice = 5000; // $50.00
     const quantity = 2;
-    const expectedTotal = ((unitPrice / 100) * quantity).toFixed(2);
+    const expectedTotal = (unitPrice / 100) * quantity;
 
     await test.step('create product variant', async () => {
       api.session.setTenantScope();
@@ -155,7 +155,7 @@ test.describe('checkout-api: payment with items', () => {
       const { data } = await api.client.checkout.readFull(checkoutId);
 
       const payment = data.checkoutQuery.checkout?.payment as ApiCheckoutPayment;
-      expect(payment.payableAmount.amount).toBe('0.00');
+      expect(payment.payableAmount.amount).toBe(0);
     });
 
     await test.step('add items to checkout', async () => {
@@ -174,7 +174,7 @@ test.describe('checkout-api: payment with items', () => {
       const { data } = await api.client.checkout.readFull(checkoutId);
 
       const payment = data.checkoutQuery.checkout?.payment as ApiCheckoutPayment;
-      const expectedTotal = ((unitPrice / 100) * 3).toFixed(2);
+      const expectedTotal = (unitPrice / 100) * 3;
       expect(payment.payableAmount.amount).toBe(expectedTotal);
     });
 
@@ -197,16 +197,19 @@ test.describe('checkout-api: payment with items', () => {
       const lineId = beforeData.checkoutQuery.checkout?.lines[0]?.id;
 
       expect(lineId).toBeTruthy();
+      if (!lineId) {
+        throw new Error('Line id not found');
+      }
 
       await api.client.checkout.deleteLines({
         checkoutId,
-        lineIds: [lineId!],
+        lineIds: [lineId],
       });
 
       const { data: afterData } = await api.client.checkout.readFull(checkoutId);
       const payment = afterData.checkoutQuery.checkout?.payment as ApiCheckoutPayment;
 
-      expect(payment.payableAmount.amount).toBe('0.00');
+      expect(payment.payableAmount.amount).toBe(0);
       // Payment method should still be selected
       expect(payment.selectedPaymentMethod).toBeTruthy();
     });
@@ -274,7 +277,7 @@ test.describe('checkout-api: payment with items', () => {
       const { data } = await api.client.checkout.readFull(checkoutId);
 
       const payment = data.checkoutQuery.checkout?.payment as ApiCheckoutPayment;
-      const expectedTotal = (unitPrice / 100).toFixed(2);
+      const expectedTotal = unitPrice / 100;
       expect(payment.payableAmount.amount).toBe(expectedTotal);
     });
 
@@ -308,7 +311,7 @@ test.describe('checkout-api: payment with items', () => {
       const { data } = await api.client.checkout.readFull(checkoutId);
 
       const payment = data.checkoutQuery.checkout?.payment as ApiCheckoutPayment;
-      const expectedTotal = ((unitPrice / 100) * 5).toFixed(2);
+      const expectedTotal = (unitPrice / 100) * 5;
       expect(payment.payableAmount.amount).toBe(expectedTotal);
 
       // Payment method should still be selected

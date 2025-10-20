@@ -215,7 +215,7 @@ test.describe('checkout-api: payment method', () => {
     });
 
     let checkoutId = '';
-    const initialPayableAmount = '0.00';
+    const initialPayableAmount = 0;
 
     await test.step('create empty checkout', async () => {
       api.session.setCustomerScope();

@@ -161,7 +161,7 @@ test.describe('client product container groups – price overrides', () => {
       variables: { handle: boxSlug },
     });
 
-    const group = data.product?.product?.groups[0];
+    const group = data.variant?.product?.groups[0];
     expect(group?.title).toBe('Components');
     expect(group?.isMultiple).toBe(true);
     expect(group?.isRequired).toBe(true);

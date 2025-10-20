@@ -147,9 +147,9 @@ test.describe('product container options displayType & swatch', () => {
     const { data } = await api.client.query('client/ProductContainerOptionsDisplay', {
       variables: { handle: firstVariantSlug },
     });
-    expect(data.product).not.toBeNull();
+    expect(data.variant).not.toBeNull();
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const productData = data.product!.product!;
+    const productData = data.variant!.product!;
     const options = productData.options;
     expect(options.length).toBe(featureGroups.length);
 
