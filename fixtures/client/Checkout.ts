@@ -16,6 +16,9 @@ import {
   ApiCheckoutDeliveryRecipientsUpdateInput,
   ApiCheckoutDeliveryRecipientsRemoveInput,
   ApiCheckoutPaymentMethodUpdateInput,
+  ApiCheckoutTagCreateInput,
+  ApiCheckoutTagUpdateInput,
+  ApiCheckoutTagDeleteInput,
 } from '@codegen/client-gql';
 import { ClientApiFixture } from '@fixtures/client/api';
 
@@ -133,6 +136,26 @@ export class Checkout {
 
   async updatePaymentMethod(input: ApiCheckoutPaymentMethodUpdateInput) {
     return this.client.mutation('checkout/CheckoutPaymentMethodUpdate', {
+      variables: { input },
+    });
+  }
+
+  async createTag(input: ApiCheckoutTagCreateInput) {
+    return this.client.mutation('checkout/CheckoutTagCreate', {
+      throwOnError: false,
+      variables: { input },
+    });
+  }
+
+  async updateTag(input: ApiCheckoutTagUpdateInput) {
+    return this.client.mutation('checkout/CheckoutTagUpdate', {
+      throwOnError: false,
+      variables: { input },
+    });
+  }
+
+  async deleteTag(input: ApiCheckoutTagDeleteInput) {
+    return this.client.mutation('checkout/CheckoutTagDelete', {
       variables: { input },
     });
   }

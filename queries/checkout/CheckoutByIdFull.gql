@@ -50,6 +50,11 @@ query CheckoutByIdFull($id: ID!) {
         sku
         title
         imageSrc
+        tag {
+          id
+          slug
+          unique
+        }
         children {
           id
         }
@@ -79,6 +84,14 @@ query CheckoutByIdFull($id: ID!) {
             currencyCode
           }
         }
+        purchasableSnapshot
+      }
+      tags {
+        id
+        slug
+        unique
+        createdAt
+        updatedAt
       }
       deliveryGroups {
         id
