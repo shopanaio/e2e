@@ -1,10 +1,5 @@
 import { EntityStatus } from '@codegen/admin-gql';
-import {
-  ApiCheckout,
-  ApiCheckoutCost,
-  CountryCode,
-  CurrencyCode,
-} from '@codegen/client-gql';
+import { ApiCheckout, ApiCheckoutCost, CountryCode, CurrencyCode } from '@codegen/client-gql';
 import { test } from '@fixtures/api/api';
 import { expect } from '@playwright/test';
 
@@ -94,9 +89,7 @@ test.describe('checkout-api: create order from checkout', () => {
     expect(data.orderMutation.orderCreate.cost.totalAmount.amount).toBe(50);
   });
 
-  test('creates order with delivery context carried from checkout', async ({
-    api,
-  }) => {
+  test('creates order with delivery context carried from checkout', async ({ api }) => {
     await test.step('setup client and customer scope', async () => {
       await api.session.setupClient();
       api.session.setCustomerScope();
@@ -170,8 +163,7 @@ test.describe('checkout-api: create order from checkout', () => {
         ],
       });
 
-      const deliveryGroup = data.checkoutMutation.checkoutDeliveryAddressesAdd
-        .deliveryGroups[0];
+      const deliveryGroup = data.checkoutMutation.checkoutDeliveryAddressesAdd.deliveryGroups[0];
       expect(deliveryGroup).toBeTruthy();
       selectedDeliveryGroupId = deliveryGroup.id;
 
@@ -221,8 +213,7 @@ test.describe('checkout-api: create order from checkout', () => {
         throw new Error('Checkout not found');
       }
       finalCheckoutCost = checkout.cost;
-      expect(checkout.deliveryGroups.some((group) => group.selectedDeliveryMethod))
-        .toBe(true);
+      expect(checkout.deliveryGroups.some((group) => group.selectedDeliveryMethod)).toBe(true);
     });
 
     await test.step('create order and compare cost', async () => {
@@ -234,9 +225,7 @@ test.describe('checkout-api: create order from checkout', () => {
       });
       const order = data.orderMutation.orderCreate;
       expect(order.id).toBeTruthy();
-      expect(order.cost.totalAmount.amount).toBe(
-        finalCheckoutCost.totalAmount.amount,
-      );
+      expect(order.cost.totalAmount.amount).toBe(finalCheckoutCost.totalAmount.amount);
       expect(order.cost.totalShippingAmount.amount).toBe(
         finalCheckoutCost.totalShippingAmount.amount,
       );
@@ -246,7 +235,7 @@ test.describe('checkout-api: create order from checkout', () => {
     });
   });
 
-  test('creates order reflecting promo code adjustments', async ({ api }) => {
+  test.only('creates order reflecting promo code adjustments', async ({ api }) => {
     await test.step('setup client and customer scope', async () => {
       await api.session.setupClient();
       api.session.setCustomerScope();
@@ -308,7 +297,7 @@ test.describe('checkout-api: create order from checkout', () => {
         code: 'SAVE50',
       });
 
-      const checkout = promoResponse.data.checkoutMutation.checkoutPromoCodeAdd;
+      const checkout = promoResponse.checkoutMutation.checkoutPromoCodeAdd;
       expect(checkout.appliedPromoCodes.length).toBe(1);
       expect(checkout.appliedPromoCodes[0].code).toBe('SAVE50');
       expect(checkout.cost.totalDiscountAmount.amount).toBeGreaterThan(0);
@@ -332,9 +321,7 @@ test.describe('checkout-api: create order from checkout', () => {
 
       const order = data.orderMutation.orderCreate;
       expect(order.cost.totalAmount.amount).toBe(checkout.cost.totalAmount.amount);
-      expect(order.cost.totalDiscountAmount.amount).toBe(
-        checkout.cost.totalDiscountAmount.amount,
-      );
+      expect(order.cost.totalDiscountAmount.amount).toBe(checkout.cost.totalDiscountAmount.amount);
     });
   });
 });

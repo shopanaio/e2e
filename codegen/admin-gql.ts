@@ -2326,9 +2326,11 @@ export type ApiProduct = {
   createdAt: Scalars['Timestamp']['output'];
   description?: Maybe<Scalars['String']['output']>;
   excerpt?: Maybe<Scalars['String']['output']>;
+  featuresV2: Array<ApiProductFeatureV2>;
   groups: Array<ApiProductGroup>;
   id: Scalars['ID']['output'];
   labels: Array<ApiLabel>;
+  optionsV2: Array<ApiProductFeatureV2>;
   primaryCategory?: Maybe<ApiCategory>;
   requiresShipping?: Maybe<Scalars['Boolean']['output']>;
   seoDescription?: Maybe<Scalars['String']['output']>;
@@ -2375,6 +2377,18 @@ export type ApiProductFeatureGroupInput = {
   title?: InputMaybe<Scalars['String']['input']>;
 };
 
+/**
+ * ProductFeatureGroupV2 - ДУБЛИКАТ entity.ProductFeatureGroup
+ * В V2 это создается из ProductFeature/ProductOption (не отдельная таблица!)
+ */
+export type ApiProductFeatureGroupV2 = {
+  __typename?: 'ProductFeatureGroupV2';
+  featureStyleType?: Maybe<Scalars['String']['output']>;
+  id: Scalars['ID']['output'];
+  slug: Scalars['String']['output'];
+  title: Scalars['String']['output'];
+};
+
 export type ApiProductFeatureInput = {
   attributeSortIndex?: InputMaybe<Scalars['Int']['input']>;
   featureId?: InputMaybe<Scalars['ID']['input']>;
@@ -2385,6 +2399,33 @@ export type ApiProductFeatureInput = {
   slug?: InputMaybe<Scalars['String']['input']>;
   swatch?: InputMaybe<ApiFeatureSwatchInput>;
   title?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** ProductFeatureSwatchV2 - ДУБЛИКАТ entity.FeatureSwatch */
+export type ApiProductFeatureSwatchV2 = {
+  __typename?: 'ProductFeatureSwatchV2';
+  color1?: Maybe<Scalars['String']['output']>;
+  color2?: Maybe<Scalars['String']['output']>;
+  id: Scalars['ID']['output'];
+  type: Scalars['String']['output'];
+};
+
+/**
+ * ProductFeatureV2 - ДУБЛИКАТ entity.ProductFeature (плоская структура V1)
+ * V2 storage имеет иерархию (Feature → Values), но GraphQL возвращает плоскую структуру
+ */
+export type ApiProductFeatureV2 = {
+  __typename?: 'ProductFeatureV2';
+  attributeSortIndex?: Maybe<Scalars['Int']['output']>;
+  featureId: Scalars['ID']['output'];
+  group: ApiProductFeatureGroupV2;
+  isAttribute: Scalars['Boolean']['output'];
+  isOption: Scalars['Boolean']['output'];
+  optionSortIndex?: Maybe<Scalars['Int']['output']>;
+  slug: Scalars['String']['output'];
+  styleType?: Maybe<Scalars['String']['output']>;
+  swatch?: Maybe<ApiProductFeatureSwatchV2>;
+  title: Scalars['String']['output'];
 };
 
 export type ApiProductFeaturesWhereInput = {
@@ -3741,6 +3782,7 @@ export type ApiVariant = {
   createdAt: Scalars['Timestamp']['output'];
   dimensionUnit?: Maybe<DimensionUnit>;
   features: Array<ApiProductFeature>;
+  featuresV2: Array<ApiProductFeatureV2>;
   gallery: Array<ApiFile>;
   height?: Maybe<Scalars['Float']['output']>;
   id: Scalars['ID']['output'];

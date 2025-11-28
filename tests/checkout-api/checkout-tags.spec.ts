@@ -2,7 +2,6 @@ import { EntityStatus } from '@codegen/admin-gql';
 import { ApiCheckout, ApiCheckoutTag, CurrencyCode } from '@codegen/client-gql';
 import { test } from '@fixtures/api/api';
 import { expect } from '@playwright/test';
-import * as yup from 'yup';
 
 test.describe('checkout-api: tags', () => {
   test('should create checkout with initial tags', async ({ api }) => {
@@ -436,7 +435,9 @@ test.describe('checkout-api: tags', () => {
     });
   });
 
-  test('should not allow making tag unique if already assigned to multiple lines', async ({ api }) => {
+  test('should not allow making tag unique if already assigned to multiple lines', async ({
+    api,
+  }) => {
     await test.step('setup client', async () => {
       await api.session.setupClient();
       api.session.setCustomerScope();

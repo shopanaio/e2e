@@ -1704,6 +1704,8 @@ type Product {
   labels: [Label!]!
   tags: [Tag!]!
   primaryCategory: Category
+  featuresV2: [ProductFeatureV2!]!
+  optionsV2: [ProductFeatureV2!]!
 }
 
 input ProductCategoriesWhereInput {
@@ -1738,6 +1740,17 @@ input ProductFeatureGroupInput {
   featureStyleType: FeatureStyleType
 }
 
+"""
+ProductFeatureGroupV2 - ДУБЛИКАТ entity.ProductFeatureGroup
+В V2 это создается из ProductFeature/ProductOption (не отдельная таблица!)
+"""
+type ProductFeatureGroupV2 {
+  id: ID!
+  slug: String!
+  title: String!
+  featureStyleType: String
+}
+
 input ProductFeatureInput {
   featureId: ID
   title: String
@@ -1750,6 +1763,14 @@ input ProductFeatureInput {
   optionSortIndex: Int
 }
 
+"""ProductFeatureSwatchV2 - ДУБЛИКАТ entity.FeatureSwatch"""
+type ProductFeatureSwatchV2 {
+  id: ID!
+  color1: String
+  color2: String
+  type: String!
+}
+
 input ProductFeaturesWhereInput {
   And: [ProductFeaturesWhereInput!]
   Or: [ProductFeaturesWhereInput!]
@@ -1757,6 +1778,23 @@ input ProductFeaturesWhereInput {
   groupId: FilterV2
   isAttribute: FilterV2
   isOption: FilterV2
+}
+
+"""
+ProductFeatureV2 - ДУБЛИКАТ entity.ProductFeature (плоская структура V1)
+V2 storage имеет иерархию (Feature → Values), но GraphQL возвращает плоскую структуру
+"""
+type ProductFeatureV2 {
+  featureId: ID!
+  slug: String!
+  title: String!
+  isAttribute: Boolean!
+  isOption: Boolean!
+  attributeSortIndex: Int
+  optionSortIndex: Int
+  styleType: String
+  group: ProductFeatureGroupV2!
+  swatch: ProductFeatureSwatchV2
 }
 
 input ProductFilterV2 {
@@ -2721,6 +2759,7 @@ type Variant {
   length: Float
   height: Float
   dimensionUnit: DimensionUnit
+  featuresV2: [ProductFeatureV2!]!
 }
 
 input VariantsInput {

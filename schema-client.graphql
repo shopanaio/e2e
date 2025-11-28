@@ -350,6 +350,9 @@ type Checkout implements Node {
   """Applied promo codes for the checkout."""
   appliedPromoCodes: [CheckoutPromoCode!]!
 
+  """Tags that can be used to organize checkout lines."""
+  tags: [CheckoutTag!]!
+
   """Payment aggregate for this checkout."""
   payment: CheckoutPayment!
 }
@@ -390,6 +393,9 @@ input CheckoutCreateInput {
 
   """Initial items to add to the new checkout."""
   items: [CheckoutLineAddInput!]!
+
+  """Optional tag definitions to initialize for this checkout."""
+  tags: [CheckoutTagInput!]
 }
 
 """Payload returned after creating a checkout."""
@@ -754,6 +760,9 @@ type CheckoutLine implements Node {
 
   """Purchasable snapshot data at the time of adding to checkout."""
   purchasableSnapshot: JSON!
+
+  """Optional tag assigned to this checkout line."""
+  tag: CheckoutTag
   purchasable: ProductVariant!
 }
 
@@ -767,6 +776,9 @@ input CheckoutLineAddInput {
 
   """ID of the purchasable snapshot to add or update."""
   purchasableSnapshot: PurchasableSnapshotInput
+
+  """Optional tag slug to associate with this line."""
+  tagSlug: String
 }
 
 """Detailed breakdown of costs for a checkout line item"""
@@ -987,6 +999,15 @@ type CheckoutMutation {
   """Removes a previously applied promo code/coupon from the checkout."""
   checkoutPromoCodeRemove(input: CheckoutPromoCodeRemoveInput!): Checkout!
 
+  """Creates a new checkout tag."""
+  checkoutTagCreate(input: CheckoutTagCreateInput!): Checkout!
+
+  """Updates a checkout tag."""
+  checkoutTagUpdate(input: CheckoutTagUpdateInput!): Checkout!
+
+  """Deletes a checkout tag."""
+  checkoutTagDelete(input: CheckoutTagDeleteInput!): Checkout!
+
   """Selects or changes the payment method for the checkout."""
   checkoutPaymentMethodUpdate(input: CheckoutPaymentMethodUpdateInput!): Checkout!
 }
@@ -1176,6 +1197,66 @@ input CheckoutRecipientInput {
 
   """Phone of the recipient."""
   phone: String
+}
+
+"""A tag that can be attached to checkout lines."""
+type CheckoutTag implements Node {
+  """Global identifier of the tag."""
+  id: ID!
+
+  """Slug identifier (a-zA-Z0-9)."""
+  slug: String!
+
+  """Whether the tag enforces uniqueness for checkout lines."""
+  unique: Boolean!
+
+  """Tag creation timestamp."""
+  createdAt: DateTime!
+
+  """Last update timestamp."""
+  updatedAt: DateTime!
+}
+
+"""Input payload for checkoutTagCreate mutation."""
+input CheckoutTagCreateInput {
+  """Checkout identifier."""
+  checkoutId: ID!
+
+  """Tag configuration."""
+  tag: CheckoutTagInput!
+}
+
+"""Input payload for checkoutTagDelete mutation."""
+input CheckoutTagDeleteInput {
+  """Checkout identifier."""
+  checkoutId: ID!
+
+  """Tag identifier (global ID)."""
+  tagId: ID!
+}
+
+"""Tag definition used when initializing or mutating checkout tags."""
+input CheckoutTagInput {
+  """Slug identifier consisting of alphanumeric characters."""
+  slug: String!
+
+  """Whether this tag enforces uniqueness for checkout lines."""
+  unique: Boolean!
+}
+
+"""Input payload for checkoutTagUpdate mutation."""
+input CheckoutTagUpdateInput {
+  """Checkout identifier."""
+  checkoutId: ID!
+
+  """Tag identifier (global ID)."""
+  tagId: ID!
+
+  """New slug, if tag needs to be renamed."""
+  slug: String
+
+  """Updated uniqueness flag."""
+  unique: Boolean
 }
 
 enum CountryCode {
