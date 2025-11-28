@@ -1,24 +1,24 @@
 import {
   ApiCheckoutCreateInput,
-  ApiCheckoutLinesAddInput,
-  ApiCheckoutLinesUpdateInput,
-  ApiCheckoutLinesDeleteInput,
-  ApiCheckoutLinesClearInput,
-  ApiCheckoutPromoCodeAddInput,
-  ApiCheckoutPromoCodeRemoveInput,
   ApiCheckoutCustomerIdentityUpdateInput,
   ApiCheckoutCustomerNoteUpdateInput,
-  ApiCheckoutDeliveryMethodUpdateInput,
   ApiCheckoutDeliveryAddressesAddInput,
-  ApiCheckoutDeliveryAddressesUpdateInput,
   ApiCheckoutDeliveryAddressesRemoveInput,
+  ApiCheckoutDeliveryAddressesUpdateInput,
+  ApiCheckoutDeliveryMethodUpdateInput,
   ApiCheckoutDeliveryRecipientsAddInput,
-  ApiCheckoutDeliveryRecipientsUpdateInput,
   ApiCheckoutDeliveryRecipientsRemoveInput,
+  ApiCheckoutDeliveryRecipientsUpdateInput,
+  ApiCheckoutLinesAddInput,
+  ApiCheckoutLinesClearInput,
+  ApiCheckoutLinesDeleteInput,
+  ApiCheckoutLinesUpdateInput,
   ApiCheckoutPaymentMethodUpdateInput,
+  ApiCheckoutPromoCodeAddInput,
+  ApiCheckoutPromoCodeRemoveInput,
   ApiCheckoutTagCreateInput,
-  ApiCheckoutTagUpdateInput,
   ApiCheckoutTagDeleteInput,
+  ApiCheckoutTagUpdateInput,
 } from '@codegen/client-gql';
 import { ClientApiFixture } from '@fixtures/client/api';
 
@@ -159,4 +159,67 @@ export class Checkout {
       variables: { input },
     });
   }
+
+  /**
+   * Add lines with children (bundles) support.
+   * Uses extended query that returns originalPrice, priceConfig, and children.
+   */
+  async addLinesWithChildren(input: CheckoutLinesAddWithChildrenInput) {
+    return this.client.mutation('checkout/CheckoutLinesAddWithChildren', {
+      throwOnError: false,
+      variables: { input },
+    });
+  }
+
+  /**
+   * Read checkout with children (bundles) support.
+   * Returns originalPrice, priceConfig, and children for each line.
+   */
+  async readWithChildren(id: string) {
+    return this.client.query('checkout/CheckoutByIdWithChildren', {
+      variables: { id },
+    });
+  }
 }
+
+// Types for children/bundles support (until codegen is regenerated)
+// Note: ChildPriceType is returned from the server (from ProductGroup config in DB),
+// it is NOT sent by the client.
+export type ChildPriceType =
+  | 'FREE'
+  | 'BASE'
+  | 'DISCOUNT_AMOUNT'
+  | 'DISCOUNT_PERCENT'
+  | 'MARKUP_AMOUNT'
+  | 'MARKUP_PERCENT'
+  | 'OVERRIDE';
+
+// Child line input - price config comes from ProductGroup in DB, not from client
+export type CheckoutChildLineInput = {
+  quantity: number;
+  purchasableId: string;
+  purchasableSnapshot?: {
+    sku?: string;
+    title: string;
+    imageUrl?: string;
+    data?: Record<string, unknown>;
+  };
+};
+
+export type CheckoutLineAddWithChildrenInput = {
+  quantity: number;
+  purchasableId: string;
+  purchasableSnapshot?: {
+    sku?: string;
+    title: string;
+    imageUrl?: string;
+    data?: Record<string, unknown>;
+  };
+  tagSlug?: string;
+  children?: CheckoutChildLineInput[];
+};
+
+export type CheckoutLinesAddWithChildrenInput = {
+  checkoutId: string;
+  lines: CheckoutLineAddWithChildrenInput[];
+};

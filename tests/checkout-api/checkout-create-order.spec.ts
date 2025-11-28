@@ -235,7 +235,7 @@ test.describe('checkout-api: create order from checkout', () => {
     });
   });
 
-  test.only('creates order reflecting promo code adjustments', async ({ api }) => {
+  test('creates order reflecting promo code adjustments', async ({ api }) => {
     await test.step('setup client and customer scope', async () => {
       await api.session.setupClient();
       api.session.setCustomerScope();

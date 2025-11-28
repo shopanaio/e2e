@@ -173,9 +173,9 @@ test.describe('checkout-api: lines update', () => {
       const unitAmount2 = line2.cost.unitPrice.amount;
       const expectedLine1TotalRounded = Math.round((unitAmount1 * 5 + Number.EPSILON) * 100) / 100;
       const expectedLine2TotalRounded = Math.round((unitAmount2 * 7 + Number.EPSILON) * 100) / 100;
-      const expectedCheckoutTotalRounded = Math.round(
-        (expectedLine1TotalRounded + expectedLine2TotalRounded + Number.EPSILON) * 100,
-      ) / 100;
+      const expectedCheckoutTotalRounded =
+        Math.round((expectedLine1TotalRounded + expectedLine2TotalRounded + Number.EPSILON) * 100) /
+        100;
 
       const lineSchema1 = yup
         .object({
