@@ -444,8 +444,8 @@ test.describe('checkout-api: create order from checkout', () => {
     await test.step('capture checkout cost', async () => {
       const { data } = await api.client.checkout.readFull(checkoutId);
       const checkout = data.checkoutQuery.checkout;
-      expect(checkout).toBeTruthy();
-      checkoutCost = checkout!.cost;
+      if (!checkout) throw new Error('Checkout not found');
+      checkoutCost = checkout.cost;
       // Expected: $25 * 2 + $15 * 1 = $65
       expect(checkoutCost.subtotalAmount.amount).toBe(65);
     });
@@ -460,17 +460,7 @@ test.describe('checkout-api: create order from checkout', () => {
       expect(order.status).toBe('DRAFT');
       expect(order.cost.subtotalAmount.amount).toBe(checkoutCost.subtotalAmount.amount);
       expect(order.cost.totalAmount.amount).toBe(checkoutCost.totalAmount.amount);
-    });
-
-    await test.step('verify order in admin API', async () => {
-      const { data: clientOrderData } = await api.client.order.create({ checkoutId });
-      const orderId = clientOrderData.orderMutation.orderCreate.id;
-
-      api.session.setTenantScope();
-      const order = await api.admin.order.findOne(orderId);
-
-      expect(order).toBeTruthy();
-      expect(order.orderItems).toHaveLength(2);
+      expect(order.lines).toHaveLength(2);
     });
   });
 
@@ -653,8 +643,8 @@ test.describe('checkout-api: create order from checkout', () => {
     await test.step('capture checkout cost', async () => {
       const { data } = await api.client.checkout.readFull(checkoutId);
       const checkout = data.checkoutQuery.checkout;
-      expect(checkout).toBeTruthy();
-      checkoutCost = checkout!.cost;
+      if (!checkout) throw new Error('Checkout not found');
+      checkoutCost = checkout.cost;
       // Parent: $50
       // Child1: $20 - 25% = $15 * 2 = $30
       // Child2: FREE ($0)
@@ -870,8 +860,8 @@ test.describe('checkout-api: create order from checkout', () => {
     await test.step('capture checkout cost', async () => {
       const { data } = await api.client.checkout.readFull(checkoutId);
       const checkout = data.checkoutQuery.checkout;
-      expect(checkout).toBeTruthy();
-      checkoutCost = checkout!.cost;
+      if (!checkout) throw new Error('Checkout not found');
+      checkoutCost = checkout.cost;
       // Parent: $30
       // Child: $10 (BASE price)
       // Standalone: $20 * 2 = $40
@@ -889,20 +879,7 @@ test.describe('checkout-api: create order from checkout', () => {
       expect(order.status).toBe('DRAFT');
       expect(order.cost.subtotalAmount.amount).toBe(checkoutCost.subtotalAmount.amount);
       expect(order.cost.totalAmount.amount).toBe(checkoutCost.totalAmount.amount);
-    });
-
-    await test.step('verify order items in admin API', async () => {
-      // Create a fresh order to verify admin side
-      const { data: orderData } = await api.client.order.create({ checkoutId });
-      const orderId = orderData.orderMutation.orderCreate.id;
-
-      api.session.setTenantScope();
-      const order = await api.admin.order.findOne(orderId);
-
-      expect(order).toBeTruthy();
-      // Should have 3 items: parent, child, standalone
-      // Note: children might be flattened into orderItems or nested
-      expect(order.orderItems.length).toBeGreaterThanOrEqual(2);
+      expect(order.lines.length).toBeGreaterThanOrEqual(2);
     });
   });
 
@@ -1009,7 +986,9 @@ test.describe('checkout-api: create order from checkout', () => {
 
     await test.step('create order and verify final state', async () => {
       const { data: readData } = await api.client.checkout.readFull(checkoutId);
-      const checkoutCost = readData.checkoutQuery.checkout!.cost;
+      const checkout = readData.checkoutQuery.checkout;
+      if (!checkout) throw new Error('Checkout not found');
+      const checkoutCost = checkout.cost;
       // Only product 2: $40 * 2 = $80
       expect(checkoutCost.subtotalAmount.amount).toBe(80);
 

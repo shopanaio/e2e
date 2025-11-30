@@ -25,6 +25,11 @@ mutation OrderCreate($input: CreateOrderInput!) {
           currencyCode
         }
       }
+      lines {
+        id
+        quantity
+        purchasableId
+      }
     }
   }
 }

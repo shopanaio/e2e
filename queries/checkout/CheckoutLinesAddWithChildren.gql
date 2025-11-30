@@ -17,6 +17,11 @@ mutation CheckoutLinesAddWithChildren($input: CheckoutLinesAddInput!) {
           purchasableId
           title
           sku
+          tag {
+            id
+            slug
+            unique
+          }
           originalPrice { amount currencyCode }
           priceConfig {
             type
@@ -34,6 +39,11 @@ mutation CheckoutLinesAddWithChildren($input: CheckoutLinesAddInput!) {
             purchasableId
             title
             sku
+            tag {
+              id
+              slug
+              unique
+            }
             originalPrice { amount currencyCode }
             priceConfig {
               type
