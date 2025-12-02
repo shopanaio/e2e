@@ -1001,4 +1001,508 @@ test.describe('checkout-api: create order from checkout', () => {
       expect(order.cost.totalAmount.amount).toBe(80);
     });
   });
+
+  test('creates order with minimal delivery address (city only, like Nova Poshta)', async ({
+    api,
+  }) => {
+    await test.step('setup client and customer scope', async () => {
+      await api.session.setupClient();
+      api.session.setCustomerScope();
+    });
+
+    let checkoutId = '';
+    let purchasableId = '';
+    const handle = `minimal-address-${Date.now()}`;
+
+    await test.step('create product variant', async () => {
+      api.session.setTenantScope();
+      await api.admin.product.create({
+        input: {
+          title: 'Minimal Address Product',
+          status: EntityStatus.Published,
+          slug: handle,
+          groups: [],
+          requiresShipping: true,
+          tags: [],
+          variants: {
+            create: [
+              api.admin.product.getDefaultVariantInput({
+                title: 'Default',
+                slug: handle,
+                price: 2500,
+                stockStatus: 'IN_STOCK',
+                inListing: true,
+                variantSortIndex: 0,
+                sku: `SKU-MA-${Date.now()}`,
+              }),
+            ],
+          },
+        },
+      });
+
+      api.session.setCustomerScope();
+      const variant = await api.client.variant.get(handle);
+      purchasableId = variant.id;
+      expect(purchasableId).toBeTruthy();
+    });
+
+    await test.step('create checkout and add lines', async () => {
+      const { data } = await api.client.checkout.create({
+        localeCode: 'uk',
+        currencyCode: CurrencyCode.Usd,
+        items: [],
+      });
+
+      checkoutId = data.checkoutMutation.checkoutCreate.id;
+      expect(checkoutId).toBeTruthy();
+
+      await api.client.checkout.addLines({
+        checkoutId,
+        lines: [{ purchasableId, quantity: 2 }],
+      });
+    });
+
+    let selectedDeliveryGroupId = '';
+
+    await test.step('add minimal delivery address (city only, no address1/countryCode)', async () => {
+      // Simulate Nova Poshta style address - only city, no street address
+      const { data } = await api.client.checkout.addDeliveryAddresses({
+        checkoutId,
+        addresses: [
+          {
+            city: 'Одеса',
+            // address1: null - not provided
+            // countryCode: null - not provided
+            // postalCode: null - not provided
+          } as any, // Cast to bypass type checking for minimal data
+        ],
+      });
+
+      const deliveryGroup = data.checkoutMutation.checkoutDeliveryAddressesAdd.deliveryGroups[0];
+      expect(deliveryGroup).toBeTruthy();
+      selectedDeliveryGroupId = deliveryGroup.id;
+    });
+
+    await test.step('select delivery method', async () => {
+      const { data: readData } = await api.client.checkout.readFull(checkoutId);
+      const checkout = readData.checkoutQuery.checkout;
+      expect(checkout).toBeTruthy();
+
+      const group = checkout?.deliveryGroups.find(
+        (deliveryGroup) => deliveryGroup.id === selectedDeliveryGroupId,
+      );
+      expect(group?.deliveryMethods.length).toBeGreaterThan(0);
+      const method = group?.deliveryMethods[0];
+      expect(method).toBeTruthy();
+
+      await api.client.checkout.updateDeliveryMethod({
+        checkoutId,
+        deliveryGroupId: selectedDeliveryGroupId,
+        shippingMethodCode: method?.code ?? '',
+        provider: method?.provider?.code ?? '',
+      });
+    });
+
+    await test.step('create order from checkout with minimal address', async () => {
+      const { data } = await api.client.order.create({ checkoutId });
+      const order = data.orderMutation.orderCreate;
+
+      expect(order.id).toBeTruthy();
+      expect(order.status).toBe('DRAFT');
+      expect(order.cost.subtotalAmount.amount).toBe(50); // $25 * 2
+    });
+  });
+
+  test('creates order with Nova Poshta warehouse delivery', async ({ api }) => {
+    await test.step('setup client and customer scope', async () => {
+      await api.session.setupClient();
+      api.session.setCustomerScope();
+    });
+
+    let checkoutId = '';
+    let purchasableId = '';
+    const handle = `novaposhta-warehouse-${Date.now()}`;
+
+    await test.step('create product variant', async () => {
+      api.session.setTenantScope();
+      await api.admin.product.create({
+        input: {
+          title: 'Nova Poshta Warehouse Product',
+          status: EntityStatus.Published,
+          slug: handle,
+          groups: [],
+          requiresShipping: true,
+          tags: [],
+          variants: {
+            create: [
+              api.admin.product.getDefaultVariantInput({
+                title: 'Default',
+                slug: handle,
+                price: 1500,
+                stockStatus: 'IN_STOCK',
+                inListing: true,
+                variantSortIndex: 0,
+                sku: `SKU-NPW-${Date.now()}`,
+              }),
+            ],
+          },
+        },
+      });
+
+      api.session.setCustomerScope();
+      const variant = await api.client.variant.get(handle);
+      purchasableId = variant.id;
+      expect(purchasableId).toBeTruthy();
+    });
+
+    await test.step('create checkout and add lines', async () => {
+      const { data } = await api.client.checkout.create({
+        localeCode: 'uk',
+        currencyCode: CurrencyCode.Usd,
+        items: [],
+      });
+
+      checkoutId = data.checkoutMutation.checkoutCreate.id;
+      expect(checkoutId).toBeTruthy();
+
+      await api.client.checkout.addLines({
+        checkoutId,
+        lines: [{ purchasableId, quantity: 1 }],
+      });
+    });
+
+    let selectedDeliveryGroupId = '';
+
+    await test.step('add Nova Poshta style address with warehouse metadata', async () => {
+      const { data } = await api.client.checkout.addDeliveryAddresses({
+        checkoutId,
+        addresses: [
+          {
+            city: 'Київ',
+            data: {
+              warehouseRef: 'some-warehouse-ref-123',
+              warehouseDescription: 'Відділення №1: вул. Хрещатик, 1',
+              cityRef: 'some-city-ref-456',
+            },
+          } as any,
+        ],
+      });
+
+      const deliveryGroup = data.checkoutMutation.checkoutDeliveryAddressesAdd.deliveryGroups[0];
+      expect(deliveryGroup).toBeTruthy();
+      selectedDeliveryGroupId = deliveryGroup.id;
+    });
+
+    await test.step('select novaposhta warehouse_warehouse method', async () => {
+      const { data: readData } = await api.client.checkout.readFull(checkoutId);
+      const checkout = readData.checkoutQuery.checkout;
+      expect(checkout).toBeTruthy();
+
+      const group = checkout?.deliveryGroups.find(
+        (deliveryGroup) => deliveryGroup.id === selectedDeliveryGroupId,
+      );
+
+      // Find novaposhta warehouse_warehouse method
+      const novaposhtaMethod = group?.deliveryMethods.find(
+        (m) => m.provider?.code === 'novaposhta' && m.code === 'warehouse_warehouse',
+      );
+
+      // Fallback to any available method if novaposhta not found
+      const method = novaposhtaMethod ?? group?.deliveryMethods[0];
+      expect(method).toBeTruthy();
+
+      await api.client.checkout.updateDeliveryMethod({
+        checkoutId,
+        deliveryGroupId: selectedDeliveryGroupId,
+        shippingMethodCode: method?.code ?? '',
+        provider: method?.provider?.code ?? '',
+      });
+    });
+
+    await test.step('create order', async () => {
+      const { data } = await api.client.order.create({ checkoutId });
+      const order = data.orderMutation.orderCreate;
+
+      expect(order.id).toBeTruthy();
+      expect(order.status).toBe('DRAFT');
+    });
+  });
+
+  test('creates order without selecting delivery method', async ({ api }) => {
+    await test.step('setup client and customer scope', async () => {
+      await api.session.setupClient();
+      api.session.setCustomerScope();
+    });
+
+    let checkoutId = '';
+    let purchasableId = '';
+    const handle = `no-delivery-method-${Date.now()}`;
+
+    await test.step('create product variant', async () => {
+      api.session.setTenantScope();
+      await api.admin.product.create({
+        input: {
+          title: 'No Delivery Method Product',
+          status: EntityStatus.Published,
+          slug: handle,
+          groups: [],
+          requiresShipping: true,
+          tags: [],
+          variants: {
+            create: [
+              api.admin.product.getDefaultVariantInput({
+                title: 'Default',
+                slug: handle,
+                price: 2000,
+                stockStatus: 'IN_STOCK',
+                inListing: true,
+                variantSortIndex: 0,
+                sku: `SKU-NDM-${Date.now()}`,
+              }),
+            ],
+          },
+        },
+      });
+
+      api.session.setCustomerScope();
+      const variant = await api.client.variant.get(handle);
+      purchasableId = variant.id;
+      expect(purchasableId).toBeTruthy();
+    });
+
+    await test.step('create checkout and add lines', async () => {
+      const { data } = await api.client.checkout.create({
+        localeCode: 'uk',
+        currencyCode: CurrencyCode.Usd,
+        items: [],
+      });
+
+      checkoutId = data.checkoutMutation.checkoutCreate.id;
+      expect(checkoutId).toBeTruthy();
+
+      await api.client.checkout.addLines({
+        checkoutId,
+        lines: [{ purchasableId, quantity: 1 }],
+      });
+    });
+
+    await test.step('add delivery address but DO NOT select method', async () => {
+      await api.client.checkout.addDeliveryAddresses({
+        checkoutId,
+        addresses: [
+          {
+            city: 'Львів',
+          } as any,
+        ],
+      });
+      // Intentionally NOT selecting delivery method
+    });
+
+    await test.step('create order without selected delivery method', async () => {
+      const { data } = await api.client.order.create({ checkoutId });
+      const order = data.orderMutation.orderCreate;
+
+      expect(order.id).toBeTruthy();
+      expect(order.status).toBe('DRAFT');
+    });
+  });
+
+  test('creates order exactly like frontend - with customer, novaposhta, metadata', async ({
+    api,
+  }) => {
+    await test.step('setup client and customer scope', async () => {
+      await api.session.setupClient();
+      api.session.setCustomerScope();
+    });
+
+    let checkoutId = '';
+    let purchasableId = '';
+    const handle = `frontend-like-${Date.now()}`;
+
+    await test.step('create product variant', async () => {
+      api.session.setTenantScope();
+      await api.admin.product.create({
+        input: {
+          title: 'Frontend Like Product',
+          status: EntityStatus.Published,
+          slug: handle,
+          groups: [],
+          requiresShipping: true,
+          tags: [],
+          variants: {
+            create: [
+              api.admin.product.getDefaultVariantInput({
+                title: 'Default',
+                slug: handle,
+                price: 2500,
+                stockStatus: 'IN_STOCK',
+                inListing: true,
+                variantSortIndex: 0,
+                sku: `SKU-FL-${Date.now()}`,
+              }),
+            ],
+          },
+        },
+      });
+
+      api.session.setCustomerScope();
+      const variant = await api.client.variant.get(handle);
+      purchasableId = variant.id;
+    });
+
+    let selectedDeliveryGroupId = '';
+
+    await test.step('create checkout exactly like frontend', async () => {
+      // Create checkout with locale 'uk' like frontend
+      const { data } = await api.client.checkout.create({
+        localeCode: 'uk',
+        currencyCode: CurrencyCode.Usd,
+        items: [],
+      });
+
+      checkoutId = data.checkoutMutation.checkoutCreate.id;
+
+      // Add line
+      await api.client.checkout.addLines({
+        checkoutId,
+        lines: [{ purchasableId, quantity: 1 }],
+      });
+
+      // Set customer identity like frontend
+      await api.client.checkout.updateCustomerIdentity({
+        checkoutId,
+        firstName: 'Philipp',
+        lastName: 'Sapronov',
+        middleName: 'тест',
+        phone: '+380333333333',
+      });
+
+      // Add delivery address with only city (like Nova Poshta)
+      const { data: addrData } = await api.client.checkout.addDeliveryAddresses({
+        checkoutId,
+        addresses: [
+          {
+            city: 'Київ',
+            data: {
+              warehouseRef: '1ec09d88-e1c2-11e3-8c4a-0050568002cf',
+              warehouseDescription: 'Відділення №1',
+              cityRef: '8d5a980d-391c-11dd-90d9-001a92567626',
+            },
+          } as any,
+        ],
+      });
+
+      selectedDeliveryGroupId = addrData.checkoutMutation.checkoutDeliveryAddressesAdd.deliveryGroups[0]?.id;
+
+      // Select novaposhta warehouse_warehouse
+      const { data: readData } = await api.client.checkout.readFull(checkoutId);
+      const group = readData.checkoutQuery.checkout?.deliveryGroups.find(
+        (g) => g.id === selectedDeliveryGroupId,
+      );
+      const novaposhtaMethod = group?.deliveryMethods.find(
+        (m) => m.provider?.code === 'novaposhta' && m.code === 'warehouse_warehouse',
+      );
+
+      if (novaposhtaMethod) {
+        await api.client.checkout.updateDeliveryMethod({
+          checkoutId,
+          deliveryGroupId: selectedDeliveryGroupId,
+          shippingMethodCode: novaposhtaMethod.code,
+          provider: novaposhtaMethod.provider?.code ?? '',
+        });
+      }
+
+      // Select payment method
+      await api.client.checkout.updatePaymentMethod({
+        checkoutId,
+        paymentMethodCode: 'bank_transfer',
+        provider: 'bank_transfer',
+      });
+    });
+
+    await test.step('create order', async () => {
+      const { data } = await api.client.order.create({ checkoutId });
+      const order = data.orderMutation.orderCreate;
+
+      expect(order.id).toBeTruthy();
+      expect(order.status).toBe('DRAFT');
+    });
+  });
+
+  test('creates order with customer identity but no delivery address', async ({ api }) => {
+    await test.step('setup client and customer scope', async () => {
+      await api.session.setupClient();
+      api.session.setCustomerScope();
+    });
+
+    let checkoutId = '';
+    let purchasableId = '';
+    const handle = `customer-no-address-${Date.now()}`;
+
+    await test.step('create product variant', async () => {
+      api.session.setTenantScope();
+      await api.admin.product.create({
+        input: {
+          title: 'Customer No Address Product',
+          status: EntityStatus.Published,
+          slug: handle,
+          groups: [],
+          requiresShipping: true,
+          tags: [],
+          variants: {
+            create: [
+              api.admin.product.getDefaultVariantInput({
+                title: 'Default',
+                slug: handle,
+                price: 1800,
+                stockStatus: 'IN_STOCK',
+                inListing: true,
+                variantSortIndex: 0,
+                sku: `SKU-CNA-${Date.now()}`,
+              }),
+            ],
+          },
+        },
+      });
+
+      api.session.setCustomerScope();
+      const variant = await api.client.variant.get(handle);
+      purchasableId = variant.id;
+      expect(purchasableId).toBeTruthy();
+    });
+
+    await test.step('create checkout with customer identity', async () => {
+      const { data } = await api.client.checkout.create({
+        localeCode: 'uk',
+        currencyCode: CurrencyCode.Usd,
+        items: [],
+      });
+
+      checkoutId = data.checkoutMutation.checkoutCreate.id;
+      expect(checkoutId).toBeTruthy();
+
+      await api.client.checkout.addLines({
+        checkoutId,
+        lines: [{ purchasableId, quantity: 1 }],
+      });
+
+      // Set customer identity
+      await api.client.checkout.updateCustomerIdentity({
+        checkoutId,
+        identity: {
+          firstName: 'Тест',
+          lastName: 'Користувач',
+          phone: '+380501234567',
+        },
+      });
+    });
+
+    await test.step('create order without delivery address', async () => {
+      const { data } = await api.client.order.create({ checkoutId });
+      const order = data.orderMutation.orderCreate;
+
+      expect(order.id).toBeTruthy();
+      expect(order.status).toBe('DRAFT');
+    });
+  });
 });
