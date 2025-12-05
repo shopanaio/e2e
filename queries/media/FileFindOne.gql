@@ -1,0 +1,17 @@
+query FileFindOne($id: ID!) {
+  mediaQuery {
+    file(id: $id) {
+      id
+      provider
+      url
+      mimeType
+      ext
+      sizeBytes
+      originalName
+      altText
+      isProcessed
+      createdAt
+      updatedAt
+    }
+  }
+}

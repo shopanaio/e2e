@@ -154,4 +154,5 @@ export type GraphQLFileName =
   | 'client/UpdateUserProfile'
   | 'client/Variant'
   | 'client/VerifyEmail'
-  | 'inventory/ProductCreate';
+  | 'inventory/ProductCreate'
+  | 'media/FileFindOne';
