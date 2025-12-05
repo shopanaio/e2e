@@ -153,4 +153,5 @@ export type GraphQLFileName =
   | 'client/UpdateCartLineQuantity'
   | 'client/UpdateUserProfile'
   | 'client/Variant'
-  | 'client/VerifyEmail';
+  | 'client/VerifyEmail'
+  | 'inventory/ProductCreate';
