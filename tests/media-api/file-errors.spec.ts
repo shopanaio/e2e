@@ -310,19 +310,6 @@ test.describe('Media API - Error Handling', () => {
 
       expect(data.mediaQuery.nodes).toEqual([]);
     });
-
-    test('handles invalid pagination parameters', async ({ api }) => {
-      await api.session.setupUserAndProject();
-
-      // Negative first value
-      const { data, errors } = await api.admin.query('media/FilesFindMany', {
-        variables: { first: -1 },
-        throwOnError: false,
-      });
-
-      // Should handle gracefully - either return error or empty result
-      expect(data || errors).toBeTruthy();
-    });
   });
 
   test.describe('UserError interface', () => {

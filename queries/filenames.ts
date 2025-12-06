@@ -159,7 +159,6 @@ export type GraphQLFileName =
   | 'media/FileCreateExternal'
   | 'media/FileDelete'
   | 'media/FileFindOne'
-  | 'media/FilesFindMany'
   | 'media/FileUpdate'
   | 'media/FileUpload'
   | 'media/FileUploadFromUrl'
