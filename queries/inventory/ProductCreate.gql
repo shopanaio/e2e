@@ -1,13 +1,17 @@
-mutation ProductCreate($input: ProductCreateInput!) {
+mutation ProductCreate {
   inventoryMutation {
-    productCreate(input: $input) {
+    productCreate {
       product {
         id
         title
+        handle
+        isPublished
         variants(first: 10) {
           edges {
             node {
               id
+              isDefault
+              handle
               sku
             }
           }
