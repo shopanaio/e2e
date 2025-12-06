@@ -4,6 +4,18 @@ mutation ProductCreate($input: ProductCreateInput!) {
       product {
         id
         title
+        variants(first: 10) {
+          edges {
+            node {
+              id
+              sku
+            }
+          }
+        }
+      }
+      userErrors {
+        message
+        code
       }
     }
   }
