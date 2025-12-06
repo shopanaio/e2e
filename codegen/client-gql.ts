@@ -283,6 +283,22 @@ export type ApiCheckout = ApiNode & {
   updatedAt: Scalars['DateTime']['output'];
 };
 
+/**
+ * Input data for a child item in a bundle.
+ * Price configuration is automatically taken from ProductGroup in the database.
+ */
+export type ApiCheckoutChildLineInput = {
+  /**
+   * ID of the purchasable for child item.
+   * Must be a variant that exists in parent product's groups.
+   */
+  purchasableId: Scalars['ID']['input'];
+  /** Snapshot data for child purchasable. */
+  purchasableSnapshot?: InputMaybe<ApiPurchasableSnapshotInput>;
+  /** Quantity of the child item. */
+  quantity: Scalars['Int']['input'];
+};
+
 /** All monetary calculations related to the checkout. */
 export type ApiCheckoutCost = {
   __typename?: 'CheckoutCost';
@@ -587,13 +603,17 @@ export type ApiCheckoutLanguageCodeUpdateInput = {
 export type ApiCheckoutLine = ApiNode & {
   __typename?: 'CheckoutLine';
   /** A list of components that make up this checkout line, such as individual products in a bundle. */
-  children: Array<Maybe<ApiCheckoutLine>>;
+  children: Array<ApiCheckoutLine>;
   /** Cost calculations for this checkout item. */
   cost: ApiCheckoutLineCost;
   /** Global unique identifier for the checkout line. */
   id: Scalars['ID']['output'];
   /** Image URL of the purchasable. */
   imageSrc?: Maybe<Scalars['String']['output']>;
+  /** Original price before any adjustments (e.g., child price config). */
+  originalPrice: ApiMoney;
+  /** Price adjustment applied to this line (for child items in bundles). */
+  priceConfig?: Maybe<ApiCheckoutLinePriceConfig>;
   purchasable: ApiProductVariant;
   /** ID of the purchasable. */
   purchasableId: Scalars['ID']['output'];
@@ -611,6 +631,8 @@ export type ApiCheckoutLine = ApiNode & {
 
 /** Input data for a single item in the checkout. */
 export type ApiCheckoutLineAddInput = {
+  /** Child items for this line. If provided, this line becomes a parent. */
+  children?: InputMaybe<Array<ApiCheckoutChildLineInput>>;
   /** ID of the product to add or update. */
   purchasableId: Scalars['ID']['input'];
   /** ID of the purchasable snapshot to add or update. */
@@ -636,6 +658,17 @@ export type ApiCheckoutLineCost = {
   totalAmount: ApiMoney;
   /** The current price per unit before discounts are applied (may differ from compareAt price if on sale). */
   unitPrice: ApiMoney;
+};
+
+/** Price adjustment configuration applied to a child line item. */
+export type ApiCheckoutLinePriceConfig = {
+  __typename?: 'CheckoutLinePriceConfig';
+  /** Amount in minor units (always positive). Used for DISCOUNT_AMOUNT, MARKUP_AMOUNT, OVERRIDE. */
+  amount?: Maybe<Scalars['Int']['output']>;
+  /** Percentage (always positive). Used for DISCOUNT_PERCENT, MARKUP_PERCENT. */
+  percent?: Maybe<Scalars['Float']['output']>;
+  /** Type of price adjustment. */
+  type: ChildPriceType;
 };
 
 /** Single replacement operation. */
@@ -1132,6 +1165,27 @@ export type ApiCheckoutTagUpdateInput = {
   /** Updated uniqueness flag. */
   unique?: InputMaybe<Scalars['Boolean']['input']>;
 };
+
+/**
+ * Price adjustment type for child items in a bundle.
+ * Values are always positive - the type determines the operation.
+ */
+export enum ChildPriceType {
+  /** Use original price without adjustments */
+  Base = 'BASE',
+  /** Subtract fixed amount from original price */
+  DiscountAmount = 'DISCOUNT_AMOUNT',
+  /** Subtract percentage from original price */
+  DiscountPercent = 'DISCOUNT_PERCENT',
+  /** Item is free (price = 0) */
+  Free = 'FREE',
+  /** Add fixed amount to original price */
+  MarkupAmount = 'MARKUP_AMOUNT',
+  /** Add percentage to original price */
+  MarkupPercent = 'MARKUP_PERCENT',
+  /** Override with fixed price */
+  Override = 'OVERRIDE'
+}
 
 export enum CountryCode {
   /** Andorra */

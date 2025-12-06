@@ -357,6 +357,24 @@ type Checkout implements Node {
   payment: CheckoutPayment!
 }
 
+"""
+Input data for a child item in a bundle.
+Price configuration is automatically taken from ProductGroup in the database.
+"""
+input CheckoutChildLineInput {
+  """Quantity of the child item."""
+  quantity: Int!
+
+  """
+  ID of the purchasable for child item.
+  Must be a variant that exists in parent product's groups.
+  """
+  purchasableId: ID!
+
+  """Snapshot data for child purchasable."""
+  purchasableSnapshot: PurchasableSnapshotInput
+}
+
 """All monetary calculations related to the checkout."""
 type CheckoutCost {
   """Total value of items before any discounts."""
@@ -750,10 +768,16 @@ type CheckoutLine implements Node {
   """Cost calculations for this checkout item."""
   cost: CheckoutLineCost!
 
+  """Original price before any adjustments (e.g., child price config)."""
+  originalPrice: Money!
+
+  """Price adjustment applied to this line (for child items in bundles)."""
+  priceConfig: CheckoutLinePriceConfig
+
   """
   A list of components that make up this checkout line, such as individual products in a bundle.
   """
-  children: [CheckoutLine]!
+  children: [CheckoutLine!]!
 
   """ID of the purchasable."""
   purchasableId: ID!
@@ -779,6 +803,9 @@ input CheckoutLineAddInput {
 
   """Optional tag slug to associate with this line."""
   tagSlug: String
+
+  """Child items for this line. If provided, this line becomes a parent."""
+  children: [CheckoutChildLineInput!]
 }
 
 """Detailed breakdown of costs for a checkout line item"""
@@ -802,6 +829,22 @@ type CheckoutLineCost {
 
   """Total cost of this line (all units), after discounts and taxes."""
   totalAmount: Money!
+}
+
+"""Price adjustment configuration applied to a child line item."""
+type CheckoutLinePriceConfig {
+  """Type of price adjustment."""
+  type: ChildPriceType!
+
+  """
+  Amount in minor units (always positive). Used for DISCOUNT_AMOUNT, MARKUP_AMOUNT, OVERRIDE.
+  """
+  amount: Int
+
+  """
+  Percentage (always positive). Used for DISCOUNT_PERCENT, MARKUP_PERCENT.
+  """
+  percent: Float
 }
 
 """Single replacement operation."""
@@ -1257,6 +1300,33 @@ input CheckoutTagUpdateInput {
 
   """Updated uniqueness flag."""
   unique: Boolean
+}
+
+"""
+Price adjustment type for child items in a bundle.
+Values are always positive - the type determines the operation.
+"""
+enum ChildPriceType {
+  """Item is free (price = 0)"""
+  FREE
+
+  """Use original price without adjustments"""
+  BASE
+
+  """Subtract fixed amount from original price"""
+  DISCOUNT_AMOUNT
+
+  """Subtract percentage from original price"""
+  DISCOUNT_PERCENT
+
+  """Add fixed amount to original price"""
+  MARKUP_AMOUNT
+
+  """Add percentage to original price"""
+  MARKUP_PERCENT
+
+  """Override with fixed price"""
+  OVERRIDE
 }
 
 enum CountryCode {

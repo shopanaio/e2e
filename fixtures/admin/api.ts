@@ -49,7 +49,7 @@ export class TenantApiFixture extends AdminGqlRequest {
     this.customer = new Customer(this);
     this.projects = new Projects(this);
     this.apiKey = new ApiKey(this);
-    this.file = new FileFixture(request, session);
+    this.file = new FileFixture(request, session, this);
     this.search = new Search(this);
     this.review = new Review(this);
     this.order = new Order(this);

@@ -9,9 +9,28 @@ query FileFindOne($id: ID!) {
       sizeBytes
       originalName
       altText
+      sourceUrl
       isProcessed
+      meta
       createdAt
       updatedAt
+      deletedAt
+      dimensions {
+        width
+        height
+      }
+      durationMs
+      s3Data {
+        bucketId
+        objectKey
+        contentHash
+        etag
+        storageClass
+      }
+      externalData {
+        externalId
+        providerMeta
+      }
     }
   }
 }

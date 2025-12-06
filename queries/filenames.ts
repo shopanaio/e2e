@@ -155,4 +155,13 @@ export type GraphQLFileName =
   | 'client/Variant'
   | 'client/VerifyEmail'
   | 'inventory/ProductCreate'
-  | 'media/FileFindOne';
+  | 'media/BucketCreate'
+  | 'media/FileCreateExternal'
+  | 'media/FileDelete'
+  | 'media/FileFindOne'
+  | 'media/FilesFindMany'
+  | 'media/FileUpdate'
+  | 'media/FileUpload'
+  | 'media/FileUploadFromUrl'
+  | 'media/NodeFindOne'
+  | 'media/NodesFindMany';

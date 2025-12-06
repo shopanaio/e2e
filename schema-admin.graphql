@@ -1,74 +1,5 @@
 directive @defer(label: String, if: Boolean! = true) on FRAGMENT_SPREAD | INLINE_FRAGMENT
 
-union Actor = User | ApiKey
-
-input AddCategoryProductsInput {
-  categoryId: ID!
-  productContainerIds: [ID!]!
-}
-
-input AddCommentInput {
-  id: ID!
-  comment: String!
-}
-
-type Address {
-  id: ID!
-  address1: String
-  address2: String
-  city: String
-  countryCode: String
-  email: String
-  firstName: String
-  lastName: String
-  latitude: Int
-  longitude: Int
-  middleName: String
-  phone: String
-  provinceCode: String
-  postalCode: String
-  meta: String
-}
-
-input AddressInput {
-  id: ID
-  address1: String
-  address2: String
-  city: String
-  countryCode: String
-  email: String
-  firstName: String
-  lastName: String
-  latitude: Int
-  longitude: Int
-  middleName: String
-  phone: String
-  provinceCode: String
-  postalCode: String
-  meta: String
-}
-
-input AddressWhereInput {
-  And: [AddressWhereInput!]
-  Or: [AddressWhereInput!]
-  id: FilterV2
-  address1: FilterV2
-  address2: FilterV2
-  city: FilterV2
-  countryCode: FilterV2
-  email: FilterV2
-  firstName: FilterV2
-  lastName: FilterV2
-  latitude: FilterV2
-  longitude: FilterV2
-  middleName: FilterV2
-  phoneNumber: FilterV2
-  provinceCode: FilterV2
-  postalCode: FilterV2
-}
-
-scalar Any
-
 type ApiKey {
   id: ID!
   name: String!
@@ -83,10 +14,6 @@ type App {
   code: String!
   name: String!
   meta: JSON
-}
-
-input ApproveReviewInput {
-  id: ID!
 }
 
 type AppsMutation {
@@ -105,419 +32,16 @@ type AppsQuery {
   installedApps: [InstalledApp!]!
 }
 
-input BulkDeleteInput {
-  ids: [ID!]!
-  entity: EntityType!
-}
-
-type BulkMutation {
-  delete(input: BulkDeleteInput!): Boolean!
-  update(input: BulkUpdateInput!): Boolean!
-  clear: Boolean!
-  checkSlug(input: BulkUniqueSlugInput!): Boolean!
-}
-
-input BulkUniqueSlugInput {
-  entity: EntityType!
-  slug: String!
-}
-
-input BulkUpdateInput {
-  ids: [ID!]!
-  entity: EntityType!
-  status: String!
-}
-
-input BulkUpdateStatusInput {
-  ids: [ID!]!
-  status: String!
-}
-
-input CancelOrderInput {
-  id: ID!
-  comment: String!
-  reason: CancelReasonEnum!
-}
-
-enum CancelReasonEnum {
-  CUSTOMER
-  FRAUD
-  INVENTORY
-  STAFF
-  OTHER
-}
-
-type Cart {
-  id: ID!
-  createdAt: Timestamp
-  updatedAt: Timestamp
-  baseCurrencyCode: String
-  displayCurrencyCode: String
-  displayExchangeRate: Float
-  subtotalAmount: Int
-  discountTotalAmount: Int
-  taxTotalAmount: Int
-  shippingTotalAmount: Int
-  grandTotalAmount: Int
-  totalQuantity: Int
-  items: [CartItem!]!
-}
-
-type CartItem {
-  id: ID!
-  purchasableId: ID!
-  purchasableType: String!
-  purchasableSnapshot: ProductSnapshot!
-  unitPrice: Int!
-  compareAtUnitPrice: Int
-  quantity: Int!
-  subtotalAmount: Int!
-  discountAmount: Int!
-  taxAmount: Int!
-  totalAmount: Int!
-  createdAt: Timestamp!
-  updatedAt: Timestamp!
-  children: [CartItem!]!
-}
-
-type CartMutation {
-  delete(id: ID!): Boolean!
-}
-
-type CartQuery {
-  findMany(input: CartsInput): CartsOutput!
-  findOne(id: ID!): Cart
-}
-
-input CartsInput {
-  where: CartWhereInput
-  order: String
-  page: Int
-  pageSize: Int
-}
-
-type CartsOutput {
-  data: [Cart!]!
-  meta: CollectionMeta!
-}
-
-input CartWhereInput {
-  And: [CartWhereInput!]
-  Or: [CartWhereInput!]
-  id: FilterV2
-  customerId: FilterV2
-  clientToken: FilterV2
-}
-
-input CategoriesInput {
-  where: CategoriesWhereInput
-  order: String
-  page: Int
-  pageSize: Int
-}
-
-type CategoriesOutput {
-  data: [Category!]!
-  meta: CollectionMeta!
-}
-
-input CategoriesWhereInput {
-  And: [CategoriesWhereInput!]
-  Or: [CategoriesWhereInput!]
-  children: CategoriesWhereInput
-  createdAt: FilterV2
-  id: FilterV2
-  listingOrder: FilterV2
-  listingType: FilterV2
-  locale: FilterV2
-  parent: CategoriesWhereInput
-  products: ProductWhereInput
-  slug: FilterV2
-  status: FilterV2
-  title: FilterV2
-  translationField: FilterV2
-  updatedAt: FilterV2
-}
-
-type Category {
-  children(input: CategoriesInput): [Category]!
-  cover: File
-  createdAt: Timestamp!
-  description: String
-  excerpt: String
-  gallery: [File!]!
-  id: ID!
-  includeChildrenProducts: Boolean!
-  listingFilters: [CategoryListingFilter!]!
-  labels: [Label!]!
-  tags: [Tag!]!
-  listingOrderBy: ListingSort!
-  listingOrderByStatus: Boolean!
-  listingPlacement: Int
-  listingType: ListingType!
-  parent: Category
-  products: [Variant!]!
-  seoDescription: String
-  seoTitle: String
-  slug: String!
-  status: String!
-  sublistingStep: Int!
-  title: String!
-  updatedAt: Timestamp!
-}
-
-input CategoryFilterInput {
-  slug: String
-  parent: CategoryFilterInput
-}
-
-type CategoryListingFilter {
-  createdAt: Timestamp!
-  id: ID!
-  path: String!
-  operator: String!
-  type: FilterType!
-  updatedAt: Timestamp!
-  value: String!
-  entry: ListingFilterEntry
-}
-
-type CategoryMutation {
-  create(input: CreateCategoryInput!): ID!
-  createMany(input: [CreateCategoryInput!]!): [Category!]!
-  update(input: UpdateCategoryInput!): Boolean!
-  addProducts(input: AddCategoryProductsInput!): Boolean!
-  deleteProduct(input: DeleteCategoryProductInput!): Boolean!
-  updateProductRank(input: UpdateCategoryProductInput!): Boolean!
-  delete(id: ID!): Boolean!
-  archive(id: ID!): Boolean!
-  deleteMany(ids: [ID!]!): Boolean!
-  archiveMany(ids: [ID!]!): Boolean!
-}
-
-type CategoryQuery {
-  findMany(input: CategoriesInput): CategoriesOutput!
-  findOne(id: ID!): Category
-}
-
-type ClientInfo {
-  ip: String
-  language: String
-  userAgent: String
-  meta: String
-}
-
-input ClientInfoInput {
-  language: String
-  userAgent: String
-  meta: String
-}
-
-type CollectionMeta {
-  page: Int!
-  pageSize: Int!
-  count: Int!
-  total: Int!
-  pageCount: Int!
-}
-
-type CoreShippingMethod {
-  code: String!
-  name: String!
-  service: ShippingService!
-}
+scalar BigInt
 
 input CreateApiKeyInput {
   name: String!
   dueDate: Timestamp
 }
 
-input CreateCategoryInput {
-  children: [ID]
-  coverId: ID
-  description: DescriptionFieldsInput
-  excerpt: String
-  gallery: [ID!]
-  includeChildrenProducts: Boolean!
-  listingFilters: [CreateListingFilterInput!]
-  listingOrderBy: ListingSort
-  listingOrderByStatus: Boolean!
-  listingType: ListingType!
-  parentId: ID
-  products: [ID!]
-  seo: SeoFieldsInput
-  slug: String!
-  status: String!
-  title: String!
-  labels: [ID!]
-}
-
-input CreateCustomerInput {
-  email: String!
-  firstName: String!
-  lastName: String!
-  language: String!
-  phone: String
-  password: String
-  isVerified: Boolean!
-}
-
-input CreateEmailProfilesInput {
-  host: String!
-  port: Int!
-  username: String!
-  password: String!
-  sortIndex: Int!
-}
-
-input CreateEmailSettingsInput {
-  from: String!
-  replyTo: String!
-}
-
-input CreateEmailTemplateInput {
-  template: String!
-  subject: String!
-  type: EmailTypeEnum!
-}
-
-input CreateFilterInput {
-  title: String!
-  isActive: Boolean!
-  sortIndex: Int!
-  type: FilterType!
-}
-
-input CreateLabelInput {
-  name: String!
-  slug: String!
-  colorHex: String
-}
-
-input CreateLinkInput {
-  title: String!
-  slug: String
-  type: MenuNodeType!
-  entryId: ID
-  parentId: ID
-  sortIndex: Int!
-  menuId: ID!
-}
-
-input CreateListingFilterInput {
-  operator: String!
-  type: FilterType!
-  value: String!
-  entryID: ID
-  path: String!
-}
-
 input CreateLocaleInput {
   isActive: Boolean!
   code: String!
-}
-
-input CreateMenuInput {
-  title: String!
-  items: [CreateLinkInput!]!
-  slug: String!
-  status: EntityStatus!
-}
-
-input CreateOrderInput {
-  currency: OrderCurrencyInput
-  payment: OrderPaymentInfoInput
-  shipping: OrderShippingInfoInput
-  customerId: ID
-  items: [CreateOrderItemInput!]
-  clientInfo: ClientInfoInput!
-  tags: [ID!]
-  externalSystemId: String
-}
-
-input CreateOrderItemInput {
-  productId: ID!
-  orderId: ID!
-  quantity: Int = 1
-}
-
-input CreatePageInput {
-  coverId: ID
-  description: DescriptionFieldsInput
-  excerpt: String
-  gallery: [ID!]
-  seo: SeoFieldsInput
-  slug: String!
-  status: String!
-  title: String!
-  labels: [ID!]
-}
-
-input CreatePaymentMethodInput {
-  name: String!
-  code: String!
-  serviceId: String!
-}
-
-input CreatePaymentServiceInput {
-  name: String!
-  code: String!
-  coverId: ID
-}
-
-input CreateProductGroupInput {
-  title: String!
-  items: [CreateProductGroupItemInput!]!
-  isMultiple: Boolean!
-  isRequired: Boolean!
-  sortIndex: Int!
-}
-
-input CreateProductGroupItemInput {
-  variantId: ID!
-  sortIndex: Int!
-  priceType: ProductGroupPriceType
-  priceAmountValue: Int
-  pricePercentageValue: Float
-  maxQuantity: Int
-}
-
-input CreateProductInput {
-  requiresShipping: Boolean!
-  title: String!
-  description: DescriptionFieldsInput
-  seo: SeoFieldsInput
-  excerpt: String
-  slug: String
-  tags: [ID!]!
-  labels: [ID!]
-  variants: ProductVariantsInput!
-  groups: [CreateProductGroupInput!]!
-  status: EntityStatus!
-  primaryCategory: ID
-}
-
-input CreateProductVariantInput {
-  barcode: String
-  categories: [ID!]!
-  title: String!
-  costPrice: Int
-  coverId: ID
-  features: [ProductFeatureInput!]
-  gallery: [ID!]
-  oldPrice: Int
-  price: Int!
-  sku: String
-  slug: String
-  inListing: Boolean!
-  variantSortIndex: Int!
-  stockStatus: String!
-  weight: Float!
-  weightUnit: WeightUnit!
-  width: Float!
-  length: Float!
-  height: Float!
-  dimensionUnit: DimensionUnit!
 }
 
 input CreateProfileInput {
@@ -538,121 +62,6 @@ input CreateProjectInput {
   email: String
 }
 
-input CreateReviewInput {
-  productId: ID
-  rating: Float!
-  title: String!
-  message: String
-  displayName: String!
-  pros: String
-  cons: String
-  images: [ID!]
-  locale: String
-  customerId: ID
-  status: ReviewStatus
-}
-
-input CreateShippingItemInput {
-  estimatedDeliveryAt: Timestamp
-  fulfillmentId: ID!
-  notificationsEnabled: Boolean
-  shippingMethodId: String
-  shippingPrice: Int
-  trackingCode: String
-  trackingEnabled: Boolean
-  trackingUrl: String
-}
-
-input CreateShippingMethodInput {
-  name: String!
-  code: String!
-  serviceId: String!
-}
-
-input CreateShippingServiceInput {
-  name: String!
-  code: String!
-  coverId: ID
-}
-
-input CreateStockStatusInput {
-  code: String!
-  title: String!
-  isAvailable: Boolean!
-}
-
-input CreateTagInput {
-  title: String!
-  slug: String!
-  color: String
-}
-
-input CreateTranslationInput {
-  sourceId: ID!
-  sourceType: EntityType!
-  locale: String!
-  fieldValue: String!
-  fieldName: TranslationField!
-}
-
-input CrmAppendTicketInput {
-  columnId: ID!
-  orderID: ID!
-}
-
-type CrmColumn {
-  ID: ID!
-  title: String!
-  slug: String!
-  sortIndex: Int!
-  tickets: [Order!]!
-}
-
-input CrmCreateColumnInput {
-  title: String!
-  slug: String!
-  sortIndex: Int!
-}
-
-input CrmMoveTicketInput {
-  columnId: ID!
-  orderId: ID!
-  afterOrderId: ID!
-}
-
-type CrmMutation {
-  columnCreateOne(input: CrmCreateColumnInput!): Boolean!
-  columnUpdateOne(input: CrmUpdateColumnInput!): Boolean!
-  columnUpdateMany(input: [CrmUpdateColumnInput!]!): Boolean!
-  columnDeleteOne(id: ID!): Boolean!
-  ticketAppend(input: CrmAppendTicketInput!): Boolean!
-  ticketMove(input: CrmMoveTicketInput!): Boolean!
-}
-
-type CrmQuery {
-  getColumns: [CrmColumn!]!
-  getTickets(input: CrmTicketsQueryInput!): [CrmTicketsQueryColumnOutput!]!
-}
-
-type CrmTicketsQueryColumnOutput {
-  hasNextPage: Boolean!
-  data: CrmColumn!
-}
-
-input CrmTicketsQueryInput {
-  offset: Int
-  limit: Int!
-  columns: [ID!]!
-  where: OrderWhereInput
-}
-
-input CrmUpdateColumnInput {
-  id: ID!
-  slug: String
-  title: String
-  sortIndex: Int
-}
-
 type Currency {
   title: String!
   code: String!
@@ -665,368 +74,317 @@ type Currency {
   thousandsSeparator: String!
 }
 
-type Customer {
-  createdAt: Timestamp!
-  email: String!
-  firstName: String!
-  id: ID!
-  isBlocked: Boolean
-  isVerified: Boolean!
-  lastName: String!
-  language: String
-  phone: String
-  updatedAt: Timestamp!
-  orders: [Order!]!
+"""Supported currency codes."""
+enum CurrencyCode {
+  UAH
+  USD
+  EUR
 }
 
-type CustomerMutation {
-  create(input: CreateCustomerInput!): ID!
-  update(input: UpdateCustomerInput!): Boolean!
-  delete(id: ID!): Boolean!
-  archive(id: ID!): Boolean!
-  deleteMany(ids: [ID!]!): [Boolean!]!
-  archiveMany(ids: [ID!]!): [Boolean!]!
-}
+scalar DateTime
 
-type CustomerQuery {
-  findOne(id: ID!): Customer
-  findMany(input: CustomersInput): CustomersOutput!
-}
-
-input CustomersInput {
-  page: Int!
-  pageSize: Int!
-  sortField: String
-  sortOrder: String
-  search: String
-}
-
-type CustomersOutput {
-  data: [Customer!]!
-  meta: CollectionMeta!
-}
-
-input DeleteCategoryProductInput {
-  categoryId: ID!
-  productId: ID!
-}
-
-input DescriptionFieldsInput {
-  json: String!
+"""Product description in multiple formats."""
+type Description {
+  """Plain text description."""
   text: String!
+
+  """HTML description."""
   html: String!
+
+  """EditorJS JSON description."""
+  json: JSON!
 }
 
-enum DimensionUnit {
-  MM
-  CM
-  M
-  IN
+"""Input for product description (all fields required)."""
+input DescriptionInput {
+  """Plain text description."""
+  text: String!
+
+  """HTML description."""
+  html: String!
+
+  """EditorJS JSON description."""
+  json: JSON!
 }
 
-type EmailProfiles {
-  host: String!
-  port: Int!
-  username: String!
-  createdAt: Timestamp!
-  updatedAt: Timestamp!
-  sortIndex: Int!
+"""Input for setting dimensions (in millimeters)."""
+input DimensionsInput {
+  """Width in millimeters."""
+  width: Int!
+
+  """Length in millimeters."""
+  length: Int!
+
+  """Height in millimeters."""
+  height: Int!
+}
+
+scalar Email
+
+"""External media data (YouTube, Vimeo, etc)."""
+type ExternalMediaData {
+  """External ID (YouTube video ID, Vimeo ID, etc)."""
+  externalId: String!
+
+  """Provider-specific metadata."""
+  providerMeta: JSON
+}
+
+"""A file represents a stored media asset."""
+type File implements Node {
+  """The globally unique ID of the file."""
   id: ID!
-}
 
-type EmailProfilesMutation {
-  create(input: CreateEmailProfilesInput!): EmailProfiles!
-  update(input: UpdateEmailProfilesInput!): EmailProfiles!
-}
+  """Provider type (s3, youtube, vimeo, url, local)."""
+  provider: FileProvider!
 
-type EmailProfilesQuery {
-  findOne: EmailProfiles
-}
-
-type EmailSettings {
-  from: String!
-  replyTo: String!
-  createdAt: Timestamp!
-  updatedAt: Timestamp!
-  id: ID!
-}
-
-type EmailSettingsMutation {
-  create(input: CreateEmailSettingsInput!): EmailSettings!
-  update(input: UpdateEmailSettingsInput!): EmailSettings!
-}
-
-type EmailSettingsQuery {
-  findOne: EmailSettings
-}
-
-type EmailTemplate {
-  template: String!
-  subject: String!
-  type: EmailTypeEnum!
-  id: ID!
-  createdAt: Timestamp!
-  updatedAt: Timestamp!
-}
-
-type EmailTemplateMutation {
-  create(input: CreateEmailTemplateInput!): EmailTemplate!
-  update(input: UpdateEmailTemplateInput!): EmailTemplate!
-  sendTestEmail(input: SendTestEmailInput!): Boolean!
-}
-
-type EmailTemplateQuery {
-  findOne(input: EmailTemplatesInput!): EmailTemplate
-  findMany(input: EmailTemplatesInput!): [EmailTemplate!]!
-}
-
-input EmailTemplatesInput {
-  where: EmailTemplatesWhereInput
-}
-
-input EmailTemplatesWhereInput {
-  And: [EmailTemplatesWhereInput!]
-  Or: [EmailTemplatesWhereInput!]
-  id: FilterV2
-  type: FilterV2
-}
-
-enum EmailTypeEnum {
-  TENANT_SIGN_UP
-  TENANT_INVITATION
-  TENANT_RESET_PASSWORD
-  CUSTOMER_SIGN_UP
-  CUSTOMER_INVITATION
-  CUSTOMER_RESET_PASSWORD
-  CUSTOMER_ORDER_CREATED
-  CUSTOMER_ORDER_SHIPPED
-  CUSTOMER_ORDER_DELIVERED
-  CUSTOMER_ORDER_CANCELLED
-}
-
-enum EntityStatus {
-  PUBLISHED
-  DRAFT
-  ARCHIVED
-}
-
-enum EntityType {
-  BOARD
-  BOARD_COL
-  BUNDLE
-  CATEGORY
-  CUSTOMER
-  EMAIL_TPL
-  PROD_FEAT
-  PROD_FEAT_GROUP
-  FILE
-  FILTER
-  FULFILLMENT
-  LINK
-  MENU
-  ORDER
-  ORDER_ITEM
-  PAGE
-  PAY_ITEM
-  PAY_METHOD
-  PROD_CONTAINER
-  PROD_GROUP
-  PROD_VARIANT
-  REVIEW
-  SHIP_ITEM
-  SHIP_METHOD
-  SHIP_SERVICE
-  STOCK_STATUS
-  TAG
-}
-
-enum FeatureStyleType {
-  RADIO
-  DROPDOWN
-  VARIANT_COVER
-  SWATCH
-  APPAREL_SIZE
-  DROPDOWN_VARIANT_COVER
-}
-
-type FeatureSwatch {
-  id: ID!
-  color1: String
-  color2: String
-  image: File
-  type: FeatureSwatchType!
-}
-
-input FeatureSwatchInput {
-  id: ID
-  color1: String
-  color2: String
-  imageId: ID
-  type: FeatureSwatchType!
-}
-
-enum FeatureSwatchType {
-  COLOR
-  COLOR_DUO
-  IMAGE
-}
-
-type File {
-  id: ID!
-  driver: FileDriver!
-  name: String!
+  """Public URL to access file."""
   url: String!
-  size: Int!
-  ext: String!
-  key: String!
-  createdAt: Timestamp!
-  updatedAt: Timestamp!
+
+  """MIME type."""
+  mimeType: String
+
+  """File extension."""
+  ext: String
+
+  """Size in bytes (0 for external providers)."""
+  sizeBytes: BigInt!
+
+  """Original filename from upload."""
+  originalName: String
+
+  """Image/video dimensions (null if not applicable)."""
+  dimensions: MediaDimensions
+
+  """Duration in milliseconds (for video/audio)."""
+  durationMs: Int
+
+  """Alt text for accessibility."""
+  altText: String
+
+  """Source URL (for files uploaded from URL)."""
+  sourceUrl: String
+
+  """Whether the file has been processed."""
+  isProcessed: Boolean!
+
+  """Additional metadata."""
+  meta: JSON
+
+  """The date and time when the file was created."""
+  createdAt: DateTime!
+
+  """The date and time when the file was last updated."""
+  updatedAt: DateTime!
+
+  """The date and time when the file was deleted (soft delete)."""
+  deletedAt: DateTime
+
+  """S3-specific data (only for S3 provider)."""
+  s3Data: S3ObjectData
+
+  """External media data (for YouTube, Vimeo, etc)."""
+  externalData: ExternalMediaData
 }
 
-enum FileDriver {
-  LOCAL
-  S3
-  YTB
-  URL
+"""A connection to a list of File items."""
+type FileConnection {
+  """A list of edges."""
+  edges: [FileEdge!]!
+
+  """Information to aid in pagination."""
+  pageInfo: PageInfo!
+
+  """The total number of files."""
+  totalCount: Int!
 }
 
-type FileMutation {
-  updateOne(input: UpdateFileInput!): File!
-  updateMany(input: [UpdateFileInput!]!): [File!]!
-  deleteOne(id: ID!): Boolean!
-  deleteMany(ids: [ID!]!): Boolean!
-  archiveOne(id: ID!): Boolean!
-  archiveMany(ids: [ID!]!): Boolean!
+"""Input for creating an external media file (YouTube, Vimeo, etc)."""
+input FileCreateExternalInput {
+  """Provider type."""
+  provider: FileProvider!
+
+  """External ID (YouTube video ID, Vimeo ID, etc)."""
+  externalId: String!
+
+  """Public URL to access the media."""
+  url: String!
+
+  """Thumbnail URL."""
+  thumbnailUrl: String
+
+  """Title/name of the media."""
+  originalName: String
+
+  """Image width in pixels."""
+  width: Int
+
+  """Image height in pixels."""
+  height: Int
+
+  """Duration in milliseconds."""
+  durationMs: Int
+
+  """Alt text for accessibility."""
+  altText: String
+
+  """Provider-specific metadata."""
+  providerMeta: JSON
+
+  """Idempotency key for deduplication."""
+  idempotencyKey: String
 }
 
-type FileQuery {
-  findOne(id: ID!): File
-  findMany(input: FilesInput): FilesOutput!
+"""Payload for external file creation."""
+type FileCreateExternalPayload {
+  """The created file."""
+  file: File
+
+  """List of errors that occurred during the mutation."""
+  userErrors: [GenericUserError!]!
 }
 
-input FilesInput {
-  where: FilesWhereInput
-  order: String
-  page: Int
-  pageSize: Int
-}
-
-type FilesOutput {
-  data: [File!]!
-  meta: CollectionMeta!
-}
-
-input FilesWhereInput {
-  And: [FilesWhereInput!]
-  Or: [FilesWhereInput!]
-  id: FilterV2
-  name: FilterV2
-  url: FilterV2
-  size: FilterV2
-  ext: FilterV2
-  createdAt: FilterV2
-  updatedAt: FilterV2
-  product: FilterV2
-  category: FilterV2
-  post: FilterV2
-  page: FilterV2
-}
-
-type Filter {
-  title: String!
-  createdAt: Timestamp!
-  isActive: Boolean!
+"""Input for deleting a file."""
+input FileDeleteInput {
+  """The ID of the file to delete."""
   id: ID!
-  sortIndex: Int!
-  type: FilterType!
-  updatedAt: Timestamp!
+
+  """Whether to permanently delete the file (hard delete)."""
+  permanent: Boolean
 }
 
-input FilterInput {
-  Eq: Any
-  NotEq: Any
-  Gt: Any
-  Gte: Any
-  Is: Any
-  IsNot: Any
-  Lt: Any
-  Lte: Any
-  In: Any
-  NotIn: Any
-  Like: Any
-  NotLike: Any
-  ILike: Any
-  NotILike: Any
+"""Payload for file deletion."""
+type FileDeletePayload {
+  """The ID of the deleted file."""
+  deletedFileId: ID
+
+  """List of errors that occurred during the mutation."""
+  userErrors: [GenericUserError!]!
 }
 
-type FilterMutation {
-  create(input: CreateFilterInput!): Filter!
-  createMany(input: [CreateFilterInput!]!): Boolean!
-  update(input: UpdateFilterInput!): Filter!
-  updateMany(input: [UpdateFilterInput!]!): Boolean!
+"""An edge in a File connection."""
+type FileEdge {
+  """The item at the end of the edge."""
+  node: File!
+
+  """A cursor for use in pagination."""
+  cursor: String!
 }
 
-type FilterQuery {
-  findMany(input: ProductFilterV2): [Filter!]!
-  findOne(id: ID!): Filter
+"""Provider type for files."""
+enum FileProvider {
+  """File stored in S3"""
+  S3
+
+  """YouTube video"""
+  YOUTUBE
+
+  """Vimeo video"""
+  VIMEO
+
+  """External URL"""
+  URL
+
+  """Local file storage"""
+  LOCAL
 }
 
-input FiltersWhereInput {
-  And: [FiltersWhereInput!]
-  Or: [FiltersWhereInput!]
-  id: FilterV2
+"""Input for updating a file."""
+input FileUpdateInput {
+  """The file ID."""
+  id: ID!
+
+  """Alt text for accessibility."""
+  altText: String
+
+  """Original name."""
+  originalName: String
+
+  """Additional metadata."""
+  meta: JSON
 }
 
-enum FilterType {
-  PRICE
-  CATEGORY
-  AVAILABILITY
-  FEATURE
-  TAG
+"""Payload for file update."""
+type FileUpdatePayload {
+  """The updated file."""
+  file: File
+
+  """List of errors that occurred during the mutation."""
+  userErrors: [GenericUserError!]!
 }
 
-scalar FilterV2
+"""Input for uploading a file from URL."""
+input FileUploadFromUrlInput {
+  """URL to fetch the file from."""
+  sourceUrl: String!
+
+  """Alt text for accessibility."""
+  altText: String
+
+  """Idempotency key for deduplication."""
+  idempotencyKey: String
+}
+
+"""Input for uploading a file (direct S3 upload result)."""
+input FileUploadInput {
+  """S3 object key."""
+  objectKey: String!
+
+  """Bucket ID."""
+  bucketId: ID!
+
+  """MIME type."""
+  mimeType: String
+
+  """File extension."""
+  ext: String
+
+  """Size in bytes."""
+  sizeBytes: BigInt!
+
+  """Original filename."""
+  originalName: String
+
+  """Image width in pixels."""
+  width: Int
+
+  """Image height in pixels."""
+  height: Int
+
+  """Duration in milliseconds."""
+  durationMs: Int
+
+  """Alt text for accessibility."""
+  altText: String
+
+  """Content hash (SHA-256)."""
+  contentHash: String
+
+  """ETag from S3."""
+  etag: String
+
+  """Idempotency key for deduplication."""
+  idempotencyKey: String
+}
+
+"""Payload for file upload."""
+type FileUploadPayload {
+  """The uploaded file."""
+  file: File
+
+  """List of errors that occurred during the mutation."""
+  userErrors: [GenericUserError!]!
+}
 
 input ForgotPasswordInput {
   email: String!
 }
 
-type Fulfillment {
-  id: ID!
-  createdAt: Timestamp!
-  parentId: ID
-  shippingItem: ShippingItem
-  items: [FulfillmentItem!]!
-  status: FulfillmentStatusEnum!
-}
-
-type FulfillmentItem {
-  orderItemId: ID!
-  quantity: Int!
-}
-
-enum FulfillmentStatusEnum {
-  PENDING
-  PROCESSING
-  ON_HOLD
-  SHIPPED
-  DELIVERED
-  RETURNED
-  CANCELLED
-  FULFILLED
-}
-
-input FulfillmentWhereInput {
-  And: [FulfillmentWhereInput!]
-  Or: [FulfillmentWhereInput!]
-  id: FilterV2
-  orderId: FilterV2
-  status: FilterV2
-}
-
-input GroupProductLinkInput {
-  groupId: ID!
-  productId: ID!
+"""A generic user error type for mutation responses."""
+type GenericUserError implements UserError {
+  message: String!
+  field: [String!]
+  code: String
 }
 
 type InstalledApp {
@@ -1039,187 +397,63 @@ type InstalledApp {
   meta: JSON
 }
 
+type InventoryMutation {
+  productCreate(input: ProductCreateInput!): ProductCreatePayload!
+  productUpdate(input: ProductUpdateInput!): ProductUpdatePayload!
+  productDelete(input: ProductDeleteInput!): ProductDeletePayload!
+  productPublish(input: ProductPublishInput!): ProductPublishPayload!
+  productUnpublish(input: ProductUnpublishInput!): ProductUnpublishPayload!
+  variantCreate(input: VariantCreateInput!): VariantCreatePayload!
+  variantDelete(input: VariantDeleteInput!): VariantDeletePayload!
+  variantSetSku(input: VariantSetSkuInput!): VariantSetSkuPayload!
+  variantSetDimensions(input: VariantSetDimensionsInput!): VariantSetDimensionsPayload!
+  variantSetWeight(input: VariantSetWeightInput!): VariantSetWeightPayload!
+  variantSetPricing(input: VariantSetPricingInput!): VariantSetPricingPayload!
+  variantSetCost(input: VariantSetCostInput!): VariantSetCostPayload!
+  productOptionCreate(input: ProductOptionCreateInput!): ProductOptionCreatePayload!
+  productOptionUpdate(input: ProductOptionUpdateInput!): ProductOptionUpdatePayload!
+  productOptionDelete(input: ProductOptionDeleteInput!): ProductOptionDeletePayload!
+  productFeatureCreate(input: ProductFeatureCreateInput!): ProductFeatureCreatePayload!
+  productFeatureUpdate(input: ProductFeatureUpdateInput!): ProductFeatureUpdatePayload!
+  productFeatureDelete(input: ProductFeatureDeleteInput!): ProductFeatureDeletePayload!
+  warehouseCreate(input: WarehouseCreateInput!): WarehouseCreatePayload!
+  warehouseUpdate(input: WarehouseUpdateInput!): WarehouseUpdatePayload!
+  warehouseDelete(input: WarehouseDeleteInput!): WarehouseDeletePayload!
+  variantSetStock(input: VariantSetStockInput!): VariantSetStockPayload!
+  variantSetMedia(input: VariantSetMediaInput!): VariantSetMediaPayload!
+}
+
+type InventoryQuery {
+  """Get a node by its global ID"""
+  node(id: ID!): Node
+
+  """Get multiple nodes by their global IDs"""
+  nodes(ids: [ID!]!): [Node]!
+
+  """Get a product by ID"""
+  product(id: ID!): Product
+
+  """Get products with Relay-style pagination"""
+  products(first: Int, after: String, last: Int, before: String): ProductConnection!
+
+  """Get a variant by ID"""
+  variant(id: ID!): Variant
+
+  """Get variants with Relay-style pagination"""
+  variants(first: Int, after: String, last: Int, before: String): VariantConnection!
+
+  """Get a warehouse by ID"""
+  warehouse(id: ID!): Warehouse
+
+  """Get all warehouses"""
+  warehouses(first: Int, after: String, last: Int, before: String): WarehouseConnection!
+}
+
 input InviteInput {
   email: String!
 }
 
 scalar JSON
-
-input KeywordCreateInput {
-  groupId: ID!
-  keyword: String!
-  localeCode: String!
-}
-
-input KeywordDeleteInput {
-  groupId: ID!
-  keyword: String!
-  localeCode: String!
-}
-
-input KeywordGroupCreateInput {
-  title: String!
-}
-
-input KeywordGroupDeleteInput {
-  id: ID!
-}
-
-input KeywordGroupUpdateInput {
-  id: ID!
-  title: String!
-}
-
-type Label {
-  id: ID!
-  name: String!
-  slug: String!
-  colorHex: String
-}
-
-type LabelMutation {
-  create(input: CreateLabelInput!): ID!
-  update(input: UpdateLabelInput!): Boolean!
-}
-
-type LabelQuery {
-  findMany(input: LabelsInput): LabelsOutput!
-  findOne(id: ID!): Label
-}
-
-input LabelsInput {
-  where: LabelWhereInput
-  order: String
-  page: Int
-  pageSize: Int
-}
-
-type LabelsOutput {
-  data: [Label!]!
-  meta: CollectionMeta!
-}
-
-input LabelWhereInput {
-  And: [LabelWhereInput!]
-  Or: [LabelWhereInput!]
-  id: FilterV2
-  slug: FilterV2
-}
-
-input LanguageConfigInput {
-  localeCode: String!
-  tsConfig: String!
-  description: String
-}
-
-type Link {
-  title: String!
-  createdAt: Timestamp!
-  entry: LinkEntry
-  type: MenuNodeType!
-  id: ID!
-  updatedAt: Timestamp!
-  slug: String
-  parentId: ID
-  sortIndex: Int!
-}
-
-union LinkEntry = Variant | Category | Page
-
-type LinkMutation {
-  create(input: CreateLinkInput!): Link!
-  update(input: UpdateLinkInput!): Boolean!
-}
-
-type LinkQuery {
-  findMany(input: LinksInput): LinksOutput!
-  findOne(id: ID!): Link
-}
-
-input LinksInput {
-  where: LinksWhereInput
-  order: String
-  page: Int
-  pageSize: Int
-}
-
-type LinksOutput {
-  data: [Link!]!
-  meta: CollectionMeta!
-}
-
-input LinksWhereInput {
-  And: [LinksWhereInput!]
-  Or: [LinksWhereInput!]
-  title: FilterV2
-  createdAt: FilterV2
-  id: FilterV2
-  slug: FilterV2
-  type: FilterV2
-  entryId: FilterV2
-  updatedAt: FilterV2
-}
-
-type ListingFilter {
-  type: String!
-  values: [Any!]!
-}
-
-union ListingFilterEntry = Category | Tag
-
-input ListingFilterInput {
-  type: FilterType!
-  values: [Any!]!
-}
-
-input ListingInput {
-  listingType: ListingType!
-  category: CategoryFilterInput!
-  filters: [ListingFilterInput!]
-  settings: ListingInputSettings
-  sort: ListingSort
-  page: Int! = 1
-  perPage: Int! = 25
-}
-
-input ListingInputSettings {
-  availableFirst: Boolean
-  types: [ListingNodeType!]
-}
-
-type ListingMeta {
-  filters: [ListingFilter!]!
-  sort: ListingSort!
-}
-
-enum ListingNodeType {
-  PRODUCT
-}
-
-type ListingOutputV1 {
-  data: [Variant!]!
-  meta: CollectionMeta!
-}
-
-type ListingQuery {
-  listingV1(input: ListingInput!): ListingOutputV1!
-}
-
-enum ListingSort {
-  CREATED_AT_ASC
-  CREATED_AT_DESC
-  PRICE_ASC
-  PRICE_DESC
-  TITLE_ASC
-  TITLE_DESC
-  CUSTOM
-}
-
-enum ListingType {
-  AUTO
-  MANUAL
-  COMPOSITE
-}
 
 type Locale {
   title: String!
@@ -1227,737 +461,585 @@ type Locale {
   isActive: Boolean!
 }
 
-input LocaleWhereInput {
-  title: FilterV2
-  code: FilterV2
-  isActive: FilterV2
-  isDefault: FilterV2
+"""Image/video dimensions."""
+type MediaDimensions {
+  """Width in pixels."""
+  width: Int!
+
+  """Height in pixels."""
+  height: Int!
 }
 
-type Menu {
-  id: ID!
-  items: [Link!]!
-  slug: String!
-  title: String!
-  status: EntityStatus!
-  createdAt: Timestamp!
-  updatedAt: Timestamp!
+type MediaMutation {
+  fileUpload(input: FileUploadInput!): FileUploadPayload!
+  fileUploadFromUrl(input: FileUploadFromUrlInput!): FileUploadPayload!
+  fileCreateExternal(input: FileCreateExternalInput!): FileCreateExternalPayload!
+  fileUpdate(input: FileUpdateInput!): FileUpdatePayload!
+  fileDelete(input: FileDeleteInput!): FileDeletePayload!
 }
 
-type MenuMutation {
-  create(input: CreateMenuInput!): ID!
-  update(input: UpdateMenuInput!): Boolean!
-  delete(id: ID!): Boolean!
-  deleteMany(ids: [ID!]!): Boolean!
-}
+type MediaQuery {
+  """Get a node by its global ID"""
+  node(id: ID!): Node
 
-enum MenuNodeType {
-  PRODUCT
-  CATEGORY
-  PAGE
-  MENU
-  LINK
-  TEXT
-}
+  """Get multiple nodes by their global IDs"""
+  nodes(ids: [ID!]!): [Node]!
 
-type MenuQuery {
-  findMany(input: MenusInput): MenusOutput!
-  findOne(id: ID!): Menu
-}
+  """Get a file by ID"""
+  file(id: ID!): File
 
-input MenusInput {
-  where: MenusWhereInput
-  order: String
-  page: Int
-  pageSize: Int
-}
-
-type MenusOutput {
-  data: [Menu!]!
-  meta: CollectionMeta!
-}
-
-input MenusWhereInput {
-  And: [MenusWhereInput!]
-  Or: [MenusWhereInput!]
-  createdAt: FilterV2
-  id: FilterV2
-  locale: FilterV2
-  slug: FilterV2
-  status: FilterV2
-  title: FilterV2
-  updatedAt: FilterV2
-  translationField: FilterV2
+  """Get files with Relay-style pagination"""
+  files(first: Int, after: String, last: Int, before: String): FileConnection!
 }
 
 type Mutation {
   appsMutation: AppsMutation!
-  bulkMutation: BulkMutation!
-  cartMutation: CartMutation!
-  categoryMutation: CategoryMutation!
-  customerMutation: CustomerMutation!
-  emailProfilesMutation: EmailProfilesMutation!
-  emailSettingsMutation: EmailSettingsMutation!
-  emailTemplateMutation: EmailTemplateMutation!
-  filterMutation: FilterMutation!
-  labelMutation: LabelMutation!
-  fileMutation: FileMutation!
-  orderMutation: OrderMutation!
-  crmMutation: CrmMutation!
-  paymentMethodMutation: PaymentMethodMutation!
-  paymentServiceMutation: PaymentServiceMutation!
-  productMutation: ProductMutation!
+  inventoryMutation: InventoryMutation!
+  mediaMutation: MediaMutation!
   projectMutation: ProjectMutation!
-  reviewMutation: ReviewMutation!
-  searchMutation: SearchMutation!
-  shippingMethodMutation: ShippingMethodMutation!
-  shippingServiceMutation: ShippingServiceMutation!
-  stockStatusMutation: StockStatusMutation!
-  linkMutation: LinkMutation!
-  menuMutation: MenuMutation!
-  pageMutation: PageMutation!
-  tagMutation: TagMutation!
   userMutation: UserMutation!
-  translationMutation: TranslationMutation!
 }
 
-type Order {
+"""
+The Node interface is implemented by all types that have a globally unique ID.
+"""
+interface Node {
+  """The globally unique ID of the object."""
   id: ID!
-  idempotencyKey: ID!
-  createdAt: Timestamp!
-  updatedAt: Timestamp!
-  status: OrderStatusEnum!
-  orderNumber: Int!
-  externalSystemId: String
-  createdBy: Actor!
-  currencyCode: String!
-  displayCurrencyCode: String
-  displayExchangeRate: Float
-  totalShippingAmount: Int
-  totalRefundedAmount: Int
-  totalDiscountAmount: Int
-  totalTaxAmount: Int
-  totalAmount: Int!
-  subtotalAmount: Int!
-  clientInfo: ClientInfo
-  customer: Customer
-  customerStatistic: OrderCustomerStatistic
-  customerNote: String
-  customerEmail: String
-  customerPhone: String
-  customerFirstName: String
-  customerMiddleName: String
-  customerLastName: String
-  customerMeta: String
-  adminNote: String
-  events: [OrderEvent!]!
-  tags: [Tag!]!
-  labels: [Label!]!
-  paymentMethod: PaymentMethod
-  shippingMethod: CoreShippingMethod
-  shippingAddress: Address
-  billingAddress: Address
-  fulfillments: [Fulfillment!]!
-  payment: PaymentItem
-  orderItems: [OrderItem!]!
-  productsInfo: [OrderItemProductInfo!]!
 }
 
-input OrderCurrencyInput {
-  currencyCode: String!
-  displayCurrencyCode: String
-  displayExchangeRate: Float
+"""Display type for product options in the UI."""
+enum OptionDisplayType {
+  DROPDOWN
+  SWATCH
+  BUTTONS
 }
 
-type OrderCustomerStatistic {
-  totalRevenue: Int!
-  totalGuestOrders: Int!
-  totalAuthorizedOrders: Int!
-}
-
-type OrderEvent {
-  id: ID!
-  createdBy: Actor!
-  eventType: OrderEventTypeEnum!
-  eventData: String
-  createdAt: Timestamp!
-}
-
-enum OrderEventTypeEnum {
-  ORDER_CREATED
-  ORDER_NOTE_UPDATED
-  ORDER_TAGS_UPDATED
-  ORDER_ITEM_CREATED
-  ORDER_ITEM_UPDATED
-  ORDER_ITEM_DELETED
-  SHIPPING_DETAILS_UPDATED
-  PAYMENT_DETAILS_UPDATED
-  CUSTOMER_ASSIGNED
-  CUSTOMER_UNASSIGNED
-  CONTACT_INFO_UPDATED
-  COMMENT_CREATED
-  NOTIFICATION_SENT
-  ORDER_STATUS_UPDATED
-  PAYMENT_STATUS_UPDATED
-  FULFILLMENT_STATUS_UPDATED
-  FULFILLMENT_SPLIT
-  FULFILLMENT_UNSPLIT
-  SHIPPING_PROFILE_CREATED
-  SHIPPING_PROFILE_DELETED
-  SHIPPING_PROFILE_UPDATED
-}
-
-type OrderItem {
-  id: ID!
-  createdAt: Timestamp!
-  discountAmount: Int!
-  originalQuantity: Int!
-  price: Int!
-  product: Variant
-  productInfo: OrderItemProductInfo!
-  productCostPrice: Int
-  quantity: Int!
-  subtotalAmount: Int!
-  taxAmount: Int
-  totalAmount: Int!
-  weight: Weight
-}
-
-type OrderItemProductInfo {
-  id: ID!
-  variantId: ID
-  snapshot: ProductSnapshot!
-}
-
-input OrderItemWhereInput {
-  And: [OrderItemWhereInput!]
-  Or: [OrderItemWhereInput!]
-  id: FilterV2
-  createdAt: FilterV2
-  discount: FilterV2
-  discountAmount: FilterV2
-  fulfillmentId: FilterV2
-  orderId: FilterV2
-  originalQuantity: FilterV2
-  price: FilterV2
-  product: ProductWhereInput
-  productCostPrice: FilterV2
-  productId: FilterV2
-  quantity: FilterV2
-  subtotalAmount: FilterV2
-  taxAmount: FilterV2
-  totalAmount: FilterV2
-  updatedAt: FilterV2
-  weight: FilterV2
-  weightUnit: FilterV2
-}
-
-type OrderMutation {
-  create(input: CreateOrderInput!): ID!
-  update(input: UpdateOrderInput!): Boolean!
-  updateStatus(input: UpdateOrderStatusInput!): Boolean!
-  updateCustomer(input: UpdateOrderCustomerInput!): Boolean!
-  deleteCustomer(id: ID!): Boolean!
-  updateTags(input: UpdateOrderTagsInput!): Boolean!
-  updateLabels(input: UpdateOrderLabelsInput!): Boolean!
-  updateAdminNote(input: UpdateAdminNoteInput!): Boolean!
-  addComment(input: AddCommentInput!): Boolean!
-  cancel(input: CancelOrderInput!): Boolean!
-  updatePaymentStatus(input: UpdatePaymentStatusInput!): Boolean!
-  splitFulfillment(input: SplitFulfillmentInput!): Boolean!
-  undoSplitFulfillment(id: ID!): Boolean!
-  updateFulfillmentStatus(input: UpdateFulfillmentStatusInput!): Boolean!
-  createShippingItem(input: CreateShippingItemInput!): Boolean!
-  updateShippingItem(input: UpdateShippingItemInput!): Boolean!
-  createOrderItem(input: CreateOrderItemInput!): Boolean!
-  updateOrderItem(input: UpdateOrderItemInput!): Boolean!
-  deleteOrderItem(id: ID!): Boolean!
-}
-
-input OrderPaymentInfoInput {
-  paymentMethodId: String
-  billingAddress: AddressInput
-}
-
-type OrderQuery {
-  findMany(input: OrdersInput): OrdersOutput!
-  findOne(id: ID!): Order
-}
-
-input OrderShippingInfoInput {
-  shippingMethodId: String
-  shippingAddress: AddressInput
-}
-
-input OrdersInput {
-  where: OrderWhereInput
-  order: String
-  page: Int
-  pageSize: Int
-}
-
-type OrdersOutput {
-  data: [Order!]!
-  meta: CollectionMeta!
-}
-
-enum OrderStatusEnum {
-  DRAFT
-  ACTIVE
-  COMPLETED
-  CANCELLED
-  ARCHIVED
-}
-
-input OrderTagsWhereInput {
-  And: [OrderTagsWhereInput!]
-  Or: [OrderTagsWhereInput!]
-  tagId: FilterV2
-}
-
-input OrderWhereInput {
-  And: [OrderWhereInput!]
-  Or: [OrderWhereInput!]
-  id: FilterV2
-  createdAt: FilterV2
-  customerId: FilterV2
-  customerEmail: FilterV2
-  customerFirstName: FilterV2
-  customerLastName: FilterV2
-  customerMiddleName: FilterV2
-  customerPhone: FilterV2
-  status: FilterV2
-  orderNumber: FilterV2
-  adminNote: FilterV2
-  items: OrderItemWhereInput
-  shippingMethodId: FilterV2
-  shippingAddress: AddressWhereInput
-  shippingLine: ShippingItemWhereInput
-  paymentMethodId: FilterV2
-  billingAddress: AddressWhereInput
-  paymentLine: PaymentItemWhereInput
-  fulfillment: FulfillmentWhereInput
-  tags: OrderTagsWhereInput
-  createdByUserId: FilterV2
-  createdByApiToken: FilterV2
-  currencyCode: FilterV2
-  displayCurrencyCode: FilterV2
-  totalShippingAmount: FilterV2
-  totalRefundedAmount: FilterV2
-  totalDiscountAmount: FilterV2
-  totalTaxAmount: FilterV2
-  totalAmount: FilterV2
-  subtotalAmount: FilterV2
-  crmTicketColumnId: FilterV2
-}
-
-type Page {
-  cover: File
-  createdAt: Timestamp!
-  description: String
-  excerpt: String
-  gallery: [File!]!
-  id: ID!
-  seoDescription: String
-  seoTitle: String
-  slug: String!
-  status: String!
-  title: String!
-  updatedAt: Timestamp!
-  labels: [Label!]!
-}
-
-type PageMutation {
-  create(input: CreatePageInput!): ID!
-  update(input: UpdatePageInput!): Boolean!
-  delete(id: ID!): Boolean!
-  deleteMany(ids: [ID!]!): Boolean!
-}
-
-type PageQuery {
-  findMany(input: PagesInput): PagesOutput!
-  findOne(id: ID!): Page
-}
-
-input PagesInput {
-  where: PagesWhereInput
-  order: String
-  page: Int
-  pageSize: Int
-}
-
-type PagesOutput {
-  data: [Page!]!
-  meta: CollectionMeta!
-}
-
-input PagesWhereInput {
-  And: [PagesWhereInput!]
-  Or: [PagesWhereInput!]
-  title: FilterV2
-  createdAt: FilterV2
-  id: FilterV2
-  slug: FilterV2
-  status: FilterV2
-  translationField: FilterV2
-  updatedAt: FilterV2
-}
-
-type PaginationInfo {
-  count: Int!
-  page: Int!
-  perPage: Int!
-  total: Int!
-  totalPages: Int!
+"""Information about pagination in a connection."""
+type PageInfo {
+  """When paginating forwards, are there more items?"""
   hasNextPage: Boolean!
-  hasPrevPage: Boolean!
+
+  """When paginating backwards, are there more items?"""
+  hasPreviousPage: Boolean!
+
+  """When paginating backwards, the cursor to continue."""
+  startCursor: String
+
+  """When paginating forwards, the cursor to continue."""
+  endCursor: String
 }
 
-type PaymentItem {
-  amount: Int!
-  createdAt: Timestamp!
+"""A product represents an item that can be sold."""
+type Product implements Node {
+  """The globally unique ID of the product."""
   id: ID!
-  paymentMethod: PaymentMethod
-  status: PaymentStatusEnum!
-  meta: String
-}
 
-input PaymentItemWhereInput {
-  And: [PaymentItemWhereInput!]
-  Or: [PaymentItemWhereInput!]
-  id: FilterV2
-  amount: FilterV2
-  createdAt: FilterV2
-  orderId: FilterV2
-  paymentMethodId: FilterV2
-  status: FilterV2
-}
+  """
+  The date and time when the product was published, or null if unpublished.
+  """
+  publishedAt: DateTime
 
-type PaymentMethod {
-  code: String!
-  name: String!
-  service: PaymentService!
-}
+  """Whether the product is currently published."""
+  isPublished: Boolean!
 
-type PaymentMethodMutation {
-  create(input: CreatePaymentMethodInput!): String!
-  delete(id: String!): Boolean!
-}
+  """The date and time when the product was created."""
+  createdAt: DateTime!
 
-type PaymentMethodQuery {
-  findMany: [PaymentMethod!]!
-  findOne(id: String!): PaymentMethod
-}
+  """The date and time when the product was last updated."""
+  updatedAt: DateTime!
 
-input PaymentMethodWhereInput {
-  And: [PaymentMethodWhereInput!]
-  Or: [PaymentMethodWhereInput!]
-  code: FilterV2
-  name: FilterV2
-  serviceId: FilterV2
-}
+  """The date and time when the product was deleted (soft delete)."""
+  deletedAt: DateTime
 
-type PaymentService {
-  code: String!
-  name: String!
-  cover: File
-  methods: [PaymentMethod!]!
-}
+  """The variants of this product."""
+  variants(first: Int, after: String, last: Int, before: String): VariantConnection!
 
-type PaymentServiceMutation {
-  create(input: CreatePaymentServiceInput!): String!
-  delete(id: String!): Boolean!
-}
+  """The options available for this product."""
+  options: [ProductOption!]!
 
-type PaymentServiceQuery {
-  findMany: [PaymentService!]!
-  findOne(id: String!): PaymentService
-}
+  """The features of this product."""
+  features: [ProductFeature!]!
 
-enum PaymentStatusEnum {
-  PENDING
-  AUTHORIZED
-  CAPTURED
-  PAID
-  PARTIALLY_PAID
-  REFUNDED
-  PARTIALLY_REFUNDED
-  FAILED
-  CANCELLED
-  VOIDED
-}
+  """The total number of variants for this product."""
+  variantsCount: Int!
 
-type Product {
-  createdAt: Timestamp!
-  description: String
+  """Product title."""
+  title: String!
+
+  """Product description."""
+  description: Description
+
+  """Short excerpt."""
   excerpt: String
-  groups: [ProductGroup!]!
-  id: ID!
-  requiresShipping: Boolean
-  seoDescription: String
+
+  """SEO title."""
   seoTitle: String
-  slug: String!
-  status: EntityStatus!
+
+  """SEO description."""
+  seoDescription: String
+}
+
+"""A connection to a list of Product items."""
+type ProductConnection {
+  """A list of edges."""
+  edges: [ProductEdge!]!
+
+  """Information to aid in pagination."""
+  pageInfo: PageInfo!
+
+  """The total number of products."""
+  totalCount: Int!
+}
+
+"""Input for creating a product."""
+input ProductCreateInput {
+  """Product title."""
   title: String!
-  updatedAt: Timestamp!
-  variants: [Variant!]!
-  labels: [Label!]!
-  tags: [Tag!]!
-  primaryCategory: Category
-  featuresV2: [ProductFeatureV2!]!
-  optionsV2: [ProductFeatureV2!]!
+
+  """Product description."""
+  description: DescriptionInput
+
+  """Short excerpt."""
+  excerpt: String
+
+  """SEO title."""
+  seoTitle: String
+
+  """SEO description."""
+  seoDescription: String
+
+  """Initial variants to create with the product."""
+  variants: [VariantInput!]
+
+  """Initial options to create with the product."""
+  options: [ProductOptionCreateInput!]
+
+  """Whether to publish the product immediately."""
+  publish: Boolean
 }
 
-input ProductCategoriesWhereInput {
-  And: [ProductCategoriesWhereInput!]
-  Or: [ProductCategoriesWhereInput!]
-  categoryId: FilterV2
+"""Payload for product creation."""
+type ProductCreatePayload {
+  """The created product."""
+  product: Product
+
+  """List of errors that occurred during the mutation."""
+  userErrors: [GenericUserError!]!
 }
 
-type ProductFeature {
-  title: String!
-  slug: String!
-  swatch: FeatureSwatch
-  group: ProductFeatureGroup!
-  isAttribute: Boolean!
-  isOption: Boolean!
-  attributeSortIndex: Int
-  optionSortIndex: Int
-  featureId: ID!
-}
-
-type ProductFeatureGroup {
+"""Input for deleting a product."""
+input ProductDeleteInput {
+  """The ID of the product to delete."""
   id: ID!
-  slug: String!
-  title: String!
-  featureStyleType: FeatureStyleType!
+
+  """Whether to permanently delete the product (hard delete)."""
+  permanent: Boolean
 }
 
-input ProductFeatureGroupInput {
-  id: ID
-  title: String
-  slug: String
-  featureStyleType: FeatureStyleType
+"""Payload for product deletion."""
+type ProductDeletePayload {
+  """The ID of the deleted product."""
+  deletedProductId: ID
+
+  """List of errors that occurred during the mutation."""
+  userErrors: [GenericUserError!]!
+}
+
+"""An edge in a Product connection."""
+type ProductEdge {
+  """The item at the end of the edge."""
+  node: Product!
+
+  """A cursor for use in pagination."""
+  cursor: String!
 }
 
 """
-ProductFeatureGroupV2 - ДУБЛИКАТ entity.ProductFeatureGroup
-В V2 это создается из ProductFeature/ProductOption (не отдельная таблица!)
+A product feature represents a searchable attribute of a product (e.g., Material, Brand).
 """
-type ProductFeatureGroupV2 {
+type ProductFeature implements Node {
+  """The globally unique ID of the feature."""
   id: ID!
+
+  """The URL-friendly identifier for this feature."""
   slug: String!
-  title: String!
-  featureStyleType: String
+
+  """Display name."""
+  name: String!
+
+  """The available values for this feature."""
+  values: [ProductFeatureValue!]!
 }
 
-input ProductFeatureInput {
-  featureId: ID
-  title: String
-  slug: String
-  swatch: FeatureSwatchInput
-  group: ProductFeatureGroupInput
-  isAttribute: Boolean
-  isOption: Boolean
-  attributeSortIndex: Int
-  optionSortIndex: Int
-}
-
-"""ProductFeatureSwatchV2 - ДУБЛИКАТ entity.FeatureSwatch"""
-type ProductFeatureSwatchV2 {
-  id: ID!
-  color1: String
-  color2: String
-  type: String!
-}
-
-input ProductFeaturesWhereInput {
-  And: [ProductFeaturesWhereInput!]
-  Or: [ProductFeaturesWhereInput!]
-  id: FilterV2
-  groupId: FilterV2
-  isAttribute: FilterV2
-  isOption: FilterV2
-}
-
-"""
-ProductFeatureV2 - ДУБЛИКАТ entity.ProductFeature (плоская структура V1)
-V2 storage имеет иерархию (Feature → Values), но GraphQL возвращает плоскую структуру
-"""
-type ProductFeatureV2 {
-  featureId: ID!
-  slug: String!
-  title: String!
-  isAttribute: Boolean!
-  isOption: Boolean!
-  attributeSortIndex: Int
-  optionSortIndex: Int
-  styleType: String
-  group: ProductFeatureGroupV2!
-  swatch: ProductFeatureSwatchV2
-}
-
-input ProductFilterV2 {
-  where: FiltersWhereInput
-  order: String
-}
-
-type ProductGroup {
-  id: ID!
-  title: String!
-  items: [ProductGroupItem!]!
-  isRequired: Boolean!
-  isMultiple: Boolean!
-  sortIndex: Int!
-}
-
-type ProductGroupItem {
-  id: ID!
-  variant: Variant!
-  sortIndex: Int!
-  priceType: ProductGroupPriceType!
-  priceAmountValue: Int
-  pricePercentageValue: Float
-  maxQuantity: Int
-}
-
-enum ProductGroupPriceType {
-  FREE
-  BASE
-  BASE_ADJUST_AMOUNT
-  BASE_ADJUST_PERCENT
-  BASE_OVERRIDE
-}
-
-type ProductMutation {
-  create(input: CreateProductInput!): Product!
-  createMany(input: [CreateProductInput!]!): [Boolean!]!
-  update(input: UpdateProductInput!): Product!
-  delete(id: ID!): Boolean!
-  deleteMany(ids: [ID!]!): Boolean!
-  archive(id: ID!): Boolean!
-  archiveMany(ids: [ID!]!): Boolean!
-}
-
-type ProductQuery {
-  findMany(input: ProductsInput): ProductsOutput!
-  findByListingFilters(filters: [CreateListingFilterInput!]!, order: String!): [Variant!]!
-  findOne(id: ID!): Product
-  findManyVariants(input: VariantsInput): VariantsOutput!
-}
-
-input ProductsInput {
-  where: ProductWhereInput
-  order: String
-  page: Int
-  pageSize: Int
-}
-
-type ProductSnapshot {
-  schemaVersion: Int!
-  createdAt: Timestamp!
+"""Input for creating a feature on a product."""
+input ProductFeatureCreateInput {
+  """The ID of the product."""
   productId: ID!
-  variantId: ID!
-  containerId: ID!
-  title: String!
-  containerTitle: String!
+
+  """The URL-friendly slug for the feature."""
   slug: String!
-  sku: String
-  barcode: String
-  cover: File
-  gallery: [File!]!
-  price: Int!
-  oldPrice: Int
-  costPrice: Int
-  currencyCode: String!
-  weight: Float
-  weightUnit: WeightUnit
-  width: Float
-  length: Float
-  height: Float
-  dimensionUnit: DimensionUnit
-  options: [ProductSnapshotOption!]!
-  attributes: [ProductSnapshotAttribute!]!
-  groups: [ProductSnapshotGroup!]!
-  requiresShipping: Boolean!
+
+  """Display name."""
+  name: String!
+
+  """The values for this feature."""
+  values: [ProductFeatureValueCreateInput!]!
 }
 
-type ProductSnapshotAttribute {
-  groupId: ID!
-  groupTitle: String!
-  featureId: ID!
-  title: String!
-  sortIndex: Int!
+"""Payload for feature create."""
+type ProductFeatureCreatePayload {
+  """The product with updated features."""
+  product: Product
+
+  """The created feature."""
+  feature: ProductFeature
+
+  """List of errors that occurred during the mutation."""
+  userErrors: [GenericUserError!]!
 }
 
-type ProductSnapshotGroup {
+"""Input for deleting a feature from a product."""
+input ProductFeatureDeleteInput {
+  """The ID of the feature to delete."""
   id: ID!
-  title: String!
-  isRequired: Boolean!
-  isMultiple: Boolean!
-  sortIndex: Int!
-  items: [ProductSnapshotGroupItem!]!
 }
 
-type ProductSnapshotGroupItem {
+"""Payload for feature delete."""
+type ProductFeatureDeletePayload {
+  """The product with updated features."""
+  product: Product
+
+  """The ID of the deleted feature."""
+  deletedFeatureId: ID
+
+  """List of errors that occurred during the mutation."""
+  userErrors: [GenericUserError!]!
+}
+
+"""Input for updating a feature."""
+input ProductFeatureUpdateInput {
+  """The ID of the feature to update."""
   id: ID!
-  variantId: ID!
-  title: String!
-  sku: String
-  quantity: Int!
-  price: Int!
-  priceType: String!
-  maxQuantity: Int
-  sortIndex: Int!
+
+  """The new slug for the feature."""
+  slug: String
+
+  """Display name."""
+  name: String
+
+  """Nested value operations."""
+  values: ProductFeatureValuesInput
 }
 
-type ProductSnapshotOption {
-  groupId: ID!
-  groupTitle: String!
-  featureId: ID!
-  title: String!
-  swatch: ProductSnapshotSwatch
-  sortIndex: Int!
+"""Payload for feature update."""
+type ProductFeatureUpdatePayload {
+  """The product with updated features."""
+  product: Product
+
+  """The updated feature."""
+  feature: ProductFeature
+
+  """List of errors that occurred during the mutation."""
+  userErrors: [GenericUserError!]!
 }
 
-type ProductSnapshotSwatch {
-  type: String!
-  color1: String
-  color2: String
-  image: File
+"""A value for a product feature."""
+type ProductFeatureValue implements Node {
+  """The globally unique ID of the feature value."""
+  id: ID!
+
+  """The URL-friendly identifier for this value."""
+  slug: String!
+
+  """Display name."""
+  name: String!
 }
 
-type ProductsOutput {
-  data: [Product!]!
-  meta: CollectionMeta!
+"""Input for creating a feature value."""
+input ProductFeatureValueCreateInput {
+  """The URL-friendly slug for the value."""
+  slug: String!
+
+  """Display name."""
+  name: String!
 }
 
-input ProductTagsWhereInput {
-  And: [ProductTagsWhereInput!]
-  Or: [ProductTagsWhereInput!]
-  tagId: FilterV2
-}
+"""Input for nested value operations in feature update."""
+input ProductFeatureValuesInput {
+  """Values to create."""
+  create: [ProductFeatureValueCreateInput!]
 
-input ProductVariantsInput {
-  create: [CreateProductVariantInput!]
-  update: [UpdateProductVariantInput!]
+  """Values to update."""
+  update: [ProductFeatureValueUpdateInput!]
+
+  """IDs of values to delete."""
   delete: [ID!]
 }
 
-input ProductWhereInput {
-  And: [ProductWhereInput!]
-  Or: [ProductWhereInput!]
-  variants: VariantWhereInput
-  categories: ProductCategoriesWhereInput
-  title: FilterV2
-  locale: FilterV2
-  translationField: FilterV2
-  createdAt: FilterV2
-  id: FilterV2
-  tags: ProductTagsWhereInput
-  trackQuantity: FilterV2
-  updatedAt: FilterV2
-  status: FilterV2
+"""Input for updating an existing feature value."""
+input ProductFeatureValueUpdateInput {
+  """The ID of the value to update."""
+  id: ID!
+
+  """The new slug for the value."""
+  slug: String
+
+  """Display name."""
+  name: String
+}
+
+"""
+A product option defines a configurable aspect of a product, such as Size or Color.
+"""
+type ProductOption implements Node {
+  """The globally unique ID of the option."""
+  id: ID!
+
+  """The URL-friendly identifier for this option."""
+  slug: String!
+
+  """Display name."""
+  name: String!
+
+  """The display type for UI rendering."""
+  displayType: OptionDisplayType!
+
+  """The available values for this option."""
+  values: [ProductOptionValue!]!
+}
+
+"""Input for creating an option on a product."""
+input ProductOptionCreateInput {
+  """The ID of the product (optional when creating with product)."""
+  productId: ID
+
+  """The URL-friendly slug for the option."""
+  slug: String!
+
+  """Display name."""
+  name: String!
+
+  """The display type for UI rendering."""
+  displayType: OptionDisplayType!
+
+  """The values for this option."""
+  values: [ProductOptionValueCreateInput!]!
+}
+
+"""Payload for option create. Returns the product with new variants."""
+type ProductOptionCreatePayload {
+  """The product with updated options and variants."""
+  product: Product
+
+  """The created option."""
+  option: ProductOption
+
+  """List of errors that occurred during the mutation."""
+  userErrors: [GenericUserError!]!
+}
+
+"""Input for deleting an option from a product."""
+input ProductOptionDeleteInput {
+  """The ID of the option to delete."""
+  id: ID!
+}
+
+"""Payload for option delete."""
+type ProductOptionDeletePayload {
+  """The product with updated options and variants."""
+  product: Product
+
+  """The ID of the deleted option."""
+  deletedOptionId: ID
+
+  """List of errors that occurred during the mutation."""
+  userErrors: [GenericUserError!]!
+}
+
+"""A visual swatch for representing an option value."""
+type ProductOptionSwatch implements Node {
+  """The globally unique ID of the swatch."""
+  id: ID!
+
+  """The type of swatch."""
+  swatchType: SwatchType!
+
+  """The primary color (hex code or color name)."""
+  colorOne: String
+
+  """The secondary color for gradients."""
+  colorTwo: String
+
+  """The file for image-based swatches."""
+  file: File
+
+  """Additional metadata for the swatch."""
+  metadata: JSON
+}
+
+"""Input for creating/updating a swatch."""
+input ProductOptionSwatchInput {
+  """The type of swatch."""
+  swatchType: SwatchType!
+
+  """The primary color (hex code or color name)."""
+  colorOne: String
+
+  """The secondary color for gradients."""
+  colorTwo: String
+
+  """The file ID for image-based swatches."""
+  fileId: ID
+
+  """Additional metadata."""
+  metadata: JSON
+}
+
+"""Input for updating an option."""
+input ProductOptionUpdateInput {
+  """The ID of the option to update."""
+  id: ID!
+
+  """The new slug for the option."""
+  slug: String
+
+  """Display name."""
+  name: String
+
+  """The new display type."""
+  displayType: OptionDisplayType
+
+  """Nested value operations."""
+  values: ProductOptionValuesInput
+}
+
+"""Payload for option update."""
+type ProductOptionUpdatePayload {
+  """The product with updated options and variants."""
+  product: Product
+
+  """The updated option."""
+  option: ProductOption
+
+  """List of errors that occurred during the mutation."""
+  userErrors: [GenericUserError!]!
+}
+
+"""
+A value for a product option, such as "Red" for Color or "Large" for Size.
+"""
+type ProductOptionValue implements Node {
+  """The globally unique ID of the option value."""
+  id: ID!
+
+  """The URL-friendly identifier for this value."""
+  slug: String!
+
+  """Display name."""
+  name: String!
+
+  """The visual swatch for this value (if applicable)."""
+  swatch: ProductOptionSwatch
+}
+
+"""Input for creating an option value."""
+input ProductOptionValueCreateInput {
+  """The URL-friendly slug for the value."""
+  slug: String!
+
+  """Display name."""
+  name: String!
+
+  """The swatch for this value."""
+  swatch: ProductOptionSwatchInput
+}
+
+"""Input for nested value operations in option update."""
+input ProductOptionValuesInput {
+  """Values to create."""
+  create: [ProductOptionValueCreateInput!]
+
+  """Values to update."""
+  update: [ProductOptionValueUpdateInput!]
+
+  """IDs of values to delete."""
+  delete: [ID!]
+}
+
+"""Input for updating an existing option value."""
+input ProductOptionValueUpdateInput {
+  """The ID of the value to update."""
+  id: ID!
+
+  """The new slug for the value."""
+  slug: String
+
+  """Display name."""
+  name: String
+
+  """The swatch for this value."""
+  swatch: ProductOptionSwatchInput
+}
+
+"""Input for publishing a product."""
+input ProductPublishInput {
+  """The ID of the product to publish."""
+  id: ID!
+}
+
+"""Payload for product publish."""
+type ProductPublishPayload {
+  """The published product."""
+  product: Product
+
+  """List of errors that occurred during the mutation."""
+  userErrors: [GenericUserError!]!
+}
+
+"""Input for unpublishing a product."""
+input ProductUnpublishInput {
+  """The ID of the product to unpublish."""
+  id: ID!
+}
+
+"""Payload for product unpublish."""
+type ProductUnpublishPayload {
+  """The unpublished product."""
+  product: Product
+
+  """List of errors that occurred during the mutation."""
+  userErrors: [GenericUserError!]!
+}
+
+"""Input for updating a product."""
+input ProductUpdateInput {
+  """The product ID."""
+  id: ID!
+
+  """Product title."""
+  title: String
+
+  """Product description."""
+  description: DescriptionInput
+
+  """Short excerpt."""
+  excerpt: String
+
+  """SEO title."""
+  seoTitle: String
+
+  """SEO description."""
+  seoDescription: String
+}
+
+"""Payload for product update."""
+type ProductUpdatePayload {
+  """The updated product."""
+  product: Product
+
+  """List of errors that occurred during the mutation."""
+  userErrors: [GenericUserError!]!
 }
 
 type Project {
@@ -2006,42 +1088,10 @@ enum ProjectStatus {
 
 type Query {
   appsQuery: AppsQuery!
-  cartQuery: CartQuery!
-  categoryQuery: CategoryQuery!
-  listingQuery: ListingQuery!
-  customerQuery: CustomerQuery!
-  emailProfilesQuery: EmailProfilesQuery!
-  emailSettingsQuery: EmailSettingsQuery!
-  emailTemplateQuery: EmailTemplateQuery!
-  filterQuery: FilterQuery!
-  labelQuery: LabelQuery!
-  fileQuery: FileQuery!
-  orderQuery: OrderQuery!
-  crmQuery: CrmQuery!
-  paymentMethodQuery: PaymentMethodQuery!
-  paymentServiceQuery: PaymentServiceQuery!
-  productQuery: ProductQuery!
+  inventoryQuery: InventoryQuery!
+  mediaQuery: MediaQuery!
   projectQuery: ProjectQuery!
-  reviewQuery: ReviewQuery!
-  shippingMethodQuery: ShippingMethodQuery!
-  shippingServiceQuery: ShippingServiceQuery!
-  stockStatusQuery: StockStatusQuery!
-  linkQuery: LinkQuery!
-  menuQuery: MenuQuery!
-  pageQuery: PageQuery!
-  tagQuery: TagQuery!
   userQuery: UserQuery!
-  translationQuery: TranslationQuery!
-}
-
-input RejectReviewInput {
-  id: ID!
-  reason: String!
-}
-
-input ReplyToReviewInput {
-  reviewId: ID!
-  text: String!
 }
 
 input ResetPasswordInput {
@@ -2050,159 +1100,45 @@ input ResetPasswordInput {
   password: String!
 }
 
-type Review {
-  id: ID!
-  createdAt: Timestamp!
-  updatedAt: Timestamp!
-  status: ReviewStatus!
-  title: String!
-  message: String!
-  rating: Float!
-  displayName: String!
-  verifiedPurchase: Boolean
-  languageCode: String
-  product: Variant
-  customer: Customer
-  pros: String
-  cons: String
-  helpfulYes: Int!
-  helpfulNo: Int!
+"""S3-specific file data."""
+type S3ObjectData {
+  """The bucket ID where this file is stored."""
+  bucketId: ID!
+
+  """S3 object key (path within bucket)."""
+  objectKey: String!
+
+  """Content hash (SHA-256) for deduplication."""
+  contentHash: String
+
+  """ETag from S3."""
+  etag: String
+
+  """Storage class (STANDARD, GLACIER, etc)."""
+  storageClass: String!
 }
 
-type ReviewMutation {
-  create(input: CreateReviewInput!): ID!
-  edit(input: UpdateReviewInput!): Boolean!
-  approve(input: ApproveReviewInput!): Boolean!
-  reject(input: RejectReviewInput!): Boolean!
-  bulkUpdateStatus(input: BulkUpdateStatusInput!): Boolean!
-  delete(input: ID!): Boolean!
-  replyToReview(input: ReplyToReviewInput!): Boolean!
+"""Represents a selected option for a variant."""
+type SelectedOption {
+  """The option ID."""
+  optionId: ID!
+
+  """The selected value ID."""
+  optionValueId: ID!
 }
 
-type ReviewQuery {
-  findMany(input: ReviewsInput): ReviewsOutput!
-  findOne(id: ID!): Review
-}
+"""Input for selecting an option value for a variant."""
+input SelectedOptionInput {
+  """The ID of the option."""
+  optionId: ID!
 
-input ReviewsInput {
-  where: ReviewsWhereInput
-  order: String
-  page: Int
-  pageSize: Int
-}
-
-type ReviewsOutput {
-  data: [Review!]!
-  meta: CollectionMeta!
-}
-
-enum ReviewStatus {
-  PENDING
-  APPROVED
-  REJECTED
-}
-
-input ReviewsWhereInput {
-  And: [ReviewsWhereInput!]
-  Or: [ReviewsWhereInput!]
-  id: FilterV2
-  createdAt: FilterV2
-  updatedAt: FilterV2
-  status: FilterV2
-}
-
-type SearchMutation {
-  keywordGroupCreate(input: KeywordGroupCreateInput!): ID!
-  keywordGroupUpdate(input: KeywordGroupUpdateInput!): Boolean!
-  keywordGroupDelete(input: KeywordGroupDeleteInput!): Boolean!
-  keywordCreate(input: KeywordCreateInput!): Boolean!
-  keywordDelete(input: KeywordDeleteInput!): Boolean!
-  linkGroupToProduct(input: GroupProductLinkInput!): Boolean!
-  unlinkGroupFromProduct(input: GroupProductLinkInput!): Boolean!
-  synonymUpsert(input: SynonymUpsertInput!): Boolean!
-  synonymDelete(input: SynonymDeleteInput!): Boolean!
-  stopWordSet(input: StopWordSetInput!): Boolean!
-  languageConfigUpsert(input: LanguageConfigInput!): Boolean!
-}
-
-input SendTestEmailInput {
-  type: EmailTypeEnum!
-  to: String!
-}
-
-input SeoFieldsInput {
-  title: String
-  description: String
+  """The ID of the option value."""
+  optionValueId: ID!
 }
 
 type Session {
   user: User!
   jwt: String!
-}
-
-type ShippingItem {
-  createdAt: Timestamp!
-  estimatedDeliveryAt: Timestamp
-  id: ID!
-  notificationsEnabled: Boolean
-  shippingMethod: CoreShippingMethod
-  shippingPrice: Int!
-  shippingService: ShippingService
-  trackingCode: String
-  trackingData: String
-  trackingEnabled: Boolean!
-  trackingUrl: String
-}
-
-input ShippingItemWhereInput {
-  And: [ShippingItemWhereInput!]
-  Or: [ShippingItemWhereInput!]
-  id: FilterV2
-  createdAt: FilterV2
-  notificationsEnabled: FilterV2
-  estimatedDeliveryAt: FilterV2
-  fulfillmentId: FilterV2
-  orderId: FilterV2
-  shippingMethodId: FilterV2
-  shippingServiceId: FilterV2
-  trackingEnabled: FilterV2
-  trackingCode: FilterV2
-  trackingUrl: FilterV2
-}
-
-type ShippingMethodMutation {
-  create(input: CreateShippingMethodInput!): String!
-  delete(id: String!): Boolean!
-}
-
-type ShippingMethodQuery {
-  findMany: [CoreShippingMethod!]!
-  findOne(id: String!): CoreShippingMethod
-}
-
-input ShippingMethodWhereInput {
-  And: [ShippingMethodWhereInput!]
-  Or: [ShippingMethodWhereInput!]
-  code: FilterV2
-  name: FilterV2
-  serviceId: FilterV2
-}
-
-type ShippingService {
-  code: String!
-  name: String!
-  cover: File
-  methods: [CoreShippingMethod!]!
-}
-
-type ShippingServiceMutation {
-  create(input: CreateShippingServiceInput!): String!
-  delete(id: String!): Boolean!
-}
-
-type ShippingServiceQuery {
-  findMany: [ShippingService!]!
-  findOne(id: String!): ShippingService
 }
 
 input SignInInput {
@@ -2219,171 +1155,14 @@ input SignUpInput {
   timezone: String!
 }
 
-input SortRankInput {
-  prev: String!
-  next: String!
-}
-
-input SplitFulfillmentInput {
-  id: ID!
-  items: [SplitFulfillmentItemInput!]!
-}
-
-input SplitFulfillmentItemInput {
-  orderItemId: ID!
-  quantity: Int!
-}
-
-type StockStatus {
-  title: String!
-  code: String!
-}
-
-type StockStatusMutation {
-  create(input: CreateStockStatusInput!): StockStatus!
-  update(input: UpdateStockStatusInput!): StockStatus!
-  delete(code: String!): Boolean!
-}
-
-type StockStatusQuery {
-  findMany: [StockStatus!]!
-  findOne(code: String!): StockStatus
-}
-
-input StopWordSetInput {
-  word: String!
-  localeCode: String!
-  isActive: Boolean!
-}
-
-input SynonymDeleteInput {
-  term: String!
-  synonym: String!
-  localeCode: String!
-}
-
-input SynonymUpsertInput {
-  term: String!
-  synonym: String!
-  localeCode: String!
-  weight: Float!
-}
-
-type Tag {
-  id: ID!
-  slug: String!
-  title: String!
-  color: String
-}
-
-type TagMutation {
-  create(input: CreateTagInput!): ID!
-  update(input: UpdateTagInput!): Boolean!
-}
-
-type TagQuery {
-  findMany(input: TagsInput): TagsOutput!
-  findOne(id: ID!): Tag
-}
-
-input TagsInput {
-  where: TagWhereInput
-  order: String
-  page: Int
-  pageSize: Int
-}
-
-type TagsOutput {
-  data: [Tag!]!
-  meta: CollectionMeta!
-}
-
-input TagWhereInput {
-  And: [TagWhereInput!]
-  Or: [TagWhereInput!]
-  id: FilterV2
-  slug: FilterV2
+"""Type of visual swatch for option values."""
+enum SwatchType {
+  COLOR
+  GRADIENT
+  IMAGE
 }
 
 scalar Timestamp
-
-type Translation {
-  fieldValue: String!
-  fieldName: TranslationField!
-  sourceId: ID!
-  sourceType: EntityType!
-  locale: String!
-}
-
-enum TranslationField {
-  TITLE
-  DESCRIPTION_TEXT
-  DESCRIPTION_HTML
-  DESCRIPTION_JSON
-  EXCERPT_TEXT
-  SEO_TITLE
-  SEO_DESCRIPTION
-}
-
-type TranslationMutation {
-  create(input: CreateTranslationInput!): Translation!
-  update(input: UpdateTranslationInput!): Translation!
-  updateMany(input: [UpdateTranslationInput!]!): Boolean!
-}
-
-type TranslationQuery {
-  findMany(where: TranslationWhereInput!): [Translation!]!
-}
-
-input TranslationWhereInput {
-  And: [TranslationWhereInput!]
-  Or: [TranslationWhereInput!]
-  fieldValue: FilterV2
-  fieldName: FilterV2
-  sourceId: FilterV2
-  sourceType: FilterV2
-  locale: FilterV2
-}
-
-scalar Uint
-
-enum UnitSystem {
-  IMPERIAL
-  METRIC
-}
-
-input UpdateAdminNoteInput {
-  id: ID!
-  adminNote: String
-}
-
-input UpdateCategoryInput {
-  children: [ID]
-  coverId: ID
-  description: DescriptionFieldsInput
-  excerpt: String
-  gallery: [ID!]
-  id: ID!
-  includeChildrenProducts: Boolean
-  listingFilters: [CreateListingFilterInput!]
-  listingOrderBy: ListingSort
-  listingOrderByStatus: Boolean
-  listingType: ListingType
-  parentId: ID
-  products: [ID!]
-  seo: SeoFieldsInput
-  slug: String
-  status: String
-  title: String
-  labels: [ID!]
-  tags: [ID!]
-}
-
-input UpdateCategoryProductInput {
-  categoryId: ID!
-  productId: ID!
-  afterId: ID
-}
 
 input UpdateCurrencyFormatInput {
   code: String!
@@ -2394,81 +1173,12 @@ input UpdateCurrencyFormatInput {
   thousandSeparator: String
 }
 
-input UpdateCustomerInput {
-  id: ID!
-  email: String
-  language: String
-  firstName: String
-  isVerified: Boolean
-  lastName: String
-  phone: String
-  password: String
-}
-
 input UpdateEmailInput {
   email: String!
 }
 
-input UpdateEmailProfilesInput {
-  host: String
-  port: Int
-  username: String
-  password: String
-  sortIndex: Int
-}
-
-input UpdateEmailSettingsInput {
-  from: String
-  replyTo: String
-}
-
-input UpdateEmailTemplateInput {
-  template: String
-  subject: String
-  id: ID!
-}
-
-input UpdateFileInput {
-  id: ID!
-  driver: FileDriver!
-  name: String!
-  url: String
-  file: Upload!
-}
-
-input UpdateFilterInput {
-  id: ID!
-  title: String
-  isActive: Boolean
-  sortIndex: Int
-  type: FilterType
-}
-
-input UpdateFulfillmentStatusInput {
-  id: ID!
-  status: FulfillmentStatusEnum!
-  comment: String
-}
-
 input UpdateImageInput {
   image: ID!
-}
-
-input UpdateLabelInput {
-  id: ID!
-  name: String
-  slug: String
-  colorHex: String
-}
-
-input UpdateLinkInput {
-  id: ID!
-  title: String
-  slug: String
-  type: MenuNodeType
-  entryId: ID
-  parentId: ID
-  sortIndex: Int
 }
 
 input UpdateLocaleInput {
@@ -2482,149 +1192,12 @@ input UpdateLocalesInput {
   delete: [String!]!
 }
 
-input UpdateMenuInput {
-  id: ID!
-  title: String
-  items: [UpdateLinkInput!]
-  slug: String
-  status: EntityStatus
-}
-
-input UpdateOrderCurrencyInput {
-  id: ID!
-  currency: OrderCurrencyInput!
-}
-
-input UpdateOrderCustomerInput {
-  id: ID!
-  customerId: ID!
-}
-
-input UpdateOrderInput {
-  id: ID!
-  payment: OrderPaymentInfoInput
-  shipping: OrderShippingInfoInput
-}
-
-input UpdateOrderItemInput {
-  id: ID!
-  quantity: Int
-  productCostPrice: Int
-  weight: WeightInput
-}
-
-input UpdateOrderLabelsInput {
-  id: ID!
-  labels: [ID!]
-}
-
-input UpdateOrderStatusInput {
-  id: ID!
-  status: OrderStatusEnum!
-  comment: String
-}
-
-input UpdateOrderTagsInput {
-  id: ID!
-  tags: [ID!]
-  labels: [ID!]
-}
-
-input UpdatePageInput {
-  coverId: ID
-  description: DescriptionFieldsInput
-  excerpt: String
-  gallery: [ID!]
-  id: ID!
-  seo: SeoFieldsInput
-  slug: String
-  status: String
-  title: String
-  labels: [ID!]
-}
-
 input UpdatePasswordInput {
   password: String!
 }
 
-input UpdatePaymentStatusInput {
-  id: ID!
-  status: PaymentStatusEnum!
-  comment: String
-}
-
 input UpdatePhoneNumberInput {
   phoneNumber: String!
-}
-
-input UpdateProductGroupInput {
-  id: ID!
-  title: String
-  items: UpdateProductGroupItemsInput
-  isMultiple: Boolean
-  isRequired: Boolean
-  sortIndex: Int
-}
-
-input UpdateProductGroupItemInput {
-  id: ID!
-  sortIndex: Int
-  priceType: ProductGroupPriceType
-  priceAmountValue: Int
-  pricePercentageValue: Float
-  maxQuantity: Int
-}
-
-input UpdateProductGroupItemsInput {
-  create: [CreateProductGroupItemInput!]
-  update: [UpdateProductGroupItemInput!]
-  delete: [ID!]
-}
-
-input UpdateProductGroupsInput {
-  create: [CreateProductGroupInput!]
-  update: [UpdateProductGroupInput!]
-  delete: [ID!]
-}
-
-input UpdateProductInput {
-  id: ID!
-  requiresShipping: Boolean
-  title: String
-  description: DescriptionFieldsInput
-  seo: SeoFieldsInput
-  excerpt: String
-  slug: String
-  tags: [ID!]
-  labels: [ID!]
-  variants: ProductVariantsInput
-  groups: UpdateProductGroupsInput
-  status: EntityStatus
-  primaryCategory: ID
-}
-
-input UpdateProductVariantInput {
-  barcode: String
-  title: String
-  costPrice: Int
-  coverId: ID
-  categories: [ID!]
-  features: [ProductFeatureInput!]
-  gallery: [ID!]
-  id: ID!
-  oldPrice: Int
-  inListing: Boolean
-  price: Int
-  sku: String
-  slug: String
-  variantSortIndex: Int
-  stockStatus: String
-  weight: Float
-  weightUnit: WeightUnit
-  width: Float
-  length: Float
-  height: Float
-  dimensionUnit: DimensionUnit
 }
 
 input UpdateProfileInput {
@@ -2640,73 +1213,33 @@ input UpdateProjectInput {
   email: String
   country: String
   timezone: String
-  weightUnit: WeightUnit
-  unitSystem: UnitSystem
 }
-
-input UpdateReviewInput {
-  id: ID!
-  rating: Float
-  title: String
-  message: String
-  pros: String
-  cons: String
-  images: [ID!]
-  status: ReviewStatus
-  displayName: String
-  productId: ID
-  customerId: ID
-}
-
-input UpdateShippingItemInput {
-  id: ID!
-  estimatedDeliveryAt: Timestamp
-  notificationsEnabled: Boolean
-  shippingMethodId: String
-  shippingPrice: Int
-  trackingCode: String
-  trackingData: String
-  trackingEnabled: Boolean
-  trackingUrl: String
-}
-
-input UpdateStockStatusInput {
-  id: ID!
-  code: String
-  title: String
-  isAvailable: Boolean
-}
-
-input UpdateTagInput {
-  id: ID!
-  title: String
-  slug: String
-  color: String
-}
-
-input UpdateTranslationInput {
-  sourceId: ID!
-  sourceType: EntityType!
-  locale: String!
-  fieldValue: String!
-  fieldName: TranslationField!
-}
-
-scalar Upload
 
 type User {
-  createdAt: Timestamp!
+  id: ID!
   tenantId: ID!
   email: String!
   firstName: String!
-  id: String!
-  isReady: Boolean!
-  isVerified: Boolean!
-  language: String!
   lastName: String!
   phoneNumber: String
+  language: String!
   timezone: String!
+  isReady: Boolean!
+  isVerified: Boolean!
+  createdAt: Timestamp!
   updatedAt: Timestamp!
+}
+
+"""A generic user error interface for mutation responses."""
+interface UserError {
+  """The error message."""
+  message: String!
+
+  """The path to the input field that caused the error."""
+  field: [String!]
+
+  """An error code for programmatic handling."""
+  code: String
 }
 
 type UserMutation {
@@ -2730,67 +1263,410 @@ type UserQuery {
   me: User!
 }
 
-scalar Uuid
-
-type Variant {
-  barcode: String
-  categories: [Category!]!
-  containerId: ID!
-  containerTitle: String!
-  costPrice: Int
-  cover: File
-  createdAt: Timestamp!
-  features: [ProductFeature!]!
-  gallery: [File!]!
+"""
+A variant represents a specific version of a product, such as a size or color.
+"""
+type Variant implements Node {
+  """The globally unique ID of the variant."""
   id: ID!
-  inListing: Boolean
-  listingSortIndex: String
-  oldPrice: Int
-  price: Int!
+
+  """The product this variant belongs to."""
+  product: Product!
+
+  """The SKU (Stock Keeping Unit) of the variant."""
   sku: String
-  slug: String!
-  stockStatus: String!
-  title: String!
-  updatedAt: Timestamp!
-  variantSortIndex: Int!
-  weight: Float
-  weightUnit: WeightUnit
-  width: Float
-  length: Float
-  height: Float
-  dimensionUnit: DimensionUnit
-  featuresV2: [ProductFeatureV2!]!
+
+  """The external system identifier for integration purposes."""
+  externalSystem: String
+
+  """The external ID in the external system."""
+  externalId: String
+
+  """The date and time when the variant was created."""
+  createdAt: DateTime!
+
+  """The date and time when the variant was last updated."""
+  updatedAt: DateTime!
+
+  """The date and time when the variant was deleted (soft delete)."""
+  deletedAt: DateTime
+
+  """Current price for this variant."""
+  price: VariantPrice
+
+  """Price history for this variant."""
+  priceHistory(first: Int, after: String, last: Int, before: String): VariantPriceConnection!
+
+  """Current cost for this variant."""
+  cost: VariantCost
+
+  """Cost history for this variant."""
+  costHistory(first: Int, after: String, last: Int, before: String): VariantCostConnection!
+
+  """The selected option values for this variant."""
+  selectedOptions: [SelectedOption!]!
+
+  """Physical dimensions of this variant."""
+  dimensions: VariantDimensions
+
+  """Physical weight of this variant."""
+  weight: VariantWeight
+
+  """Stock levels for this variant across warehouses."""
+  stock: [WarehouseStock!]!
+
+  """Whether the variant is in stock (has quantity > 0 in any warehouse)."""
+  inStock: Boolean!
+
+  """Variant title."""
+  title: String
+
+  """Media attached to this variant (images, videos)."""
+  media: [VariantMediaItem!]!
 }
 
-input VariantsInput {
-  where: VariantWhereInput
-  order: String
-  page: Int
-  pageSize: Int
+"""A connection to a list of Variant items."""
+type VariantConnection {
+  """A list of edges."""
+  edges: [VariantEdge!]!
+
+  """Information to aid in pagination."""
+  pageInfo: PageInfo!
+
+  """The total number of variants."""
+  totalCount: Int!
 }
 
-type VariantsOutput {
-  data: [Variant!]!
-  meta: CollectionMeta!
+"""Represents the cost of a variant."""
+type VariantCost implements Node {
+  """The globally unique ID of the cost record."""
+  id: ID!
+
+  """The currency code."""
+  currency: CurrencyCode!
+
+  """The unit cost in minor units."""
+  unitCostMinor: BigInt!
+
+  """When this cost became effective."""
+  effectiveFrom: DateTime!
+
+  """When this cost stopped being effective (null if current)."""
+  effectiveTo: DateTime
+
+  """When this cost record was created."""
+  recordedAt: DateTime!
+
+  """Whether this is the current active cost."""
+  isCurrent: Boolean!
 }
 
-input VariantWhereInput {
-  And: [VariantWhereInput!]
-  Or: [VariantWhereInput!]
-  title: FilterV2
-  createdAt: FilterV2
-  features: ProductFeaturesWhereInput
-  id: FilterV2
-  oldPrice: FilterV2
-  container: ProductWhereInput
-  containerId: FilterV2
-  price: FilterV2
-  qnt: FilterV2
-  sku: FilterV2
-  slug: FilterV2
-  stockStatus: FilterV2
-  updatedAt: FilterV2
-  categoryId: FilterV2
+"""A connection to a list of VariantCost items."""
+type VariantCostConnection {
+  """A list of edges."""
+  edges: [VariantCostEdge!]!
+
+  """Information to aid in pagination."""
+  pageInfo: PageInfo!
+
+  """The total number of cost records."""
+  totalCount: Int!
+}
+
+"""An edge in a VariantCost connection."""
+type VariantCostEdge {
+  """The item at the end of the edge."""
+  node: VariantCost!
+
+  """A cursor for use in pagination."""
+  cursor: String!
+}
+
+"""Input for creating a variant with a product ID."""
+input VariantCreateInput {
+  """The ID of the product to add the variant to."""
+  productId: ID!
+
+  """The variant data."""
+  variant: VariantInput!
+}
+
+"""Payload for variant creation."""
+type VariantCreatePayload {
+  """The created variant."""
+  variant: Variant
+
+  """List of errors that occurred during the mutation."""
+  userErrors: [GenericUserError!]!
+}
+
+"""Input for deleting a variant."""
+input VariantDeleteInput {
+  """The ID of the variant to delete."""
+  id: ID!
+
+  """Whether to permanently delete the variant (hard delete)."""
+  permanent: Boolean
+}
+
+"""Payload for variant deletion."""
+type VariantDeletePayload {
+  """The ID of the deleted variant."""
+  deletedVariantId: ID
+
+  """The product the variant belonged to."""
+  product: Product
+
+  """List of errors that occurred during the mutation."""
+  userErrors: [GenericUserError!]!
+}
+
+"""Physical dimensions of a variant (stored in millimeters)."""
+type VariantDimensions {
+  """Width in millimeters."""
+  width: Int!
+
+  """Length in millimeters."""
+  length: Int!
+
+  """Height in millimeters."""
+  height: Int!
+}
+
+"""An edge in a Variant connection."""
+type VariantEdge {
+  """The item at the end of the edge."""
+  node: Variant!
+
+  """A cursor for use in pagination."""
+  cursor: String!
+}
+
+"""Input for creating a variant."""
+input VariantInput {
+  """Variant title."""
+  title: String
+
+  """The SKU for the variant."""
+  sku: String
+
+  """External system identifier."""
+  externalSystem: String
+
+  """External ID in the external system."""
+  externalId: String
+
+  """Selected option values for the variant."""
+  options: [SelectedOptionInput!]
+
+  """Physical dimensions."""
+  dimensions: DimensionsInput
+
+  """Physical weight."""
+  weight: WeightInput
+}
+
+"""Media attached to a variant with sort order."""
+type VariantMediaItem {
+  """The file from the Media service."""
+  file: File!
+
+  """Sort order index (lower = first)."""
+  sortIndex: Int!
+}
+
+"""Represents a price for a variant."""
+type VariantPrice implements Node {
+  """The globally unique ID of the price record."""
+  id: ID!
+
+  """The currency code."""
+  currency: CurrencyCode!
+
+  """The price amount in minor units (cents, kopecks, etc.)."""
+  amountMinor: BigInt!
+
+  """The compare-at price in minor units (strikethrough price)."""
+  compareAtMinor: BigInt
+
+  """When this price became effective."""
+  effectiveFrom: DateTime!
+
+  """When this price stopped being effective (null if current)."""
+  effectiveTo: DateTime
+
+  """When this price record was created."""
+  recordedAt: DateTime!
+
+  """Whether this is the current active price."""
+  isCurrent: Boolean!
+}
+
+"""A connection to a list of VariantPrice items."""
+type VariantPriceConnection {
+  """A list of edges."""
+  edges: [VariantPriceEdge!]!
+
+  """Information to aid in pagination."""
+  pageInfo: PageInfo!
+
+  """The total number of price records."""
+  totalCount: Int!
+}
+
+"""An edge in a VariantPrice connection."""
+type VariantPriceEdge {
+  """The item at the end of the edge."""
+  node: VariantPrice!
+
+  """A cursor for use in pagination."""
+  cursor: String!
+}
+
+"""Input for setting a cost on a variant."""
+input VariantSetCostInput {
+  """The ID of the variant."""
+  variantId: ID!
+
+  """The currency code."""
+  currency: CurrencyCode!
+
+  """The unit cost in minor units."""
+  unitCostMinor: BigInt!
+}
+
+"""Payload for variant cost set."""
+type VariantSetCostPayload {
+  """The created/updated cost."""
+  cost: VariantCost
+
+  """List of errors that occurred during the mutation."""
+  userErrors: [GenericUserError!]!
+}
+
+"""Input for setting variant dimensions."""
+input VariantSetDimensionsInput {
+  """The ID of the variant."""
+  variantId: ID!
+
+  """The dimensions to set."""
+  dimensions: DimensionsInput!
+}
+
+"""Payload for variant dimensions set."""
+type VariantSetDimensionsPayload {
+  """The updated variant."""
+  variant: Variant
+
+  """List of errors that occurred during the mutation."""
+  userErrors: [GenericUserError!]!
+}
+
+"""Input for setting variant media (replaces all existing media)."""
+input VariantSetMediaInput {
+  """The variant ID."""
+  variantId: ID!
+
+  """
+  File IDs in desired order (first = primary). Empty array clears all media.
+  """
+  fileIds: [ID!]!
+}
+
+"""Payload for variant set media."""
+type VariantSetMediaPayload {
+  """The updated variant."""
+  variant: Variant
+
+  """List of errors that occurred during the mutation."""
+  userErrors: [GenericUserError!]!
+}
+
+"""Input for setting a price on a variant."""
+input VariantSetPricingInput {
+  """The ID of the variant."""
+  variantId: ID!
+
+  """The currency code."""
+  currency: CurrencyCode!
+
+  """The price amount in minor units."""
+  amountMinor: BigInt!
+
+  """The compare-at price in minor units (optional)."""
+  compareAtMinor: BigInt
+}
+
+"""Payload for variant pricing set."""
+type VariantSetPricingPayload {
+  """The created/updated price."""
+  price: VariantPrice
+
+  """List of errors that occurred during the mutation."""
+  userErrors: [GenericUserError!]!
+}
+
+"""Input for setting variant SKU."""
+input VariantSetSkuInput {
+  """The ID of the variant."""
+  variantId: ID!
+
+  """The new SKU value."""
+  sku: String!
+}
+
+"""Payload for variant SKU set."""
+type VariantSetSkuPayload {
+  """The updated variant."""
+  variant: Variant
+
+  """List of errors that occurred during the mutation."""
+  userErrors: [GenericUserError!]!
+}
+
+"""Input for setting stock on a variant."""
+input VariantSetStockInput {
+  """The ID of the variant."""
+  variantId: ID!
+
+  """The warehouse ID."""
+  warehouseId: ID!
+
+  """The quantity to set."""
+  quantity: Int!
+}
+
+"""Payload for variant stock set."""
+type VariantSetStockPayload {
+  """The updated stock record."""
+  stock: WarehouseStock
+
+  """List of errors that occurred during the mutation."""
+  userErrors: [GenericUserError!]!
+}
+
+"""Input for setting variant weight."""
+input VariantSetWeightInput {
+  """The ID of the variant."""
+  variantId: ID!
+
+  """The weight to set."""
+  weight: WeightInput!
+}
+
+"""Payload for variant weight set."""
+type VariantSetWeightPayload {
+  """The updated variant."""
+  variant: Variant
+
+  """List of errors that occurred during the mutation."""
+  userErrors: [GenericUserError!]!
+}
+
+"""Physical weight of a variant (stored in grams)."""
+type VariantWeight {
+  """Weight in grams."""
+  value: Int!
 }
 
 input VerifyEmailInput {
@@ -2798,19 +1674,158 @@ input VerifyEmailInput {
   token: String!
 }
 
-type Weight {
-  weight: Float!
-  unit: WeightUnit!
+"""A warehouse represents a physical location where inventory is stored."""
+type Warehouse implements Node {
+  """The globally unique ID of the warehouse."""
+  id: ID!
+
+  """The unique code identifying this warehouse."""
+  code: String!
+
+  """The display name of the warehouse."""
+  name: String!
+
+  """Whether this is the default warehouse for the project."""
+  isDefault: Boolean!
+
+  """The date and time when the warehouse was created."""
+  createdAt: DateTime!
+
+  """The date and time when the warehouse was last updated."""
+  updatedAt: DateTime!
+
+  """Stock levels for all variants in this warehouse."""
+  stock(first: Int, after: String, last: Int, before: String): WarehouseStockConnection!
+
+  """Total number of variants stocked in this warehouse."""
+  variantsCount: Int!
 }
 
+"""A connection to a list of Warehouse items."""
+type WarehouseConnection {
+  """A list of edges."""
+  edges: [WarehouseEdge!]!
+
+  """Information to aid in pagination."""
+  pageInfo: PageInfo!
+
+  """The total number of warehouses."""
+  totalCount: Int!
+}
+
+"""Input for creating a warehouse."""
+input WarehouseCreateInput {
+  """The unique code for the warehouse."""
+  code: String!
+
+  """The display name for the warehouse."""
+  name: String!
+
+  """Whether this should be the default warehouse."""
+  isDefault: Boolean
+}
+
+"""Payload for warehouse creation."""
+type WarehouseCreatePayload {
+  """The created warehouse."""
+  warehouse: Warehouse
+
+  """List of errors that occurred during the mutation."""
+  userErrors: [GenericUserError!]!
+}
+
+"""Input for deleting a warehouse."""
+input WarehouseDeleteInput {
+  """The ID of the warehouse to delete."""
+  id: ID!
+}
+
+"""Payload for warehouse deletion."""
+type WarehouseDeletePayload {
+  """The ID of the deleted warehouse."""
+  deletedWarehouseId: ID
+
+  """List of errors that occurred during the mutation."""
+  userErrors: [GenericUserError!]!
+}
+
+"""An edge in a Warehouse connection."""
+type WarehouseEdge {
+  """The item at the end of the edge."""
+  node: Warehouse!
+
+  """A cursor for use in pagination."""
+  cursor: String!
+}
+
+"""Represents stock level for a variant in a specific warehouse."""
+type WarehouseStock implements Node {
+  """The globally unique ID of the stock record."""
+  id: ID!
+
+  """The warehouse where this stock is located."""
+  warehouse: Warehouse!
+
+  """The variant this stock record is for."""
+  variant: Variant!
+
+  """The quantity currently on hand."""
+  quantityOnHand: Int!
+
+  """The date and time when the stock was created."""
+  createdAt: DateTime!
+
+  """The date and time when the stock was last updated."""
+  updatedAt: DateTime!
+}
+
+"""A connection to a list of WarehouseStock items."""
+type WarehouseStockConnection {
+  """A list of edges."""
+  edges: [WarehouseStockEdge!]!
+
+  """Information to aid in pagination."""
+  pageInfo: PageInfo!
+
+  """The total number of stock records."""
+  totalCount: Int!
+}
+
+"""An edge in a WarehouseStock connection."""
+type WarehouseStockEdge {
+  """The item at the end of the edge."""
+  node: WarehouseStock!
+
+  """A cursor for use in pagination."""
+  cursor: String!
+}
+
+"""Input for updating a warehouse."""
+input WarehouseUpdateInput {
+  """The ID of the warehouse to update."""
+  id: ID!
+
+  """The new code for the warehouse."""
+  code: String
+
+  """The new name for the warehouse."""
+  name: String
+
+  """Whether this should be the default warehouse."""
+  isDefault: Boolean
+}
+
+"""Payload for warehouse update."""
+type WarehouseUpdatePayload {
+  """The updated warehouse."""
+  warehouse: Warehouse
+
+  """List of errors that occurred during the mutation."""
+  userErrors: [GenericUserError!]!
+}
+
+"""Input for setting weight (in grams)."""
 input WeightInput {
-  weight: Float!
-  unit: WeightUnit!
-}
-
-enum WeightUnit {
-  GR
-  KG
-  LB
-  OZ
+  """Weight in grams."""
+  value: Int!
 }
