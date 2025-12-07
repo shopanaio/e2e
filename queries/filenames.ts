@@ -155,6 +155,8 @@ export type GraphQLFileName =
   | 'client/Variant'
   | 'client/VerifyEmail'
   | 'inventory/ProductCreate'
+  | 'inventory/ProductFindOne'
+  | 'inventory/ProductFindMany'
   | 'inventory/VariantCreate'
   | 'inventory/VariantSetCost'
   | 'inventory/VariantSetDimensions'
