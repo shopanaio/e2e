@@ -1,12 +1,15 @@
 mutation VariantSetPricing($input: VariantSetPricingInput!) {
   inventoryMutation {
     variantSetPricing(input: $input) {
-      price {
+      variant {
         id
-        currency
-        amountMinor
-        compareAtMinor
-        effectiveFrom
+        price {
+          id
+          currency
+          amountMinor
+          compareAtMinor
+          effectiveFrom
+        }
       }
       userErrors {
         message

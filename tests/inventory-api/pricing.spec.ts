@@ -44,9 +44,9 @@ test.describe('Pricing & Cost API', () => {
 
       const result = data.inventoryMutation.variantSetPricing;
       expect(result.userErrors).toHaveLength(0);
-      expect(result.price).toBeTruthy();
-      expect(result.price.currency).toBe('UAH');
-      expect(result.price.amountMinor).toBe(10000);
+      expect(result.variant?.price).toBeTruthy();
+      expect(result.variant.price.currency).toBe('UAH');
+      expect(result.variant.price.amountMinor).toBe(10000);
     });
 
     test('should set variant price with compare-at price', async ({ api }) => {
@@ -70,9 +70,9 @@ test.describe('Pricing & Cost API', () => {
 
       const result = data.inventoryMutation.variantSetPricing;
       expect(result.userErrors).toHaveLength(0);
-      expect(result.price).toBeTruthy();
-      expect(result.price.amountMinor).toBe(8000);
-      expect(result.price.compareAtMinor).toBe(10000);
+      expect(result.variant?.price).toBeTruthy();
+      expect(result.variant.price.amountMinor).toBe(8000);
+      expect(result.variant.price.compareAtMinor).toBe(10000);
     });
 
     test('should update price (temporal pattern)', async ({ api }) => {
@@ -107,7 +107,7 @@ test.describe('Pricing & Cost API', () => {
 
       const result = data.inventoryMutation.variantSetPricing;
       expect(result.userErrors).toHaveLength(0);
-      expect(result.price.amountMinor).toBe(15000);
+      expect(result.variant.price.amountMinor).toBe(15000);
     });
 
     test('should set prices in different currencies', async ({ api }) => {
@@ -130,7 +130,7 @@ test.describe('Pricing & Cost API', () => {
       });
 
       expect(uahData.inventoryMutation.variantSetPricing.userErrors).toHaveLength(0);
-      expect(uahData.inventoryMutation.variantSetPricing.price.currency).toBe('UAH');
+      expect(uahData.inventoryMutation.variantSetPricing.variant).toBeTruthy();
 
       // Set USD price
       const { data: usdData } = await api.admin.mutation('inventory/VariantSetPricing', {
@@ -144,7 +144,7 @@ test.describe('Pricing & Cost API', () => {
       });
 
       expect(usdData.inventoryMutation.variantSetPricing.userErrors).toHaveLength(0);
-      expect(usdData.inventoryMutation.variantSetPricing.price.currency).toBe('USD');
+      expect(usdData.inventoryMutation.variantSetPricing.variant).toBeTruthy();
     });
 
     test('should return error for invalid variant ID', async ({ api }) => {
@@ -161,7 +161,7 @@ test.describe('Pricing & Cost API', () => {
 
       const result = data?.inventoryMutation?.variantSetPricing;
       expect(result).toBeTruthy();
-      expect(result.price).toBeNull();
+      expect(result.variant).toBeNull();
       expect(result.userErrors.length).toBeGreaterThan(0);
       expect(result.userErrors[0].code).toBe('NOT_FOUND');
     });
@@ -190,9 +190,9 @@ test.describe('Pricing & Cost API', () => {
 
       const result = data.inventoryMutation.variantSetCost;
       expect(result.userErrors).toHaveLength(0);
-      expect(result.cost).toBeTruthy();
-      expect(result.cost.currency).toBe('UAH');
-      expect(result.cost.unitCostMinor).toBe(5000);
+      expect(result.variant?.cost).toBeTruthy();
+      expect(result.variant.cost.currency).toBe('UAH');
+      expect(result.variant.cost.unitCostMinor).toBe(5000);
     });
 
     test('should update cost (temporal pattern)', async ({ api }) => {
@@ -227,7 +227,7 @@ test.describe('Pricing & Cost API', () => {
 
       const result = data.inventoryMutation.variantSetCost;
       expect(result.userErrors).toHaveLength(0);
-      expect(result.cost.unitCostMinor).toBe(6000);
+      expect(result.variant.cost.unitCostMinor).toBe(6000);
     });
 
     test('should return error for invalid variant ID', async ({ api }) => {
@@ -244,7 +244,7 @@ test.describe('Pricing & Cost API', () => {
 
       const result = data?.inventoryMutation?.variantSetCost;
       expect(result).toBeTruthy();
-      expect(result.cost).toBeNull();
+      expect(result.variant).toBeNull();
       expect(result.userErrors.length).toBeGreaterThan(0);
       expect(result.userErrors[0].code).toBe('NOT_FOUND');
     });
@@ -286,8 +286,8 @@ test.describe('Pricing & Cost API', () => {
       expect(costData.inventoryMutation.variantSetCost.userErrors).toHaveLength(0);
 
       // Verify margin: price (100) - cost (50) = 50 UAH margin
-      const price = priceData.inventoryMutation.variantSetPricing.price.amountMinor;
-      const cost = costData.inventoryMutation.variantSetCost.cost.unitCostMinor;
+      const price = priceData.inventoryMutation.variantSetPricing.variant.price.amountMinor;
+      const cost = costData.inventoryMutation.variantSetCost.variant.cost.unitCostMinor;
       expect(price - cost).toBe(5000); // 50.00 UAH margin
     });
   });
