@@ -34,9 +34,96 @@ type AppsQuery {
 
 scalar BigInt
 
+"""Filter operators for Boolean fields"""
+input BooleanFilter {
+  """Equals"""
+  _eq: Boolean
+
+  """Not equals"""
+  _neq: Boolean
+
+  """Is null"""
+  _is: Boolean
+
+  """Is not null"""
+  _isNot: Boolean
+}
+
+"""A bucket represents an S3 storage bucket for a project."""
+type Bucket {
+  """The globally unique ID of the bucket."""
+  id: ID!
+
+  """S3 bucket name."""
+  bucketName: String!
+
+  """AWS region."""
+  region: String!
+
+  """Bucket status (active, archived, etc)."""
+  status: String!
+
+  """Priority for bucket selection."""
+  priority: Int!
+
+  """Custom endpoint URL (for S3-compatible storage)."""
+  endpointUrl: String
+
+  """The date and time when the bucket was created."""
+  createdAt: DateTime!
+
+  """The date and time when the bucket was last updated."""
+  updatedAt: DateTime!
+}
+
+"""Input for creating a bucket."""
+input BucketCreateInput {
+  """S3 bucket name (must be unique)."""
+  bucketName: String!
+
+  """AWS region (default: us-east-1)."""
+  region: String
+
+  """Bucket status (default: active)."""
+  status: String
+
+  """Priority for bucket selection (default: 0)."""
+  priority: Int
+
+  """Custom endpoint URL (for S3-compatible storage)."""
+  endpointUrl: String
+}
+
+"""Payload for bucket creation."""
+type BucketCreatePayload {
+  """The created bucket."""
+  bucket: Bucket
+
+  """List of errors that occurred during the mutation."""
+  userErrors: [GenericUserError!]!
+}
+
+type CollectionMeta {
+  page: Int!
+  pageSize: Int!
+  count: Int!
+  total: Int!
+  pageCount: Int!
+}
+
 input CreateApiKeyInput {
   name: String!
   dueDate: Timestamp
+}
+
+input CreateCustomerInput {
+  email: String!
+  firstName: String!
+  lastName: String!
+  language: String!
+  phone: String
+  password: String
+  isVerified: Boolean!
 }
 
 input CreateLocaleInput {
@@ -81,7 +168,83 @@ enum CurrencyCode {
   EUR
 }
 
+type Customer {
+  createdAt: Timestamp!
+  email: String!
+  firstName: String!
+  id: ID!
+  isBlocked: Boolean
+  isVerified: Boolean!
+  lastName: String!
+  language: String
+  phone: String
+  updatedAt: Timestamp!
+}
+
+type CustomerMutation {
+  create(input: CreateCustomerInput!): ID!
+  update(input: UpdateCustomerInput!): Boolean!
+  delete(id: ID!): Boolean!
+  archive(id: ID!): Boolean!
+  deleteMany(ids: [ID!]!): [Boolean!]!
+  archiveMany(ids: [ID!]!): [Boolean!]!
+}
+
+type CustomerQuery {
+  findOne(id: ID!): Customer
+  findMany(input: CustomersInput): CustomersOutput!
+}
+
+input CustomersInput {
+  page: Int!
+  pageSize: Int!
+  sortField: String
+  sortOrder: String
+  search: String
+}
+
+type CustomersOutput {
+  data: [Customer!]!
+  meta: CollectionMeta!
+}
+
 scalar DateTime
+
+"""Filter operators for DateTime fields"""
+input DateTimeFilter {
+  """Equals"""
+  _eq: DateTime
+
+  """Not equals"""
+  _neq: DateTime
+
+  """Greater than (after)"""
+  _gt: DateTime
+
+  """Greater than or equal (on or after)"""
+  _gte: DateTime
+
+  """Less than (before)"""
+  _lt: DateTime
+
+  """Less than or equal (on or before)"""
+  _lte: DateTime
+
+  """In array"""
+  _in: [DateTime!]
+
+  """Not in array"""
+  _notIn: [DateTime!]
+
+  """Is null"""
+  _is: Boolean
+
+  """Is not null"""
+  _isNot: Boolean
+
+  """Between range (inclusive)"""
+  _between: [DateTime!]
+}
 
 """Product description in multiple formats."""
 type Description {
@@ -187,18 +350,6 @@ type File implements Node {
   externalData: ExternalMediaData
 }
 
-"""A connection to a list of File items."""
-type FileConnection {
-  """A list of edges."""
-  edges: [FileEdge!]!
-
-  """Information to aid in pagination."""
-  pageInfo: PageInfo!
-
-  """The total number of files."""
-  totalCount: Int!
-}
-
 """Input for creating an external media file (YouTube, Vimeo, etc)."""
 input FileCreateExternalInput {
   """Provider type."""
@@ -262,15 +413,6 @@ type FileDeletePayload {
   userErrors: [GenericUserError!]!
 }
 
-"""An edge in a File connection."""
-type FileEdge {
-  """The item at the end of the edge."""
-  node: File!
-
-  """A cursor for use in pagination."""
-  cursor: String!
-}
-
 """Provider type for files."""
 enum FileProvider {
   """File stored in S3"""
@@ -325,43 +467,13 @@ input FileUploadFromUrlInput {
   idempotencyKey: String
 }
 
-"""Input for uploading a file (direct S3 upload result)."""
-input FileUploadInput {
-  """S3 object key."""
-  objectKey: String!
-
-  """Bucket ID."""
-  bucketId: ID!
-
-  """MIME type."""
-  mimeType: String
-
-  """File extension."""
-  ext: String
-
-  """Size in bytes."""
-  sizeBytes: BigInt!
-
-  """Original filename."""
-  originalName: String
-
-  """Image width in pixels."""
-  width: Int
-
-  """Image height in pixels."""
-  height: Int
-
-  """Duration in milliseconds."""
-  durationMs: Int
+"""Input for uploading a file via multipart form data."""
+input FileUploadMultipartInput {
+  """The file to upload."""
+  file: Upload!
 
   """Alt text for accessibility."""
   altText: String
-
-  """Content hash (SHA-256)."""
-  contentHash: String
-
-  """ETag from S3."""
-  etag: String
 
   """Idempotency key for deduplication."""
   idempotencyKey: String
@@ -376,6 +488,42 @@ type FileUploadPayload {
   userErrors: [GenericUserError!]!
 }
 
+"""Filter operators for Float fields"""
+input FloatFilter {
+  """Equals"""
+  _eq: Float
+
+  """Not equals"""
+  _neq: Float
+
+  """Greater than"""
+  _gt: Float
+
+  """Greater than or equal"""
+  _gte: Float
+
+  """Less than"""
+  _lt: Float
+
+  """Less than or equal"""
+  _lte: Float
+
+  """In array"""
+  _in: [Float!]
+
+  """Not in array"""
+  _notIn: [Float!]
+
+  """Is null"""
+  _is: Boolean
+
+  """Is not null"""
+  _isNot: Boolean
+
+  """Between range (inclusive)"""
+  _between: [Float!]
+}
+
 input ForgotPasswordInput {
   email: String!
 }
@@ -385,6 +533,27 @@ type GenericUserError implements UserError {
   message: String!
   field: [String!]
   code: String
+}
+
+"""Filter operators for ID fields"""
+input IDFilter {
+  """Equals"""
+  _eq: ID
+
+  """Not equals"""
+  _neq: ID
+
+  """In array"""
+  _in: [ID!]
+
+  """Not in array"""
+  _notIn: [ID!]
+
+  """Is null"""
+  _is: Boolean
+
+  """Is not null"""
+  _isNot: Boolean
 }
 
 type InstalledApp {
@@ -397,8 +566,44 @@ type InstalledApp {
   meta: JSON
 }
 
+"""Filter operators for Int fields"""
+input IntFilter {
+  """Equals"""
+  _eq: Int
+
+  """Not equals"""
+  _neq: Int
+
+  """Greater than"""
+  _gt: Int
+
+  """Greater than or equal"""
+  _gte: Int
+
+  """Less than"""
+  _lt: Int
+
+  """Less than or equal"""
+  _lte: Int
+
+  """In array"""
+  _in: [Int!]
+
+  """Not in array"""
+  _notIn: [Int!]
+
+  """Is null"""
+  _is: Boolean
+
+  """Is not null"""
+  _isNot: Boolean
+
+  """Between range (inclusive)"""
+  _between: [Int!]
+}
+
 type InventoryMutation {
-  productCreate(input: ProductCreateInput!): ProductCreatePayload!
+  productCreate: ProductCreatePayload!
   productUpdate(input: ProductUpdateInput!): ProductUpdatePayload!
   productDelete(input: ProductDeleteInput!): ProductDeletePayload!
   productPublish(input: ProductPublishInput!): ProductPublishPayload!
@@ -446,7 +651,18 @@ type InventoryQuery {
   warehouse(id: ID!): Warehouse
 
   """Get all warehouses"""
-  warehouses(first: Int, after: String, last: Int, before: String): WarehouseConnection!
+  warehouses(
+    first: Int
+    after: String
+    last: Int
+    before: String
+
+    """Filter conditions"""
+    where: WarehouseWhereInput
+
+    """Sort order"""
+    orderBy: [WarehouseOrderByInput!]
+  ): WarehouseConnection!
 }
 
 input InviteInput {
@@ -471,7 +687,8 @@ type MediaDimensions {
 }
 
 type MediaMutation {
-  fileUpload(input: FileUploadInput!): FileUploadPayload!
+  bucketCreate(input: BucketCreateInput!): BucketCreatePayload!
+  fileUpload(input: FileUploadMultipartInput!): FileUploadPayload!
   fileUploadFromUrl(input: FileUploadFromUrlInput!): FileUploadPayload!
   fileCreateExternal(input: FileCreateExternalInput!): FileCreateExternalPayload!
   fileUpdate(input: FileUpdateInput!): FileUpdatePayload!
@@ -487,15 +704,13 @@ type MediaQuery {
 
   """Get a file by ID"""
   file(id: ID!): File
-
-  """Get files with Relay-style pagination"""
-  files(first: Int, after: String, last: Int, before: String): FileConnection!
 }
 
 type Mutation {
   appsMutation: AppsMutation!
   inventoryMutation: InventoryMutation!
   mediaMutation: MediaMutation!
+  customerMutation: CustomerMutation!
   projectMutation: ProjectMutation!
   userMutation: UserMutation!
 }
@@ -534,6 +749,9 @@ type PageInfo {
 type Product implements Node {
   """The globally unique ID of the product."""
   id: ID!
+
+  """The URL-friendly handle for the product."""
+  handle: String
 
   """
   The date and time when the product was published, or null if unpublished.
@@ -590,33 +808,6 @@ type ProductConnection {
 
   """The total number of products."""
   totalCount: Int!
-}
-
-"""Input for creating a product."""
-input ProductCreateInput {
-  """Product title."""
-  title: String!
-
-  """Product description."""
-  description: DescriptionInput
-
-  """Short excerpt."""
-  excerpt: String
-
-  """SEO title."""
-  seoTitle: String
-
-  """SEO description."""
-  seoDescription: String
-
-  """Initial variants to create with the product."""
-  variants: [VariantInput!]
-
-  """Initial options to create with the product."""
-  options: [ProductOptionCreateInput!]
-
-  """Whether to publish the product immediately."""
-  publish: Boolean
 }
 
 """Payload for product creation."""
@@ -715,6 +906,18 @@ type ProductFeatureDeletePayload {
 
   """List of errors that occurred during the mutation."""
   userErrors: [GenericUserError!]!
+}
+
+"""Input for creating a feature during product creation."""
+input ProductFeatureInput {
+  """The URL-friendly slug for the feature."""
+  slug: String!
+
+  """Display name."""
+  name: String!
+
+  """The values for this feature."""
+  values: [ProductFeatureValueCreateInput!]!
 }
 
 """Input for updating a feature."""
@@ -1017,6 +1220,9 @@ input ProductUpdateInput {
   """The product ID."""
   id: ID!
 
+  """The URL-friendly handle for the product."""
+  handle: String
+
   """Product title."""
   title: String
 
@@ -1090,6 +1296,7 @@ type Query {
   appsQuery: AppsQuery!
   inventoryQuery: InventoryQuery!
   mediaQuery: MediaQuery!
+  customerQuery: CustomerQuery!
   projectQuery: ProjectQuery!
   userQuery: UserQuery!
 }
@@ -1155,6 +1362,57 @@ input SignUpInput {
   timezone: String!
 }
 
+"""Sort direction"""
+enum SortDirection {
+  asc
+  desc
+}
+
+"""Filter operators for String fields"""
+input StringFilter {
+  """Equals"""
+  _eq: String
+
+  """Not equals"""
+  _neq: String
+
+  """In array"""
+  _in: [String!]
+
+  """Not in array"""
+  _notIn: [String!]
+
+  """Is null"""
+  _is: Boolean
+
+  """Is not null"""
+  _isNot: Boolean
+
+  """Contains substring (case-sensitive)"""
+  _contains: String
+
+  """Contains substring (case-insensitive)"""
+  _containsi: String
+
+  """Does not contain substring (case-sensitive)"""
+  _notContains: String
+
+  """Does not contain substring (case-insensitive)"""
+  _notContainsi: String
+
+  """Starts with (case-sensitive)"""
+  _startsWith: String
+
+  """Starts with (case-insensitive)"""
+  _startsWithi: String
+
+  """Ends with (case-sensitive)"""
+  _endsWith: String
+
+  """Ends with (case-insensitive)"""
+  _endsWithi: String
+}
+
 """Type of visual swatch for option values."""
 enum SwatchType {
   COLOR
@@ -1171,6 +1429,17 @@ input UpdateCurrencyFormatInput {
   symbolRight: String
   decimalSeparator: String
   thousandSeparator: String
+}
+
+input UpdateCustomerInput {
+  id: ID!
+  email: String
+  language: String
+  firstName: String
+  isVerified: Boolean
+  lastName: String
+  phone: String
+  password: String
 }
 
 input UpdateEmailInput {
@@ -1214,6 +1483,8 @@ input UpdateProjectInput {
   country: String
   timezone: String
 }
+
+scalar Upload
 
 type User {
   id: ID!
@@ -1272,6 +1543,12 @@ type Variant implements Node {
 
   """The product this variant belongs to."""
   product: Product!
+
+  """Whether this is the default variant for the product."""
+  isDefault: Boolean!
+
+  """The URL-friendly handle for the variant (generated from options)."""
+  handle: String!
 
   """The SKU (Stock Keeping Unit) of the variant."""
   sku: String
@@ -1456,8 +1733,8 @@ input VariantInput {
   """External ID in the external system."""
   externalId: String
 
-  """Selected option values for the variant."""
-  options: [SelectedOptionInput!]
+  """Selected option values for the variant (required)."""
+  options: [SelectedOptionInput!]!
 
   """Physical dimensions."""
   dimensions: DimensionsInput
@@ -1537,8 +1814,8 @@ input VariantSetCostInput {
 
 """Payload for variant cost set."""
 type VariantSetCostPayload {
-  """The created/updated cost."""
-  cost: VariantCost
+  """The updated variant."""
+  variant: Variant
 
   """List of errors that occurred during the mutation."""
   userErrors: [GenericUserError!]!
@@ -1599,8 +1876,8 @@ input VariantSetPricingInput {
 
 """Payload for variant pricing set."""
 type VariantSetPricingPayload {
-  """The created/updated price."""
-  price: VariantPrice
+  """The updated variant."""
+  variant: Variant
 
   """List of errors that occurred during the mutation."""
   userErrors: [GenericUserError!]!
@@ -1638,8 +1915,8 @@ input VariantSetStockInput {
 
 """Payload for variant stock set."""
 type VariantSetStockPayload {
-  """The updated stock record."""
-  stock: WarehouseStock
+  """The updated variant."""
+  variant: Variant
 
   """List of errors that occurred during the mutation."""
   userErrors: [GenericUserError!]!
@@ -1713,6 +1990,27 @@ type WarehouseConnection {
   totalCount: Int!
 }
 
+"""Relay-style pagination input for Warehouse"""
+input WarehouseConnectionInput {
+  """Returns the first n items"""
+  first: Int
+
+  """Returns items after this cursor"""
+  after: String
+
+  """Returns the last n items"""
+  last: Int
+
+  """Returns items before this cursor"""
+  before: String
+
+  """Filter conditions"""
+  where: WarehouseWhereInput
+
+  """Sort order"""
+  orderBy: [WarehouseOrderByInput!]
+}
+
 """Input for creating a warehouse."""
 input WarehouseCreateInput {
   """The unique code for the warehouse."""
@@ -1756,6 +2054,36 @@ type WarehouseEdge {
 
   """A cursor for use in pagination."""
   cursor: String!
+}
+
+"""Ordering configuration for Warehouse"""
+input WarehouseOrderByInput {
+  """Field to order by"""
+  field: WarehouseOrderField!
+
+  """Sort direction"""
+  order: SortDirection!
+}
+
+"""Fields available for sorting Warehouse"""
+enum WarehouseOrderField {
+  """Sort by id"""
+  id
+
+  """Sort by code"""
+  code
+
+  """Sort by name"""
+  name
+
+  """Sort by isDefault"""
+  isDefault
+
+  """Sort by createdAt"""
+  createdAt
+
+  """Sort by updatedAt"""
+  updatedAt
 }
 
 """Represents stock level for a variant in a specific warehouse."""
@@ -1822,6 +2150,36 @@ type WarehouseUpdatePayload {
 
   """List of errors that occurred during the mutation."""
   userErrors: [GenericUserError!]!
+}
+
+"""Filter conditions for Warehouse"""
+input WarehouseWhereInput {
+  """Logical AND of multiple conditions"""
+  _and: [WarehouseWhereInput!]
+
+  """Logical OR of multiple conditions"""
+  _or: [WarehouseWhereInput!]
+
+  """Negate the condition"""
+  _not: WarehouseWhereInput
+
+  """Filter by id"""
+  id: IDFilter
+
+  """Filter by code"""
+  code: StringFilter
+
+  """Filter by name"""
+  name: StringFilter
+
+  """Filter by isDefault"""
+  isDefault: BooleanFilter
+
+  """Filter by createdAt"""
+  createdAt: DateTimeFilter
+
+  """Filter by updatedAt"""
+  updatedAt: DateTimeFilter
 }
 
 """Input for setting weight (in grams)."""
