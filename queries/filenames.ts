@@ -173,6 +173,7 @@ export type GraphQLFileName =
   | 'inventory/WarehouseDelete'
   | 'inventory/WarehouseFindMany'
   | 'inventory/WarehouseFindOne'
+  | 'inventory/WarehouseStockFindMany'
   | 'inventory/WarehouseUpdate'
   | 'media/BucketCreate'
   | 'media/FileCreateExternal'
