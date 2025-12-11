@@ -1,5 +1,12 @@
 import { test } from '@fixtures/base.extend';
 import { expect } from '@playwright/test';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+// Test image paths
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const TEST_IMAGE_1 = path.resolve(__dirname, '../../fixtures/images/lamp.jpg');
+const TEST_IMAGE_2 = path.resolve(__dirname, '../../fixtures/images/vase.jpg');
 
 test.describe('Variant Media API', () => {
   test.beforeEach(async ({ api }) => {
@@ -33,10 +40,7 @@ test.describe('Variant Media API', () => {
       }
 
       // Upload a file using media API
-      const file = await api.admin.file.uploadFromUrl(
-        'https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/PNG_transparency_demonstration_1.png/280px-PNG_transparency_demonstration_1.png',
-        'Test product image',
-      );
+      const file = await api.admin.file.uploadFile(TEST_IMAGE_1, 'Test product image');
       expect(file.id).toBeTruthy();
 
       // Set media on variant
@@ -65,28 +69,18 @@ test.describe('Variant Media API', () => {
       }
 
       // Upload multiple files
-      const file1 = await api.admin.file.uploadFromUrl(
-        'https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/PNG_transparency_demonstration_1.png/280px-PNG_transparency_demonstration_1.png',
-      );
-
-      const file2 = await api.admin.file.uploadFromUrl(
-        'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/Good_Food_Display_-_NCI_Visuals_Online.jpg/320px-Good_Food_Display_-_NCI_Visuals_Online.jpg',
-      );
-
-      const file3 = await api.admin.file.uploadFromUrl(
-        'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Camponotus_flavomarginatus_ant.jpg/320px-Camponotus_flavomarginatus_ant.jpg',
-      );
+      const file1 = await api.admin.file.uploadFile(TEST_IMAGE_1);
+      const file2 = await api.admin.file.uploadFile(TEST_IMAGE_2);
 
       expect(file1.id).toBeTruthy();
       expect(file2.id).toBeTruthy();
-      expect(file3.id).toBeTruthy();
 
       // Set media on variant
       const { data } = await api.admin.mutation('inventory/VariantSetMedia', {
         variables: {
           input: {
             variantId,
-            fileIds: [file1.id, file2.id, file3.id],
+            fileIds: [file1.id, file2.id],
           },
         },
       });
@@ -106,9 +100,7 @@ test.describe('Variant Media API', () => {
       }
 
       // First, add some media
-      const file = await api.admin.file.uploadFromUrl(
-        'https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/PNG_transparency_demonstration_1.png/280px-PNG_transparency_demonstration_1.png',
-      );
+      const file = await api.admin.file.uploadFile(TEST_IMAGE_1);
 
       await api.admin.mutation('inventory/VariantSetMedia', {
         variables: {
@@ -144,9 +136,7 @@ test.describe('Variant Media API', () => {
       }
 
       // First set - file1
-      const file1 = await api.admin.file.uploadFromUrl(
-        'https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/PNG_transparency_demonstration_1.png/280px-PNG_transparency_demonstration_1.png',
-      );
+      const file1 = await api.admin.file.uploadFile(TEST_IMAGE_1);
 
       await api.admin.mutation('inventory/VariantSetMedia', {
         variables: {
@@ -158,9 +148,7 @@ test.describe('Variant Media API', () => {
       });
 
       // Second set - replace with file2
-      const file2 = await api.admin.file.uploadFromUrl(
-        'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/Good_Food_Display_-_NCI_Visuals_Online.jpg/320px-Good_Food_Display_-_NCI_Visuals_Online.jpg',
-      );
+      const file2 = await api.admin.file.uploadFile(TEST_IMAGE_2);
 
       const { data } = await api.admin.mutation('inventory/VariantSetMedia', {
         variables: {
@@ -178,9 +166,7 @@ test.describe('Variant Media API', () => {
 
     test('should return error for invalid variant ID', async ({ api }) => {
       // Upload a file first
-      const file = await api.admin.file.uploadFromUrl(
-        'https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/PNG_transparency_demonstration_1.png/280px-PNG_transparency_demonstration_1.png',
-      );
+      const file = await api.admin.file.uploadFile(TEST_IMAGE_1);
 
       const { data } = await api.admin.mutation('inventory/VariantSetMedia', {
         variables: {
@@ -206,13 +192,9 @@ test.describe('Variant Media API', () => {
         return;
       }
 
-      // Upload files in specific order
-      const file1 = await api.admin.file.uploadFromUrl(
-        'https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/PNG_transparency_demonstration_1.png/280px-PNG_transparency_demonstration_1.png',
-      );
-      const file2 = await api.admin.file.uploadFromUrl(
-        'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/Good_Food_Display_-_NCI_Visuals_Online.jpg/320px-Good_Food_Display_-_NCI_Visuals_Online.jpg',
-      );
+      // Upload files
+      const file1 = await api.admin.file.uploadFile(TEST_IMAGE_1);
+      const file2 = await api.admin.file.uploadFile(TEST_IMAGE_2);
 
       // Set with specific order: file2 first, then file1
       const { data } = await api.admin.mutation('inventory/VariantSetMedia', {
