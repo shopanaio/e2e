@@ -12,7 +12,7 @@ function decodeCursor<T = unknown>(cursor: string): T {
   return JSON.parse(json) as T;
 }
 
-export type SeekValue = { field: string; order: string; value: unknown };
+export type SeekValue = { field: string; direction: string; value: unknown };
 
 /** Order direction for the new API format */
 export type OrderDirection = 'asc' | 'desc' | 'ASC' | 'DESC';
@@ -20,7 +20,7 @@ export type OrderDirection = 'asc' | 'desc' | 'ASC' | 'DESC';
 /** Single order by input */
 export interface OrderByInput<TField extends string = string> {
   field: TField;
-  order: OrderDirection;
+  direction: OrderDirection;
 }
 
 /** Connection edge with generic node type */
@@ -307,7 +307,7 @@ export function createConnectionPaginationTests<
           // First seek field should match the primary sort field
           const primarySort = sortCase.orderBy[0];
           expect(decoded.seek[0].field).toBe(primarySort.field);
-          expect(decoded.seek[0].order.toLowerCase()).toBe(primarySort.order.toLowerCase());
+          expect(decoded.seek[0].direction.toLowerCase()).toBe(primarySort.direction.toLowerCase());
 
           // Last seek field should be 'id' for stable pagination
           expect(decoded.seek[decoded.seek.length - 1].field.toLowerCase()).toBe('id');

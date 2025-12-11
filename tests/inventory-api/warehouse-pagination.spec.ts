@@ -58,32 +58,32 @@ createConnectionPaginationTests<ApiWarehouse>({
   sortCases: [
     {
       name: 'code ASC',
-      orderBy: [{ field: 'code', order: 'asc' }],
+      orderBy: [{ field: 'code', direction: 'asc' }],
       sortExpected: (items) => [...items].sort((a, b) => a.code.localeCompare(b.code)),
     },
     {
       name: 'code DESC',
-      orderBy: [{ field: 'code', order: 'desc' }],
+      orderBy: [{ field: 'code', direction: 'desc' }],
       sortExpected: (items) => [...items].sort((a, b) => b.code.localeCompare(a.code)),
     },
     {
       name: 'name ASC',
-      orderBy: [{ field: 'name', order: 'asc' }],
+      orderBy: [{ field: 'name', direction: 'asc' }],
       sortExpected: (items) => [...items].sort((a, b) => a.name.localeCompare(b.name)),
     },
     {
       name: 'name DESC',
-      orderBy: [{ field: 'name', order: 'desc' }],
+      orderBy: [{ field: 'name', direction: 'desc' }],
       sortExpected: (items) => [...items].sort((a, b) => b.name.localeCompare(a.name)),
     },
     {
       name: 'createdAt ASC',
-      orderBy: [{ field: 'createdAt', order: 'asc' }],
+      orderBy: [{ field: 'createdAt', direction: 'asc' }],
       sortExpected: (items) => [...items].sort((a, b) => a.createdAt.localeCompare(b.createdAt)),
     },
     {
       name: 'createdAt DESC',
-      orderBy: [{ field: 'createdAt', order: 'desc' }],
+      orderBy: [{ field: 'createdAt', direction: 'desc' }],
       sortExpected: (items) => [...items].sort((a, b) => b.createdAt.localeCompare(a.createdAt)),
     },
   ],

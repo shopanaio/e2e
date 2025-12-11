@@ -2062,7 +2062,7 @@ input WarehouseOrderByInput {
   field: WarehouseOrderField!
 
   """Sort direction"""
-  order: SortDirection!
+  direction: SortDirection!
 }
 
 """Fields available for sorting Warehouse"""
