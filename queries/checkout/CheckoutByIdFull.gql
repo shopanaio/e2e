@@ -37,6 +37,9 @@ query CheckoutByIdFull($id: ID!) {
         email
         phone
         countryCode
+        firstName
+        lastName
+        middleName
         customer { id }
       }
       customerNote
@@ -46,12 +49,12 @@ query CheckoutByIdFull($id: ID!) {
         purchasableId
         sku
         title
-        purchasable {
-          ...on PurchasableSnapshot {
-            snapshot
-          }
-        }
         imageSrc
+        tag {
+          id
+          slug
+          unique
+        }
         children {
           id
         }
@@ -81,6 +84,14 @@ query CheckoutByIdFull($id: ID!) {
             currencyCode
           }
         }
+        purchasableSnapshot
+      }
+      tags {
+        id
+        slug
+        unique
+        createdAt
+        updatedAt
       }
       deliveryGroups {
         id
@@ -93,20 +104,26 @@ query CheckoutByIdFull($id: ID!) {
           countryCode
           provinceCode
           postalCode
-          email
+          data
+        }
+        recipient {
           firstName
           lastName
-          data
+          middleName
+          email
+          phone
         }
         deliveryMethods {
           code
           deliveryMethodType
-          provider { code data }
+          provider { code }
+          data
         }
         selectedDeliveryMethod {
           code
           deliveryMethodType
-          provider { code data }
+          provider { code }
+          data
         }
         estimatedCost {
           amount { amount currencyCode }
@@ -116,6 +133,24 @@ query CheckoutByIdFull($id: ID!) {
       appliedPromoCodes {
         code
         appliedAt
+      }
+      payment {
+        paymentMethods {
+          code
+          provider { code }
+          flow
+          data
+        }
+        selectedPaymentMethod {
+          code
+          provider { code }
+          flow
+          data
+        }
+        payableAmount {
+          amount
+          currencyCode
+        }
       }
     }
   }

@@ -38,7 +38,7 @@ function collectGraphQLFiles(dir) {
 collectGraphQLFiles(ROOT_DIR);
 
 // Generate the TypeScript file content without a separate filePaths variable.
-const tsOutput = `// ⚠️ This file was auto-generated. Do not edit manually.
+const tsOutput = `
 
 export type GraphQLFileName =
 ${entries.map(({ key }) => `  | '${key}'`).join('\n')};

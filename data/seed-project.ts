@@ -1,294 +1,356 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
-  ApiFeatureGroup,
   ApiProduct,
   DimensionUnit,
   EntityStatus,
-  FeatureStyleType,
   ListingSort,
   ListingType,
   ReviewStatus,
   WeightUnit,
 } from '@codegen/admin-gql';
 import { TenantApiFixture } from '@fixtures/admin/api';
-import { CATEGORIES, TAGS, FEATURE_GROUPS, PRODUCTS, REVIEW_TEMPLATES } from './seed-config';
+import { CategoryData, TagData, ProductDataWithFeatures } from './seed-data';
+import { slugify } from '@utils/transliterate';
+import path from 'path';
+import fs from 'fs';
 
-// Функция генерации slug'а варианта из названий фич
-function generateVariantSlug(productSlug: string, featureValues: string[]): string {
-  return `${productSlug}_${featureValues
-    .map((val) => val.toLowerCase())
-    .join('_')}`;
+export interface ReviewTemplate {
+  rating: number;
+  title: string;
+  message: string;
+  pros: string;
+  cons: string;
 }
 
-// Функция создания категорий
-export async function seedCategories(api: TenantApiFixture): Promise<Record<string, string>> {
+/**
+ * Upload images from images directory recursively.
+ * Returns a map of image filename to file ID.
+ */
+export async function uploadImages(api: TenantApiFixture, dataDir: string): Promise<Record<string, string>> {
+  console.log('🖼️  Starting to upload images...');
+  const imageMap: Record<string, string> = {};
+
+  const imagesDir = path.join(dataDir, 'images');
+
+  if (!fs.existsSync(imagesDir)) {
+    console.log('⚠️  Images directory not found, skipping image upload');
+    return imageMap;
+  }
+
+  // Recursively find all image files
+  const findImages = (dir: string): string[] => {
+    const results: string[] = [];
+    const files = fs.readdirSync(dir);
+
+    for (const file of files) {
+      const filePath = path.join(dir, file);
+      const stat = fs.statSync(filePath);
+
+      if (stat.isDirectory()) {
+        results.push(...findImages(filePath));
+      } else {
+        const ext = path.extname(file).toLowerCase();
+        if (['.jpg', '.jpeg', '.png', '.gif', '.webp'].includes(ext)) {
+          results.push(filePath);
+        }
+      }
+    }
+
+    return results;
+  };
+
+  const imageFiles = findImages(imagesDir);
+  console.log(`Found ${imageFiles.length} images to upload`);
+
+  for (const filePath of imageFiles) {
+    try {
+      const fileId = await api.file.createFromFile(filePath);
+
+      // Store by filename without extension (to match with product slugs)
+      const fileName = path.basename(filePath);
+      const baseName = path.basename(fileName, path.extname(fileName));
+      imageMap[baseName] = fileId;
+
+      console.log(`✓ Uploaded image: ${fileName} -> ${fileId}`);
+    } catch (error: any) {
+      console.log(`Failed to upload image ${path.basename(filePath)}, continuing...`, error.message);
+      continue;
+    }
+  }
+
+  console.log(`🖼️  Finished uploading images. Uploaded: ${Object.keys(imageMap).length}`);
+  return imageMap;
+}
+
+export async function seedCategories(api: TenantApiFixture, categories: CategoryData[]): Promise<Record<string, string>> {
+  console.log('🏷️ Starting to seed categories...');
   const categoryMap: Record<string, string> = {};
 
-  console.log('🏷️  Создание категорий...');
-
-  for (const categoryData of CATEGORIES) {
-    // Создаем родительскую категорию
-    const category = await api.category.create({
-      input: {
-        title: categoryData.title,
-        slug: categoryData.slug,
-        description: {
-          html: `<p>${categoryData.description}</p>`,
-          json: JSON.stringify({ content: categoryData.description }),
-          text: categoryData.description,
-        },
-        status: EntityStatus.Published,
-        listingType: ListingType.Manual,
-        includeChildrenProducts: false,
-        listingOrderByStatus: false,
-        listingFilters: [],
-        listingOrderBy: ListingSort.Custom,
-      },
-    });
-
-    categoryMap[categoryData.slug] = category.id;
-    console.log(`   ✅ Создана категория: ${categoryData.title}`);
-
-    // Создаем дочерние категории
-    if (categoryData.children) {
-      for (const childTitle of categoryData.children) {
-        const childSlug = `${categoryData.slug}-${childTitle.toLowerCase().replace(/\s+/g, '-')}`;
-        const childCategory = await api.category.create({
-          input: {
-            title: childTitle,
-            slug: childSlug,
-            parentId: category.id,
-            status: EntityStatus.Published,
-            listingType: ListingType.Manual,
-            includeChildrenProducts: false,
-            listingOrderByStatus: false,
-            listingFilters: [],
-            listingOrderBy: ListingSort.Custom,
+  for (const categoryData of categories) {
+    try {
+      const category = await api.category.create({
+        input: {
+          title: categoryData.title,
+          slug: categoryData.slug,
+          description: {
+            html: `<p>${categoryData.description}</p>`,
+            json: JSON.stringify({ content: categoryData.description }),
+            text: categoryData.description,
           },
-        });
+          status: EntityStatus.Published,
+          listingType: ListingType.Manual,
+          includeChildrenProducts: false,
+          listingOrderByStatus: false,
+          listingFilters: [],
+          listingOrderBy: ListingSort.Custom,
+        },
+      });
 
-        categoryMap[childSlug] = childCategory.id;
-        console.log(`      ✅ Создана подкатегория: ${childTitle}`);
+      categoryMap[categoryData.slug] = category.id;
+      console.log(`✓ Created category: ${categoryData.title} (${categoryData.slug})`);
+    } catch (error: any) {
+      console.log(`Failed to create category ${categoryData.slug}, continuing...`, error);
+      continue;
+    }
+
+    if (categoryData.children && categoryMap[categoryData.slug]) {
+      for (const childTitle of categoryData.children) {
+        const childSlug = `${categoryData.slug}-${slugify(childTitle)}`;
+        try {
+          const childCategory = await api.category.create({
+            input: {
+              title: childTitle,
+              slug: childSlug,
+              parentId: categoryMap[categoryData.slug],
+              status: EntityStatus.Published,
+              listingType: ListingType.Manual,
+              includeChildrenProducts: false,
+              listingOrderByStatus: false,
+              listingFilters: [],
+              listingOrderBy: ListingSort.Custom,
+            },
+          });
+
+          categoryMap[childSlug] = childCategory.id;
+          console.log(`✓ Created child category: ${childTitle} (${childSlug})`);
+        } catch (error: any) {
+          console.log(`Failed to create child category ${childSlug}, continuing...`, error);
+          continue;
+        }
       }
     }
   }
 
+  console.log(`🏷️ Finished seeding categories. Created: ${Object.keys(categoryMap).length}`);
   return categoryMap;
 }
 
-// Функция создания тегов
-export async function seedTags(api: TenantApiFixture): Promise<Record<string, string>> {
+export async function seedTags(api: TenantApiFixture, tags: TagData[]): Promise<Record<string, string>> {
+  console.log('🏷️ Starting to seed tags...');
   const tagMap: Record<string, string> = {};
 
-  console.log('\n🏷️  Создание тегов...');
+  for (const tagData of tags) {
+    try {
+      const tag = await api.tag.create({
+        input: {
+          title: tagData.title,
+          slug: tagData.slug,
+        },
+      });
 
-  for (const tagData of TAGS) {
-    const tag = await api.tag.create({
-      input: {
-        title: tagData.title,
-        slug: tagData.slug,
-      },
-    });
-
-    tagMap[tagData.slug] = tag.id;
-    console.log(`   ✅ Создан тег: ${tagData.title}`);
+      tagMap[tagData.slug] = tag.id;
+      console.log(`✓ Created tag: ${tagData.title} (${tagData.slug})`);
+    } catch (error: any) {
+      console.log(`Failed to create tag ${tagData.slug}, continuing...`, error);
+      continue;
+    }
   }
 
+  console.log(`🏷️ Finished seeding tags. Created: ${Object.keys(tagMap).length}`);
   return tagMap;
 }
 
-// Функция создания feature groups
-export async function seedFeatureGroups(
-  api: TenantApiFixture,
-): Promise<Record<string, ApiFeatureGroup>> {
-  const featureGroupMap: Record<string, ApiFeatureGroup> = {};
-
-  console.log('\n🎨 Создание опций (feature groups)...');
-
-  for (const featureGroupData of FEATURE_GROUPS) {
-    const featureGroup = await api.feature.createGroupWithValues({
-      title: featureGroupData.title,
-      slug: featureGroupData.slug,
-      values: featureGroupData.values,
-    });
-
-    featureGroupMap[featureGroupData.slug] = featureGroup;
-    console.log(
-      `   ✅ Создана группа опций: ${featureGroupData.title} (${featureGroupData.values.length} значений)`,
-    );
-  }
-
-  return featureGroupMap;
-}
-
-// Функция создания продуктов
 export async function seedProducts(
   api: TenantApiFixture,
   categoryMap: Record<string, string>,
   tagMap: Record<string, string>,
-  featureGroupMap: Record<string, ApiFeatureGroup>,
+  imageMap: Record<string, string>,
+  products: ProductDataWithFeatures[],
 ): Promise<Record<string, ApiProduct>> {
+  console.log('📦 Starting to seed products...');
   const productMap: Record<string, ApiProduct> = {};
 
-  console.log('\n📦 Создание продуктов...');
+  // Convert imageMap to array for random selection
+  const availableImageIds = Object.values(imageMap);
+  let imageIndex = 0;
 
-  for (const productData of PRODUCTS) {
+  // Helper to get next image ID
+  const getNextImageId = (): string | null => {
+    if (availableImageIds.length === 0) return null;
+    const imageId = availableImageIds[imageIndex % availableImageIds.length];
+    imageIndex++;
+    return imageId;
+  };
+
+  // Helper to get random images for gallery (cover + 4 random images)
+  const getGalleryImages = (coverId: string | null): string[] => {
+    if (!coverId || availableImageIds.length === 0) return [];
+
+    const gallery = [coverId];
+    const remainingImages = availableImageIds.filter((id) => id !== coverId);
+
+    // Add up to 4 random images
+    const shuffled = [...remainingImages].sort(() => Math.random() - 0.5);
+    const additionalImages = shuffled.slice(0, Math.min(4, shuffled.length));
+
+    return [...gallery, ...additionalImages];
+  };
+
+  for (const productData of products) {
+    const tagIds = (productData.tags ?? []).map((tagSlug) => tagMap[tagSlug]).filter(Boolean);
+    const basePriceCents = Math.round((productData.price || 0) * 100);
     const categoryId = categoryMap[productData.category];
     const categoriesForVariant = categoryId ? [categoryId] : [];
 
-    // Безопасное определение базовой цены
-    const rawPrice = productData.price ??
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (Array.isArray((productData as any).variants) && (productData as any).variants[0]?.price?.amount
-        ? parseFloat((productData as any).variants[0].price.amount)
-        : 0);
-    const basePriceCents = Math.round((rawPrice || 0) * 100);
-
-    const tagIds = (productData.tags ?? []).map((tagSlug) => tagMap[tagSlug]).filter(Boolean);
-
-    // Генерируем варианты на основе существующих feature groups
-    const variantsToCreate = [];
-
-    if (productData.featureGroups && productData.featureGroups.length > 0) {
-      // Собираем матрицу features для генерации вариантов
-      const featuresMatrix = productData.featureGroups
-        .map((fg) => {
-          const featureGroup = featureGroupMap[fg.slug];
-          if (!featureGroup) {
-            console.warn(`   ⚠️  Feature group ${fg.slug} не найдена`);
-            return [];
-          }
-
-          // Фильтруем только те значения, которые нужны для этого продукта
-          return featureGroup.features.filter((f) => fg.values.includes(f.title));
-        })
-        .filter((arr) => arr.length > 0);
-
-      // Генерируем все комбинации (декартово произведение)
-      const cartesianProduct = <T>(arrays: T[][]): T[][] => {
-        return arrays.reduce<T[][]>(
-          (acc, curr) => acc.flatMap((a) => curr.map((b) => [...a, b])),
-          [[]],
-        );
-      };
-
-      const combinations = cartesianProduct(featuresMatrix);
-
-      // Создаем варианты для каждой комбинации
-      combinations.forEach((combo, index) => {
-        const variantTitle = `${productData.title} - ${combo.map((f) => f.title).join(' ')}`;
-        const variantSlug = generateVariantSlug(productData.slug, combo.map((f) => f.title));
-
-        variantsToCreate.push({
-          title: variantTitle,
-          slug: variantSlug,
-          price: basePriceCents,
-          oldPrice: 0,
-          costPrice: 0,
-          sku: `${productData.slug}-${index}`,
-          stockStatus: 'IN_STOCK',
-          categories: categoriesForVariant,
-          inListing: true,
-          variantSortIndex: index,
-          weight: 0,
-          weightUnit: WeightUnit.Gr,
-          width: 0,
-          height: 0,
-          length: 0,
-          dimensionUnit: DimensionUnit.Cm,
-          features: combo.map((feature, idx) => ({
-            featureId: feature.id,
-            isOption: true,
-            isAttribute: true,
-            optionSortIndex: idx,
-            attributeSortIndex: idx,
-            styleType: FeatureStyleType.Radio,
-          })),
-          gallery: [],
-          coverId: null,
-        });
-      });
+    // Try to find image by product slug, otherwise use next available image
+    let coverId: string | null = null;
+    const slugBasedImageId = imageMap[productData.slug];
+    if (slugBasedImageId) {
+      coverId = slugBasedImageId;
     } else {
-      // Если нет опций, создаем один базовый вариант
-      variantsToCreate.push({
-        title: productData.title,
-        slug: productData.slug,
-        price: basePriceCents,
-        oldPrice: 0,
-        costPrice: 0,
-        sku: productData.slug,
-        stockStatus: 'IN_STOCK',
-        categories: categoriesForVariant,
-        inListing: true,
-        variantSortIndex: 0,
-        weight: 0,
-        weightUnit: WeightUnit.Gr,
-        width: 0,
-        height: 0,
-        length: 0,
-        dimensionUnit: DimensionUnit.Cm,
-        features: [],
-        gallery: [],
-        coverId: null,
-      });
+      coverId = getNextImageId();
     }
 
-    const descriptionJson = {
-      data: {
-        type: 'doc',
-        content: [
-          {
-            type: 'paragraph',
-            attrs: { nodeIndent: null, nodeTextAlignment: null, nodeLineHeight: null, style: '' },
-            content: [
-              {
-                type: 'text',
-                text: productData.description,
+    let product: ApiProduct;
+
+    try {
+      if (productData.featureGroups && productData.featureGroups.length > 0) {
+        // Продукт с опциями - используем новый API
+        const options = productData.featureGroups.map((fg) => ({
+          title: fg.slug.charAt(0).toUpperCase() + fg.slug.slice(1), // capitalize first letter
+          slug: fg.slug,
+          values: fg.values,
+        }));
+
+        product = await api.product.createWithOptions({
+          title: productData.title,
+          slug: productData.slug,
+          status: EntityStatus.Published,
+          price: basePriceCents,
+          options: options,
+        });
+
+        // Добавляем категории и изображения к вариантам
+        const hasCategories = categoriesForVariant.length > 0;
+        const hasImages = coverId !== null;
+
+        if (hasCategories || hasImages) {
+          await api.product.update({
+            input: {
+              id: product.id,
+              variants: {
+                update: product.variants.map((variant, index) => {
+                  // Для первого варианта используем основное изображение, для остальных - следующие
+                  const variantCoverId = index === 0 ? coverId : getNextImageId();
+
+                  return {
+                    id: variant.id,
+                    ...(hasCategories ? { categories: categoriesForVariant } : {}),
+                    ...(variantCoverId ? {
+                      coverId: variantCoverId,
+                      gallery: getGalleryImages(variantCoverId),
+                    } : {}),
+                  };
+                }),
               },
-            ],
+            },
+          });
+
+          // Обновляем локальный объект продукта
+          const updatedProduct = await api.product.findOne(product.id);
+          product = updatedProduct;
+        }
+      } else {
+        // Простой продукт без опций
+        product = await api.product.create({
+          input: {
+            title: productData.title,
+            slug: productData.slug,
+            status: EntityStatus.Published,
+            requiresShipping: true,
+            description: {
+              html: `<p>${productData.description}</p>`,
+              json: JSON.stringify({
+                data: {
+                  type: 'doc',
+                  content: [
+                    {
+                      type: 'paragraph',
+                      attrs: {
+                        nodeIndent: null,
+                        nodeTextAlignment: null,
+                        nodeLineHeight: null,
+                        style: '',
+                      },
+                      content: [
+                        {
+                          type: 'text',
+                          text: productData.description,
+                        },
+                      ],
+                    },
+                  ],
+                },
+              }),
+              text: productData.description,
+            },
+
+            excerpt: '',
+            groups: [],
+            tags: tagIds,
+            variants: {
+              create: [
+                {
+                  title: productData.title,
+                  slug: productData.slug,
+                  price: basePriceCents,
+                  oldPrice: 0,
+                  costPrice: 0,
+                  sku: productData.slug,
+                  stockStatus: 'IN_STOCK',
+                  categories: categoriesForVariant,
+                  inListing: true,
+                  variantSortIndex: 0,
+                  weight: 0,
+                  weightUnit: WeightUnit.Gr,
+                  width: 0,
+                  height: 0,
+                  length: 0,
+                  dimensionUnit: DimensionUnit.Cm,
+                  gallery: getGalleryImages(coverId),
+                  coverId: coverId,
+                },
+              ],
+            },
           },
-        ],
-      },
-    };
+        });
+      }
 
-    // Создаем продукт с подготовленными вариантами
-    const productTitle = productData.title || (productData as any).name || productData.slug;
-    const product = await api.product.create({
-      input: {
-        title: productTitle,
-        slug: productData.slug,
-        status: EntityStatus.Published,
-        requiresShipping: true,
-        description: {
-          html: `<p>${productData.description}</p>`,
-          json: JSON.stringify(descriptionJson),
-          text: productData.description,
-        },
-        excerpt: '',
-        groups: [],
-        tags: tagIds,
-        variants: {
-          create: variantsToCreate,
-        },
-      },
-    });
-
-    productMap[product.slug] = product;
-    console.log(
-      `   ✅ Создан продукт: ${productTitle} (${variantsToCreate.length} вариантов)`,
-    );
+      productMap[product.slug] = product;
+      console.log(`✓ Created product: ${product.title} (${product.slug}) with ${product.variants.length} variants`);
+    } catch (error: any) {
+      console.log(`Failed to create product ${productData.slug}, continuing...`, error);
+      continue;
+    }
   }
 
-  // Обновляем продукты, добавляя группы
-  console.log('\n🔄 Обновление продуктов с группами...');
-  for (const productData of PRODUCTS) {
+  for (const productData of products) {
     if (!productData.groups || productData.groups.length === 0) {
       continue;
     }
 
     const mainProduct = productMap[productData.slug];
     if (!mainProduct) {
-      console.warn(`   ⚠️ Продукт ${productData.slug} не найден для добавления групп`);
       continue;
     }
 
@@ -297,33 +359,29 @@ export async function seedProducts(
         .map((item) => {
           const componentProduct = productMap[item.productSlug];
           if (!componentProduct) {
-            console.warn(`   ⚠️ Продукт-компонент ${item.productSlug} не найден`);
             return null;
           }
 
-                    let variant;
+          let variant;
 
-          // Если есть featureValues, генерируем variantSlug по той же логике что и при создании
           const itemWithFeatures = item as any;
           if (itemWithFeatures.featureValues && itemWithFeatures.featureValues.length > 0) {
-            const generatedVariantSlug = generateVariantSlug(item.productSlug, itemWithFeatures.featureValues);
-            variant = componentProduct.variants.find((v) => v.slug === generatedVariantSlug);
+            // Найти вариант по заголовку, который содержит все значения фич
+            const targetTitle = itemWithFeatures.featureValues.join(' ');
+            variant = componentProduct.variants.find(
+              (v) =>
+                v.title.includes(targetTitle) ||
+                itemWithFeatures.featureValues.every((value: string) => v.title.includes(value)),
+            );
 
             if (!variant) {
-              console.warn(
-                `   ⚠️ Вариант ${generatedVariantSlug} не найден в продукте ${item.productSlug}`,
-              );
               return null;
             }
           } else {
-            // Fallback к старой логике с variantSlug
             const variantSlug = itemWithFeatures.variantSlug ?? item.productSlug;
             variant = componentProduct.variants.find((v) => v.slug === variantSlug);
 
             if (!variant) {
-              console.warn(
-                `   ⚠️ Вариант ${variantSlug} не найден в продукте ${item.productSlug}`,
-              );
               return null;
             }
           }
@@ -353,18 +411,16 @@ export async function seedProducts(
           },
         },
       });
-      console.log(`   ✅ Добавлены группы в продукт: ${productData.title}`);
     }
   }
 
+  console.log(`📦 Finished seeding products. Created: ${Object.keys(productMap).length}`);
   return productMap;
 }
 
-// Функция создания покупателей
 export async function seedCustomers(api: TenantApiFixture): Promise<string[]> {
+  console.log('👥 Starting to seed customers...');
   const customerIds: string[] = [];
-
-  console.log('\\n👤 Создание покупателей...');
 
   const customers = [
     { firstName: 'Иван', lastName: 'Петров', email: 'ivan.petrov@example.com' },
@@ -385,28 +441,43 @@ export async function seedCustomers(api: TenantApiFixture): Promise<string[]> {
   ];
 
   for (const customerData of customers) {
-    const customer = await api.customer.create({
-      ...customerData,
-      password: 'Test123!',
-      isVerified: true,
-      language: 'ru',
-    });
+    try {
+      const customer = await api.customer.create({
+        ...customerData,
+        password: 'Test123!',
+        isVerified: true,
+        language: 'ru',
+      });
 
-    customerIds.push(customer);
-    console.log(`   ✅ Создан покупатель: ${customerData.firstName} ${customerData.lastName}`);
+      customerIds.push(customer.id);
+      console.log(`✓ Created customer: ${customerData.firstName} ${customerData.lastName} (${customerData.email})`);
+    } catch (error: any) {
+      console.log(`Failed to create customer ${customerData.email}, continuing...`, error);
+      continue;
+    }
   }
 
+  console.log(`👥 Finished seeding customers. Created: ${customerIds.length}`);
   return customerIds;
 }
 
-// Функция создания отзывов
 export async function seedReviews(
   adminApi: TenantApiFixture,
   productIds: string[],
   customerIds: string[],
+  reviewTemplates: ReviewTemplate[],
 ): Promise<void> {
-  console.log('\n⭐ Создание отзывов...');
+  console.log(`⭐ Starting to seed reviews. Products: ${productIds.length}, Customers: ${customerIds.length}`);
 
+  if (productIds.length === 0) {
+    console.log('No products found, skipping reviews');
+    return;
+  }
+
+  if (customerIds.length === 0) {
+    console.log('No customers found, skipping reviews');
+    return;
+  }
   const reviewerNames = [
     'Александр К.',
     'Ольга М.',
@@ -427,82 +498,144 @@ export async function seedReviews(
 
   for (let i = 0; i < productIds.length; i++) {
     const productId = productIds[i];
-    const product = await adminApi.product.findOne(productId);
+    console.log(`Creating reviews for product ${i + 1}/${productIds.length}: ${productId}`);
 
-    // Используем ID первого варианта вместо ID контейнера
-    const variantId = product.variants[0]?.id;
-    if (!variantId) {
-      console.warn(
-        `   ⚠️  Продукт ${product.title} не имеет вариантов, пропускаем создание отзывов`,
-      );
-      continue;
-    }
+    try {
+      const product = await adminApi.product.findOne(productId);
 
-    // Создаем 10-15 отзывов на каждый продукт
-    const reviewCount = REVIEW_TEMPLATES.length;
+      const variantId = product.variants[0]?.id;
+      if (!variantId) {
+        console.log(`No variants found for product ${productId}, skipping`);
+        continue;
+      }
+
+    const reviewCount = reviewTemplates.length;
 
     for (let j = 0; j < reviewCount; j++) {
       const customerId = customerIds[j];
       const reviewerName = reviewerNames[j];
-      const reviewTemplate = REVIEW_TEMPLATES[j];
+      const reviewTemplate = reviewTemplates[j];
 
-      // Создаем отзыв через admin API
-      const id = await adminApi.review.create({
-        productId: variantId,
-        customerId: customerId,
-        rating: reviewTemplate.rating,
-        title: reviewTemplate.title,
-        message: reviewTemplate.message,
-        pros: reviewTemplate.pros,
-        cons: reviewTemplate.cons,
-        locale: 'ru',
-        displayName: reviewerName,
-      });
-
-      await adminApi.review.update({
-        input: {
-          id,
+      try {
+        const id = await adminApi.review.create({
           productId: variantId,
           customerId: customerId,
+          rating: reviewTemplate.rating,
+          title: reviewTemplate.title,
+          message: reviewTemplate.message,
+          pros: reviewTemplate.pros,
+          cons: reviewTemplate.cons,
+          locale: 'ru',
           displayName: reviewerName,
-          status: ReviewStatus.Approved, // Сразу одобряем отзыв
-        },
-      });
+        });
 
-      console.log(`   ✅ Создан отзыв для ${product.title} от ${reviewerName}`);
+        await adminApi.review.update({
+          input: {
+            id,
+            productId: variantId,
+            customerId: customerId,
+            displayName: reviewerName,
+            status: ReviewStatus.Approved,
+          },
+        });
+        console.log(`✓ Created review: ${reviewTemplate.title} (${reviewTemplate.rating}/5) by ${reviewerName}`);
+        } catch (error: any) {
+          console.log(`Failed to create review for product ${variantId} from ${reviewerName}, continuing...`, error);
+          continue;
+        }
+      }
+    } catch (error: any) {
+      console.log(`Failed to find product ${productId}, continuing...`, error);
+      continue;
     }
   }
+  console.log(`⭐ Finished seeding reviews`);
 }
 
-// Главная функция инициализации
-export async function seedProject(adminApi: TenantApiFixture): Promise<void> {
-  console.log('🚀 Начало инициализации проекта с тестовыми данными...\n');
+/**
+ * Load data from specified directory
+ */
+function loadSeedData(dataDir: string) {
+  const readJsonFile = <T = unknown>(filePath: string): T => {
+    const raw = fs.readFileSync(filePath, 'utf-8');
+    return JSON.parse(raw) as T;
+  };
+
+  const readJsonDir = <T>(subDir: string): T[] => {
+    const dirPath = path.join(dataDir, subDir);
+    if (!fs.existsSync(dirPath)) {
+      return [];
+    }
+    const files = fs.readdirSync(dirPath).filter((f) => f.endsWith('.json'));
+    return files.map((file) => readJsonFile<T>(path.join(dirPath, file)));
+  };
+
+  const categories = readJsonDir<CategoryData>('categories');
+  const tags = readJsonDir<TagData>('tags');
+  const products = readJsonDir<ProductDataWithFeatures>('products');
+  const reviewTemplates = readJsonDir<ReviewTemplate>('review-templates');
+
+  return { categories, tags, products, reviewTemplates };
+}
+
+export async function seedProject(
+  adminApi: TenantApiFixture,
+  dataDir: string,
+  options: { seedReviews?: boolean; seedCustomers?: boolean } = {},
+): Promise<void> {
+  const { seedReviews: shouldSeedReviews = true, seedCustomers: shouldSeedCustomers = true } = options;
+
+  console.log(`\n📂 Loading data from: ${dataDir}`);
+  const { categories, tags, products, reviewTemplates } = loadSeedData(dataDir);
+  console.log(`   Categories: ${categories.length}, Tags: ${tags.length}, Products: ${products.length}`);
+
+  let categoryMap: Record<string, string> = {};
+  let tagMap: Record<string, string> = {};
+  let imageMap: Record<string, string> = {};
+  let productMap: Record<string, ApiProduct> = {};
+  let productIds: string[] = [];
+  let customerIds: string[] = [];
+
   try {
-    // 1. Создаем категории
-    const categoryMap = await seedCategories(adminApi);
-
-    // 2. Создаем теги
-    const tagMap = await seedTags(adminApi);
-
-    // 3. Создаем feature groups (опции)
-    const featureGroupMap = await seedFeatureGroups(adminApi);
-
-    // 4. Создаем продукты
-    const productMap = await seedProducts(adminApi, categoryMap, tagMap, featureGroupMap);
-    const productIds = Object.values(productMap).map((p) => p.id);
-
-    // 5. Создаем покупателей
-    const customerIds = await seedCustomers(adminApi);
-
-    // 6. Создаем отзывы
-    await seedReviews(adminApi, productIds, customerIds);
-
-    console.log('\n✅ Инициализация проекта завершена успешно!');
-    console.log(
-      `   📊 Создано: ${CATEGORIES.length} категорий, ${TAGS.length} тегов, ${FEATURE_GROUPS.length} групп опций, ${PRODUCTS.length} продуктов`,
-    );
+    imageMap = await uploadImages(adminApi, dataDir);
   } catch (error) {
-    console.error('❌ Ошибка при инициализации:', error);
-    throw error;
+    console.log('Error uploading images, continuing...', error);
+  }
+
+  try {
+    categoryMap = await seedCategories(adminApi, categories);
+  } catch (error) {
+    console.log('Error seeding categories, continuing...', error);
+  }
+
+  try {
+    tagMap = await seedTags(adminApi, tags);
+  } catch (error) {
+    console.log('Error seeding tags, continuing...', error);
+  }
+
+  try {
+    productMap = await seedProducts(adminApi, categoryMap, tagMap, imageMap, products);
+    productIds = Object.values(productMap).map((p) => p.id);
+    console.log(`Created ${productIds.length} products`);
+  } catch (error) {
+    console.log('Error seeding products, continuing...', error);
+  }
+
+  if (shouldSeedCustomers) {
+    try {
+      customerIds = await seedCustomers(adminApi);
+      console.log(`Created ${customerIds.length} customers`);
+    } catch (error) {
+      console.log('Error seeding customers, continuing...', error);
+    }
+  }
+
+  if (shouldSeedReviews && reviewTemplates.length > 0 && productIds.length > 0 && customerIds.length > 0) {
+    try {
+      await seedReviews(adminApi, productIds, customerIds, reviewTemplates);
+    } catch (error) {
+      console.log('Error seeding reviews, continuing...', error);
+    }
   }
 }

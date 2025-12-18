@@ -21,6 +21,11 @@ mutation CheckoutLinesAdd($input: CheckoutLinesAddInput!) {
           id
           quantity
           purchasableId
+          tag {
+            id
+            slug
+            unique
+          }
           cost {
             unitPrice {
               amount

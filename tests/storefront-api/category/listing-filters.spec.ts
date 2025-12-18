@@ -15,12 +15,12 @@ import type { ApiFixtures } from '@fixtures/api/api';
 import { randomUUID } from 'node:crypto';
 
 // ---------------------------------------------------------------------------
-// Тесты API Storefront: проверяем, что категория возвращает корректные фильтры
-// (price, category, tag, feature, option) при наличии разноплановых товаров.
+
+
 // ---------------------------------------------------------------------------
 
 // ---------------------------------------------------------------------------
-// Типы и вспомогательные функции
+
 // ---------------------------------------------------------------------------
 
 type ProductSeed = {
@@ -42,7 +42,7 @@ async function setupCategoryWithProducts(
   await api.session.setupUserAndProject();
 
   // ---------------------------------------------------------------------
-  // 1. Создаём тестовую категорию
+  
   // ---------------------------------------------------------------------
 
   // Create category
@@ -68,7 +68,7 @@ async function setupCategoryWithProducts(
   });
 
   // ---------------------------------------------------------------------
-  // 2. Подготовка тегов: создаём все уникальные теги, встречающиеся у seed-товаров
+  
   // ---------------------------------------------------------------------
   const tagMap = new Map<string, string>();
   for (const product of products) {
@@ -89,13 +89,13 @@ async function setupCategoryWithProducts(
   }
 
   // ---------------------------------------------------------------------
-  // 3. Анализируем группы характеристик для создания продуктов
+  
   // ---------------------------------------------------------------------
-  // Теперь мы не создаем FeatureGroup предварительно, а будем использовать
-  // inline feature creation в api.admin.product.create()
+  
+  
 
   // ---------------------------------------------------------------------
-  // 4. Создание товаров по переданным seed-данным
+  
   // ---------------------------------------------------------------------
   const productIds: string[] = [];
 
@@ -103,7 +103,7 @@ async function setupCategoryWithProducts(
     // Resolve tag IDs
     const tagIds = (seed.tags || []).map((t) => tagMap.get(t)!).filter(Boolean);
 
-    // Build features inline (без предварительного создания FeatureGroup)
+    
     const attributeLinks =
       seed.features?.map((feat, idx) => ({
         attributeSortIndex: idx,
@@ -176,7 +176,7 @@ async function setupCategoryWithProducts(
   }
 
   // ---------------------------------------------------------------------
-  // 5. Привязываем товары к категории
+  
   // ---------------------------------------------------------------------
   if (productIds.length > 0) {
     await api.admin.mutation('admin/CategoryAddProducts', {
@@ -190,7 +190,7 @@ async function setupCategoryWithProducts(
 }
 
 // ---------------------------------------------------------------------------
-// Вспомогательные методы тестов
+
 // ---------------------------------------------------------------------------
 
 function findFilterByType(filters: ApiFilter[], typename: string): ApiFilter | undefined {
@@ -203,7 +203,7 @@ function findFilterByType(filters: ApiFilter[], typename: string): ApiFilter | u
 
 test.describe('Category Listing Filters', () => {
   // ---------------------------------------------------------------------
-  // Тест 1. Пустая категория — фильтры отсутствуют
+  
   // ---------------------------------------------------------------------
   test('returns empty facets for category without products', async ({ api }) => {
     await api.session.setupUserAndProject();
@@ -240,20 +240,20 @@ test.describe('Category Listing Filters', () => {
   });
 
   // ---------------------------------------------------------------------
-  // Тест 2. Категория с разнообразными товарами — возвращаются все нужные фильтры
+  
   // ---------------------------------------------------------------------
   test('returns all facet types for category with diverse products', async ({ api }) => {
     // -----------------------------------------------------------------
-    // Подготовка тестовых данных.
-    // 1) Три товара с разными ценами, тегами, характеристиками и статусами.
-    //    • Basic T-Shirt  – 10.00 (IN_STOCK)  tags: new-arrival, summer;   features: Material=Cotton, Style=Casual; rating 4.5
-    //    • Premium Jacket – 50.00 (OUT_OF_STOCK) tags: sale;              features: Material=Leather, Style=Formal; rating 3.5
-    //    • Sport Shoes    – 30.00 (PREORDER)    tags: new-arrival;        features: Material=Synthetic;              rating n/a
-    // 2) На основании этих товаров сервис должен вернуть:
-    //    • PriceRangeFilter  (min 10, max 50)
-    //    • ListFilter TAG        – new-arrival, summer, sale
-    //    • ListFilter FEATURE    – значения Cotton, Leather, Synthetic, Casual, Formal
-    //    • ListFilter OPTION     – опций нет, но фильтр должен существовать пустым
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     // -----------------------------------------------------------------
     const products: ProductSeed[] = [
       {
@@ -343,19 +343,19 @@ test.describe('Category Listing Filters', () => {
     });
 
     const filters = data.category!.listing.filters;
-    // --------------------------- Проверка PriceRangeFilter ---------------------------
+    
     const priceFilter = findFilterByType(filters, 'PriceRangeFilter') as any;
     expect(priceFilter).toBeDefined();
     expect(Number(priceFilter.minPrice.amount)).toBe(10);
     expect(Number(priceFilter.maxPrice.amount)).toBe(50);
 
-    // --------------------------- Проверка ListFilter'ов ------------------------------
-    // В ответе несколько ListFilter, различаем их по полю handle.
-    // Ожидаются TAG, FEATURE, OPTION.
+    
+    
+    
     // -----------------------------------------------------------------
 
     // -----------------------------------------------------------------
-    // Вспомогательный поиск ListFilter по handle (TAG, FEATURE, OPTION)
+    
     // -----------------------------------------------------------------
     const findListFilter = (handle: string) =>
       filters.find((f) => (f as any).__typename === 'ListFilter' && (f as any).handle === handle);
@@ -387,7 +387,7 @@ test.describe('Category Listing Filters', () => {
     const getTagCount = (title: string) => tagValues.find((v: any) => v.title === title)?.count;
     expect(getTagCount('new-arrival')).toBe(3);
 
-    // -------- Убеждаемся, что черновые продукты (status=DRAFT) не влияют --------
+    
     const tagTitles = tagFilter.values.map((v: any) => v.title);
     expect(tagTitles).not.toContain('exclusive');
   });

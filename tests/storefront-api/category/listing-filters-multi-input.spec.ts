@@ -60,7 +60,7 @@ async function setupComplexProducts(api: ApiFixtures['api']): Promise<{
     input: { title: 'Sale', slug: `sale-${randomUUID()}`, color: '#000000' },
   });
 
-  // Features будут созданы inline при создании продуктов
+  
 
   // Define product seeds
   const seeds: ComplexSeed[] = [
@@ -244,7 +244,7 @@ test.describe('Category Listing + Facets with multiple filter inputs', () => {
   test('returns products matching availability AND feature', async ({ api }) => {
     const { categorySlug, seeds } = dataset;
 
-    // materialHandle формируется как material.{material.toLowerCase()}
+    
     const leatherHandle = 'material.leather';
     const filtersInput = [
       { handle: 'AVAILABILITY', values: ['OUT_OF_STOCK'] },
@@ -288,7 +288,7 @@ test.describe('Category Listing + Facets with multiple filter inputs', () => {
     const { categorySlug, seeds } = dataset;
 
     const saleTagSlug = (seeds.find((s) => s.tag === 'sale') as any).tagSlug;
-    // sizeHandle формируется как size.{size.toLowerCase()}
+    
     const sizeMHandle = 'size.m';
 
     const filtersInput = [

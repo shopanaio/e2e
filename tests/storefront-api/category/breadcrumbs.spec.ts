@@ -147,12 +147,12 @@ test.describe('client category breadcrumbs, source is not included', () => {
 
     const category = data.category as any;
 
-    // Проверяем основные поля категории
+    
     expect(category.handle).toBe(grandchild.handle);
     const breadcrumbs = category.breadcrumbs as any[];
     expect(breadcrumbs.map((b: any) => b.title)).toEqual([root.title, child.title]);
 
-    // Проверяем значения полей каждого breadcrumb
+    
     const [rootBreadcrumb, childBreadcrumb] = breadcrumbs;
 
     // Root
@@ -200,17 +200,17 @@ test.describe('client category breadcrumbs, source is not included', () => {
     expect(childNode).toBeDefined();
     expect(grandchildNode).toBeDefined();
 
-    // Проверяем значения полей самого root
+    
     expect(rootNode.handle).toBe(root.handle);
     expect(rootNode.breadcrumbs).toHaveLength(0);
 
-    // Проверяем поля child и её breadcrumbs
+    
     expect(childNode.handle).toBe(child.handle);
     expect(childNode.title).toBe(child.title);
 
     expect(childNode.breadcrumbs.map((b: any) => b.title)).toEqual([root.title]);
 
-    // Проверяем поля grandchild и её breadcrumbs
+    
     expect(grandchildNode.handle).toBe(grandchild.handle);
     expect(grandchildNode.title).toBe(grandchild.title);
 

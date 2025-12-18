@@ -10,7 +10,7 @@ import {
 import { randomUUID } from 'node:crypto';
 import * as Yup from 'yup';
 
-// TODO: Переписать тест для использования api.admin.product фикстурных методов вместо ручных GraphQL вызовов
+
 
 test.describe('Products API', () => {
   let category = {} as ApiCategory;
@@ -41,7 +41,7 @@ test.describe('Products API', () => {
         },
       });
 
-      // Обновляем варианты после создания продукта
+      
       product = await api.admin.product.update({
         input: {
           id: product.id,

@@ -1,5 +1,5 @@
 query ProductContainerOptionsDisplay($handle: String!) {
-  product(handle: $handle) {
+  variant(handle: $handle) {
     product {
       options {
         handle

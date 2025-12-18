@@ -31,6 +31,9 @@ mutation CheckoutCreate($input: CheckoutCreateInput!) {
         email
         phone
         countryCode
+        firstName
+        lastName
+        middleName
         customer { id }
       }
       customerNote
@@ -44,6 +47,11 @@ mutation CheckoutCreate($input: CheckoutCreateInput!) {
         id
         quantity
         purchasableId
+        tag {
+          id
+          slug
+          unique
+        }
         cost {
           unitPrice {
             amount
@@ -54,6 +62,13 @@ mutation CheckoutCreate($input: CheckoutCreateInput!) {
             currencyCode
           }
         }
+      }
+      tags {
+        id
+        slug
+        unique
+        createdAt
+        updatedAt
       }
       deliveryGroups {
         id
@@ -66,20 +81,26 @@ mutation CheckoutCreate($input: CheckoutCreateInput!) {
           countryCode
           provinceCode
           postalCode
-          email
+          data
+        }
+        recipient {
           firstName
           lastName
-          data
+          middleName
+          email
+          phone
         }
         deliveryMethods {
           code
           deliveryMethodType
-          provider { code data }
+          provider { code }
+          data
         }
         selectedDeliveryMethod {
           code
           deliveryMethodType
-          provider { code data }
+          provider { code }
+          data
         }
         estimatedCost {
           amount { amount currencyCode }

@@ -21,7 +21,6 @@ test.describe('checkout-api: lines update', () => {
 
     await test.step('create empty checkout', async () => {
       const { data } = await api.client.checkout.create({
-        idempotency: `e2e-${Date.now()}`,
         localeCode: 'en',
         currencyCode: CurrencyCode.Usd,
         items: [],
@@ -34,7 +33,7 @@ test.describe('checkout-api: lines update', () => {
     await test.step('seed two product variants and get purchasableIds', async () => {
       api.session.setTenantScope();
       const handle1 = `test-product-update-1-${Date.now()}`;
-      const product1 = await api.admin.product.create({
+      await api.admin.product.create({
         input: {
           title: 'Update Line Product 1',
           status: EntityStatus.Published,
@@ -57,10 +56,9 @@ test.describe('checkout-api: lines update', () => {
           },
         },
       });
-      purchasableId = product1.variants[0].id as string;
 
       const handle2 = `test-product-update-2-${Date.now()}`;
-      const product2 = await api.admin.product.create({
+      await api.admin.product.create({
         input: {
           title: 'Update Line Product 2',
           status: EntityStatus.Published,
@@ -83,7 +81,14 @@ test.describe('checkout-api: lines update', () => {
           },
         },
       });
-      purchasableId2 = product2.variants[0].id as string;
+
+      // Fetch products from client API to get correct purchasable IDs (base64 encoded)
+      api.session.setCustomerScope();
+      const variant1 = await api.client.variant.get(handle1);
+      const variant2 = await api.client.variant.get(handle2);
+
+      purchasableId = variant1.id as string;
+      purchasableId2 = variant2.id as string;
 
       expect(purchasableId).toBeTruthy();
       expect(purchasableId2).toBeTruthy();
@@ -164,13 +169,13 @@ test.describe('checkout-api: lines update', () => {
         })
         .required();
 
-      const unitAmount1 = Number(line1.cost.unitPrice.amount);
-      const unitAmount2 = Number(line2.cost.unitPrice.amount);
+      const unitAmount1 = line1.cost.unitPrice.amount;
+      const unitAmount2 = line2.cost.unitPrice.amount;
       const expectedLine1TotalRounded = Math.round((unitAmount1 * 5 + Number.EPSILON) * 100) / 100;
       const expectedLine2TotalRounded = Math.round((unitAmount2 * 7 + Number.EPSILON) * 100) / 100;
-      const expectedCheckoutTotalRounded = Math.round(
-        (expectedLine1TotalRounded + expectedLine2TotalRounded + Number.EPSILON) * 100,
-      ) / 100;
+      const expectedCheckoutTotalRounded =
+        Math.round((expectedLine1TotalRounded + expectedLine2TotalRounded + Number.EPSILON) * 100) /
+        100;
 
       const lineSchema1 = yup
         .object({
@@ -255,7 +260,7 @@ test.describe('checkout-api: lines update', () => {
       if (!checkout) {
         throw new Error('checkout is null');
       }
-      expect(Number(checkout.cost.totalAmount.amount)).toBe(expectedCheckoutTotalRounded);
+      expect(checkout.cost.totalAmount.amount).toBe(expectedCheckoutTotalRounded);
     });
   });
 });

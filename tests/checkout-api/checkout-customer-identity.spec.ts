@@ -11,7 +11,6 @@ test.describe('checkout-api: customer identity update', () => {
 
     await test.step('create empty checkout', async () => {
       const { data } = await api.client.checkout.create({
-        idempotency: `e2e-${Date.now()}`,
         localeCode: 'en',
         currencyCode: CurrencyCode.Usd,
         items: [],
@@ -74,13 +73,12 @@ test.describe('checkout-api: customer identity update', () => {
 
   test('should clear customer email by setting null', async ({ api }) => {
     await api.session.setupClient();
-    await api.session.setupCustomer(); // Регистрирует кастомера и делает setCustomerScope()
+    await api.session.setupCustomer();
 
     let checkoutId = '';
 
     await test.step('create checkout with customer email', async () => {
       const { data } = await api.client.checkout.create({
-        idempotency: `e2e-${Date.now()}`,
         localeCode: 'en',
         currencyCode: CurrencyCode.Usd,
         items: [],

@@ -41,12 +41,13 @@ test.describe('checkout-api: lines order stability', () => {
       },
     });
 
-    const productIdA = product.variants[0].id as string;
-    const productIdB = product.variants[1].id as string;
-
+    // Fetch products from client API to get correct purchasable IDs (base64 encoded)
     api.session.setCustomerScope();
+    const variantA = await api.client.variant.get(`${handle}-a`);
+    const variantB = await api.client.variant.get(`${handle}-b`);
+    const productIdA = variantA.id;
+    const productIdB = variantB.id;
     const { data: createdResp } = await api.client.checkout.create({
-      idempotency: `e2e-${Date.now()}`,
       localeCode: 'en',
       currencyCode: CurrencyCode.Usd,
       items: [],

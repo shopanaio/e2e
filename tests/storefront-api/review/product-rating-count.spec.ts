@@ -3,13 +3,13 @@ import { expect } from '@playwright/test';
 import { EntityStatus } from '@codegen/admin-gql';
 import { generateUser } from '@utils/user';
 
-// e2e test: проверка rating и reviewCount после одобрения отзывов
+
 
 test.describe('StorefrontProductRatingAndCount', () => {
   test('product variants reflect correct rating and reviewCount', async ({ api }) => {
     await api.session.setupUserAndProject();
 
-    // Создаём продукт-контейнер с 4 вариантами
+    
     const container = await api.admin.product.createWithOptions({
       title: 'Rating Test Product',
       options: [
@@ -25,12 +25,12 @@ test.describe('StorefrontProductRatingAndCount', () => {
     await api.session.setupApiKey();
     await api.session.setupCustomer();
 
-    const ratings = [5, 4.5, 4, 3.5, 3, 5, 4, 4, 4.5, 5, 5, 4, 2, 3, 3.5]; // 15 оценок
+    const ratings = [5, 4.5, 4, 3.5, 3, 5, 4, 4, 4.5, 5, 5, 4, 2, 3, 3.5]; 
     const reviewIds: string[] = [];
 
     for (let i = 0; i < ratings.length; i++) {
       if (i > 0) {
-        // создаём нового покупателя для каждого следующего отзыва
+        
         const user = generateUser();
         const { data } = await api.client.auth.passwordSignUp({
           email: user.email,
@@ -44,7 +44,7 @@ test.describe('StorefrontProductRatingAndCount', () => {
       }
       const variant = await api.client.product.get(container.variants[0].slug);
       const review = await api.client.review.create({
-        productId: variant.id, // используем один и тот же вариант
+        productId: variant.id, 
         rating: ratings[i],
         title: `Review ${i}`,
         message: 'text',
@@ -52,10 +52,10 @@ test.describe('StorefrontProductRatingAndCount', () => {
       reviewIds.push(review.iid);
     }
 
-    // Возвращаемся к tenant-scope для админских действий
+    
     api.session.setTenantScope();
 
-    // Одобряем первые 12 отзывов
+    
     for (let i = 0; i < 12; i++) {
       const ok = await api.admin.review.approve(reviewIds[i]);
       expect(ok).toBe(true);

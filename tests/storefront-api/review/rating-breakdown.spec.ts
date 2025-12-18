@@ -4,13 +4,13 @@ import { EntityStatus } from '@codegen/admin-gql';
 import { GraphQLFileName } from '@queries/filenames';
 import { generateUser } from '@utils/user';
 
-// e2e test: проверка breakdown рейтинга продукта по одобренным отзывам
+
 
 test.describe('StorefrontProductRatingBreakdown', () => {
   test('product rating breakdown is calculated correctly', async ({ api }) => {
     await api.session.setupUserAndProject();
 
-    // Создаём продукт-контейнер с одной размерной опцией (два варианта)
+    
     const container = await api.admin.product.createWithOptions({
       title: 'Rating Breakdown Test Product',
       options: [
@@ -26,18 +26,18 @@ test.describe('StorefrontProductRatingBreakdown', () => {
     await api.session.setupApiKey();
     await api.session.setupCustomer();
 
-    // Набор оценок. Итоговая раскладка:
-    // ★5 – 1 шт, ★4 – 3 шт, ★3 – 3 шт, ★2 – 2 шт, ★1 – 2 шт (всего 11)
-    // Включаем дробные значения, чтобы проверить корректное округление вниз до целой звезды
+    
+    
+    
     const ratings = [5, 4.9, 4.2, 4, 3.8, 3.5, 3.2, 2.9, 2.5, 1.9, 1.2];
     const reviewIds: string[] = [];
 
-    // Берём handle первого варианта (нам не важны остальные)
+    
     const { slug: variantHandle } = container.variants[0];
 
     for (let i = 0; i < ratings.length; i++) {
       if (i > 0) {
-        // для каждого следующего отзыва создаём нового покупателя
+        
         const user = generateUser();
         const { data } = await api.client.auth.passwordSignUp({
           email: user.email,
@@ -59,17 +59,17 @@ test.describe('StorefrontProductRatingBreakdown', () => {
       reviewIds.push(review.iid);
     }
 
-    // Переключаемся в tenant-scope для одобрения отзывов
+    
     api.session.setTenantScope();
     for (const id of reviewIds) {
       const ok = await api.admin.review.approve(id);
       expect(ok).toBe(true);
     }
 
-    // Возвращаем customer-scope
+    
     await api.session.setCustomerScope();
 
-    // Ожидаемые данные по раскладке
+    
     const expectedCounts: Record<number, number> = {};
     for (const r of ratings) {
       const star = Math.floor(r);
@@ -77,7 +77,7 @@ test.describe('StorefrontProductRatingBreakdown', () => {
     }
     const totalReviews = ratings.length;
 
-    // Делаем прямой запрос за рейтингом с breakdown
+    
     const { data } = await api.client.query('client/ProductRatingBreakdown' as unknown as GraphQLFileName, {
       variables: { handle: variantHandle },
     });
@@ -85,7 +85,7 @@ test.describe('StorefrontProductRatingBreakdown', () => {
     const breakdown =
       (data?.product?.rating?.breakdown as { star: number; count: number; percentage: number }[]) ?? [];
 
-    // Проверяем, что пришли только звёздные корзины с фактическими отзывами
+    
     expect(breakdown.length).toBe(Object.keys(expectedCounts).length);
 
     for (const [starStr, count] of Object.entries(expectedCounts)) {
@@ -99,7 +99,7 @@ test.describe('StorefrontProductRatingBreakdown', () => {
       }
     }
 
-    // Явные ожидания: рассчитываем проценты с округлением до одной цифры после запятой
+    
     const expectedBreakdown = [
       { star: 5, count: 1, percentage: 9.1 },
       { star: 4, count: 3, percentage: 27.3 },
@@ -129,7 +129,7 @@ test.describe('StorefrontProductRatingBreakdown', () => {
     await api.session.setupApiKey();
     await api.session.setupCustomer();
 
-    // ★5 – 1, ★4 – 1, ★3 – 2, ★2 – 2, ★1 – 5 (всего 11)
+    
     const ratings = [5, 4.1, 3.7, 3.3, 2.6, 2.4, 1.9, 1.8, 1.5, 1.3, 1];
     const reviewIds: string[] = [];
 
@@ -193,7 +193,7 @@ test.describe('StorefrontProductRatingBreakdown', () => {
       }
     }
 
-    // Явные ожидания для наглядности
+    
     const expectedBreakdown = [
       { star: 5, count: 1, percentage: 9.1 },
       { star: 4, count: 1, percentage: 9.1 },

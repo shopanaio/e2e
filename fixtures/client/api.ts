@@ -6,7 +6,9 @@ import { Product } from './Product';
 import { ApiQuery, ApiMutation } from '@codegen/client-gql';
 import { Review } from './Review';
 import { Checkout } from './Checkout';
+import { Order } from './Order';
 import { CheckoutApiFixture } from '@fixtures/checkout/api';
+import { Variant } from './Variant';
 
 class ClientGqlRequest extends BaseGqlRequest<ApiQuery, ApiMutation> {
   constructor(request: APIRequestContext, session: GqlRequestSession) {
@@ -24,6 +26,8 @@ export class ClientApiFixture extends ClientGqlRequest {
   product: Product;
   review: Review;
   checkout: Checkout;
+  order: Order;
+  variant: Variant;
 
   constructor({
     request,
@@ -40,5 +44,7 @@ export class ClientApiFixture extends ClientGqlRequest {
     this.product = new Product(this);
     this.review = new Review(this);
     this.checkout = new Checkout(this);
+    this.order = new Order(this);
+    this.variant = new Variant(this);
   }
 }

@@ -3,7 +3,7 @@ import { expect } from '@playwright/test';
 import { randomUUID } from 'node:crypto';
 import * as yup from 'yup';
 
-// TODO: Переписать тест для использования api.admin.tag фикстурных методов вместо ручных GraphQL вызовов
+
 
 test.describe('TagUpdate', () => {
   test('Update', async ({ api }) => {

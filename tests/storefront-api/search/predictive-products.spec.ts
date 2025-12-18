@@ -34,7 +34,6 @@ test.describe('storefront predictive products search', () => {
       ],
     });
 
-    // Берём вариант, в названии которого есть `Max`, чтобы проверить префиксный поиск
     const variantWithMax = product.variants.find((v: any) => v.title.includes('Max'));
     expect(variantWithMax).toBeDefined();
     const expectedVariantTitle = (variantWithMax as any).title;
@@ -58,9 +57,7 @@ test.describe('storefront predictive products search', () => {
       options: [{ title: 'Edition', values: ['Ultra Performance X'] }],
     });
 
-    // 1) создаём группу keyword
     const groupId = await api.admin.search.keywordGroupCreate({ title: 'SEO' });
-    // 2) keyword + link
     await api.admin.search.keywordCreate({ groupId, keyword: 'laptop', localeCode: 'en' });
     await api.admin.search.linkGroupToProduct({ groupId, productId: product.id });
 
@@ -83,7 +80,6 @@ test.describe('storefront predictive products search', () => {
       ],
     });
 
-    // добавляем синоним
     await api.admin.search.synonymUpsert({
       term: 'inch',
       synonym: 'laptop',
@@ -97,7 +93,6 @@ test.describe('storefront predictive products search', () => {
   });
 
   test.skip('locale specific search', async ({ api: _api }) => {
-    // TODO: Реализовать после поддержки Accept-Language в фикстурах
     void _api;
   });
 
@@ -124,13 +119,6 @@ test.describe('storefront predictive products search', () => {
   test('relevance sort order', async ({ api }) => {
     await api.session.setupUserAndProject();
 
-    /*
-     * Создаём набор вариантов с различной степенью соответствия поисковому запросу «Canon».
-     * 1. «Canon»          – полный (exact) матч.
-     * 2. «Canon XR»       – префиксный матч.
-     * 3. «Canonite»       – частичное совпадение (подстрока).
-     * По убыванию релевантности ожидаем именно такую последовательность.
-     */
     const product = await api.admin.product.createWithOptions({
       title: 'Test Camera',
       slug: `camera-${randomUUID()}`,
@@ -138,7 +126,6 @@ test.describe('storefront predictive products search', () => {
       options: [{ title: 'Model', values: ['Canon', 'Canon XR', 'Canonite'] }],
     });
 
-    // Берём тайтлы вариантов для дальнейших проверок.
     const exactVariant = product.variants.find((v: any) => v.title === 'Canon');
     const prefixVariant = product.variants.find((v: any) => v.title === 'Canon XR');
 
@@ -150,25 +137,20 @@ test.describe('storefront predictive products search', () => {
 
     await api.session.setupApiKey();
 
-    // Проверяем, что все варианты действительно находятся по запросу.
     await checkProductInSearch(api, 'Canon', exactMatchTitle);
     await checkProductInSearch(api, 'Canon', prefixMatchTitle);
 
-    // Получаем отсортированный по релевантности список.
     const { data } = await api.client.query('client/PredictiveSearchProducts', {
       variables: { query: 'Canon' },
     });
     const products: ApiProduct[] = data.predictiveSearch.products;
 
-    // Ожидаем минимум два результата (exact + prefix).
     expect(products.length).toBeGreaterThanOrEqual(2);
 
     const titles: string[] = products.map((it) => it.title);
 
-    // 1) Самый релевантный (exact) должен быть первым.
     expect(titles[0]).toBe(exactMatchTitle);
 
-    // 2) Префиксный матч должен идти после полного.
     const prefixIndex = titles.indexOf(prefixMatchTitle);
     expect(prefixIndex).toBeGreaterThan(0);
   });

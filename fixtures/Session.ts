@@ -150,6 +150,12 @@ export class SessionFixture {
     await this.setupUser();
     await this.setupProject();
     await this.setupApiKey();
+
+    await Promise.all(
+      ['shopana', 'bank_transfer', 'novaposhta', 'meest', 'simple-promo'].map((code) =>
+        this.api.admin.mutation('admin/AppsInstall', { variables: { code } }),
+      ),
+    );
   };
 
   setupClientAndCustomer = async () => {

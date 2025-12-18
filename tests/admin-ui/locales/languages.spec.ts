@@ -1,6 +1,5 @@
 import { test } from '@fixtures/base.extend';
 import { EntityStatus, WeightUnit } from '@codegen/admin-gql';
-//import { randomUUID } from 'node:crypto';
 
 test.describe('Translations UI', () => {
   test('Translations create', async ({

@@ -13,7 +13,7 @@ import type { ApiFixtures } from '@fixtures/api/api';
 import { randomUUID } from 'node:crypto';
 
 // ---------------------------------------------------------------------------
-// Вспомогательные функции
+
 // ---------------------------------------------------------------------------
 
 type TagInfo = { title: string; id: string };
@@ -108,7 +108,7 @@ async function prepareHierarchyWithFilters(api: ApiFixtures['api']): Promise<{
     },
   });
 
-  // Draft child – should be ignored
+  
   const draftChild = await api.admin.category.create({
     input: {
       title: 'Draft Child',
@@ -170,7 +170,7 @@ async function prepareHierarchyWithFilters(api: ApiFixtures['api']): Promise<{
       categoryId: child2.id,
       status: EntityStatus.Published,
     },
-    // Draft product – should not affect filters
+    
     {
       title: 'Drafty',
       price: 4000,
@@ -178,7 +178,7 @@ async function prepareHierarchyWithFilters(api: ApiFixtures['api']): Promise<{
       categoryId: child1.id,
       status: EntityStatus.Draft,
     },
-    // Product in draft category – should not affect filters
+    
     {
       title: 'Hidden',
       price: 5000,

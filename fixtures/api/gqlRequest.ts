@@ -52,7 +52,9 @@ export class BaseGqlRequest<QueryType, MutationType> {
     });
 
     const json = await response.json();
-    // console.log(JSON.stringify(json, null, 2), "json");
+    if (json.errors || json.data === null) {
+      // console.log(JSON.stringify(json, null, 2), "API Response");
+    }
     if (props.throwOnError !== false && json.errors) {
       throw json.errors;
     }

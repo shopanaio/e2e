@@ -2,11 +2,11 @@ import { test } from '@fixtures/base.extend';
 import { expect } from '@playwright/test';
 import { generateUser } from '@utils/user';
 
-// e2e test: пользователь не может менять чужой отзыв
+
 
 test.describe('StorefrontReviewForeignUpdateDelete', () => {
   test('cannot update or delete review of another customer', async ({ api }) => {
-    // Tenant, проект, api key и первый покупатель-A
+    
     await api.session.setupUserAndProject();
     const {
       variants: [{ slug: handle }],
@@ -23,7 +23,7 @@ test.describe('StorefrontReviewForeignUpdateDelete', () => {
       message: 'My review',
     });
 
-    // ---- Регистрируем другого покупателя (Customer B) ----
+    
     const userB = generateUser();
     const { data: signUpData } = await api.client.auth.passwordSignUp({
       email: userB.email,
@@ -35,7 +35,7 @@ test.describe('StorefrontReviewForeignUpdateDelete', () => {
     api.session.customer.data = userB;
     api.session.customer.accessToken = tokenB;
 
-    // Пытаемся изменить чужой отзыв
+    
     const { errors: updateErrors } = await api.client.mutation('client/ReviewUpdate', {
       throwOnError: false,
       variables: {
@@ -47,7 +47,7 @@ test.describe('StorefrontReviewForeignUpdateDelete', () => {
     });
     expect(updateErrors).toBeTruthy();
 
-    // Пытаемся удалить чужой отзыв
+    
     const { errors: deleteErrors } = await api.client.mutation('client/ReviewDelete', {
       throwOnError: false,
       variables: { id: review.id },

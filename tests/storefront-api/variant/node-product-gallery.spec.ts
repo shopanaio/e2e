@@ -68,7 +68,7 @@ test.describe('node product gallery connection', () => {
 
     await api.session.setupApiKey();
 
-    // Получаем GraphQL ID через публичное API (по slug варианта)
+    
     const prodResp = await api.client.query('client/Product' as GraphQLFileName, {
       variables: { handle: variant.slug },
     });
@@ -92,7 +92,7 @@ test.describe('node product gallery connection', () => {
 
     await api.session.setupApiKey();
 
-    // Получаем GraphQL ID через публичное API
+    
     const prodResp = await api.client.query('client/Product', {
       variables: { handle: variant.slug },
     });

@@ -6,14 +6,14 @@ import { CategorySort } from '@codegen/client-gql';
 import type { ApiFixtures } from '@fixtures/api/api';
 import { createCursorPaginationTests } from '@utils/cursorPaginationBuilder';
 
-// Вспомогательная функция для подготовки окружения и данных
+
 async function prepareCategories(api: ApiFixtures['api']) {
   const expectedTitles: string[] = [];
   const categoryIds: string[] = [];
 
   await api.session.setupUserAndProject();
 
-  // Создаём 5 опубликованных категорий
+  
   for (let i = 0; i < 5; i++) {
     const title = `Category ${i}`;
     const result = await api.admin.category.create({
@@ -46,7 +46,7 @@ async function prepareCategories(api: ApiFixtures['api']) {
     categoryIds.push(result.id);
   }
 
-  // Создаём 2 черновые категории (Draft)
+  
   for (let i = 0; i < 2; i++) {
     await api.admin.category.create({
       input: {
@@ -155,7 +155,7 @@ test.describe('Client Category API', () => {
     data.categories.edges.forEach((edge, index) => {
       const category = edge.node;
 
-      // Проверяем основные скалярные поля
+      
       expect(category.id).toBeDefined();
       expect(category.iid).toBeDefined();
       expect(category.title).toBe(expectedTitles[index]);
@@ -170,7 +170,7 @@ test.describe('Client Category API', () => {
       expect(category.seoTitle).toBe(`SEO Title for Category ${index}`);
       expect(category.seoDescription).toBe(`SEO Description for Category ${index}`);
 
-      // Проверяем cover (может быть null)
+      
       expect(category.cover).toBeDefined();
     });
   });
@@ -179,14 +179,14 @@ test.describe('Client Category API', () => {
   test.skip('sorts categories correctly after update by updatedAt', async ({ api }) => {
     const { categoryIds } = await prepareCategories(api);
 
-    // Получаем начальный порядок по updatedAt
+    
     const { data: initialData } = await api.client.query('client/Categories', {
       variables: { first: 20, sort: CategorySort.UpdatedAtDesc },
     });
 
     const initialOrder = initialData.categories.edges.map((edge) => edge.node.title);
 
-    // Обновляем первую категорию
+    
     const firstCategoryId = categoryIds[0];
     await api.admin.category.update({
       input: {
@@ -207,25 +207,25 @@ test.describe('Client Category API', () => {
       },
     });
 
-    // Ждем немного чтобы updatedAt точно изменился
+    
     await new Promise((resolve) => setTimeout(resolve, 100));
 
-    // Получаем обновленный порядок по updatedAt
+    
     const { data: updatedData } = await api.client.query('client/Categories', {
       variables: { first: 20, sort: CategorySort.UpdatedAtDesc },
     });
 
     const updatedOrder = updatedData.categories.edges.map((edge) => edge.node.title);
 
-    // Проверяем что обновленная категория теперь первая
+    
     expect(updatedOrder[0]).toBe('Updated Category 0');
 
-    // Проверяем что остальные категории остались в том же порядке
+    
     const otherCategories = updatedOrder.slice(1);
     const expectedOtherCategories = initialOrder.filter((title) => title !== 'Category 0');
     expect(otherCategories).toEqual(expectedOtherCategories);
 
-    // Проверяем что обновленные поля сохранились
+    
     const updatedCategory = updatedData.categories.edges[0].node;
     expect(updatedCategory.title).toBe('Updated Category 0');
     expect(updatedCategory.excerpt).toBe('Updated excerpt for category 0');

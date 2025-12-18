@@ -11,8 +11,6 @@ import type { GraphQLFileName } from '@queries/filenames';
 // Helpers
 // ---------------------------------------------------------------------------
 
-/**
- * Загружает произвольное количество мок-файлов и возвращает их ID. */
 async function uploadMockFiles(api: ApiFixtures['api'], count: number): Promise<string[]> {
   const ids: string[] = [];
   for (let i = 0; i < count; i++) {
@@ -21,19 +19,15 @@ async function uploadMockFiles(api: ApiFixtures['api'], count: number): Promise<
   return ids;
 }
 
-/**
- * Cоздаёт товар-контейнер с указанным количеством вариантов.
- * Можно передать coverId и gallery, которые будут применены либо ко всем вариантам,
- * либо сгенерированы внутри фабрики.
- */
+
 async function createProductWithVariants(
   api: ApiFixtures['api'],
   opts: {
     variantCount: number;
-    // Если передано, используется для всех вариантов (case 1)
+
     uniformCoverId?: string;
     uniformGallery?: string[];
-    // Если не передано, будет сгенерирован уникальный cover + gallery на каждый вариант (case 2)
+
   },
 ) {
   const handle = `product-gallery-${randomUUID()}`;
@@ -47,7 +41,7 @@ async function createProductWithVariants(
       coverId = opts.uniformCoverId;
       gallery = opts.uniformGallery;
     } else {
-      // генерируем свои файлы
+
       const [c, ...g] = await uploadMockFiles(api, 4); // 1 cover + 3 gallery
       coverId = c;
       gallery = g;
@@ -97,7 +91,7 @@ test.describe('product gallery connection', () => {
   test('all variants inherit same cover & gallery from container', async ({ api }) => {
     await api.session.setupUserAndProject();
 
-    // Подготовка файлов: один cover + 3 gallery
+
     const [coverId, ...galleryIds] = await uploadMockFiles(api, 4);
 
     const { product } = await createProductWithVariants(api, {
@@ -109,13 +103,13 @@ test.describe('product gallery connection', () => {
     await api.session.setupApiKey();
 
     for (const variant of product.variants) {
-      // Проверяем cover через обычный Product query
+
       const { data: prodData } = await api.client.query('client/Product', {
         variables: { handle: variant.slug },
       });
       expect((prodData as any).product.cover?.id).toBe(coverId);
 
-      // Проверяем gallery
+
       const { data: galData } = await api.client.query('client/ProductGallery', {
         variables: { handle: variant.slug, first: 10 },
       });
@@ -129,7 +123,7 @@ test.describe('product gallery connection', () => {
     const { product } = await createProductWithVariants(api, { variantCount: 3 });
     await api.session.setupApiKey();
 
-    // Собираем coverIds и galleryIds по каждому варианту для проверки уникальности
+
     const coverIds: string[] = [];
     const galleries: string[][] = [];
 
@@ -145,16 +139,16 @@ test.describe('product gallery connection', () => {
       galleries.push((galData as any).product.gallery.edges.map((e: any) => e.node.iid));
     }
 
-    // Проверяем что все coverId разные
+
     expect(new Set(coverIds).size).toBe(coverIds.length);
-    // И галереи разные (сравниваем по строковому представлению)
+
     expect(new Set(galleries.map((g) => g.join(','))).size).toBe(galleries.length);
   });
 
   test('paginates single product gallery with cursors', async ({ api }) => {
     await api.session.setupUserAndProject();
 
-    // Создаём один продукт-контейнер с 1 вариантом для простоты
+
     const [coverId, ...galleryIds] = await uploadMockFiles(api, 6); // 1 cover + 5 gallery
     const { product } = await createProductWithVariants(api, {
       variantCount: 1,

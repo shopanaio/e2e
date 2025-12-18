@@ -1,6 +1,6 @@
 import { expect } from '@playwright/test';
 import { randomUUID } from 'node:crypto';
-//import { GQLRequest } from '@utils/gql';
+
 import {
   ApiProduct,
   ApiVariant,
@@ -27,6 +27,7 @@ import {
 import { TenantApiFixture } from '@fixtures/admin/api';
 import _ from 'lodash';
 import { DeepPartial } from 'types';
+import { slugify } from '@utils/transliterate';
 
 export class Product {
   constructor(private api: TenantApiFixture) {}
@@ -173,9 +174,6 @@ export class Product {
   };
 
   /**
-   * Быстрое создание продукта c произвольным набором опций и автоматической генерацией всех комбинаций вариантов.
-   *
-   * Пример использования:
    * ```ts
    * await api.admin.product.createWithOptions({
    *   title: 'T-Shirt',
@@ -205,7 +203,7 @@ export class Product {
     description?: ApiDescriptionFieldsInput | null;
     excerpt?: string;
   }): Promise<ApiProduct> => {
-    // 1. Формируем матрицу возможных значений опций напрямую (без предварительного создания Feature/FeatureGroup)
+
     type FeatureEntity = {
       title: string;
       slug: string;
@@ -214,10 +212,10 @@ export class Product {
     };
 
     const featuresMatrix: FeatureEntity[][] = options.map((option) => {
-      const groupSlug = option.slug ?? option.title.toLowerCase().replace(/\s+/g, '-');
+      const groupSlug = option.slug ?? slugify(option.title);
       return option.values.map((value) => ({
         title: value,
-        slug: `${groupSlug}.${value.toLowerCase().replace(/\s+/g, '-')}`,
+        slug: `${groupSlug}.${slugify(value)}`,
         groupTitle: option.title,
         groupSlug,
       }));
@@ -266,7 +264,7 @@ export class Product {
       }),
     );
 
-    // 3. Создаём продукт с подготовленными вариантами
+
     const createInput = {
       description,
       excerpt,

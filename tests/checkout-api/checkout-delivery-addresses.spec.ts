@@ -19,7 +19,6 @@ test.describe('checkout-api: delivery addresses management', () => {
 
     await test.step('create empty checkout', async () => {
       const { data } = await api.client.checkout.create({
-        idempotency: `e2e-${Date.now()}`,
         localeCode: 'en',
         currencyCode: CurrencyCode.Usd,
         items: [],
@@ -38,9 +37,6 @@ test.describe('checkout-api: delivery addresses management', () => {
             address2: 'Apt 4B',
             city: 'New York',
             countryCode: CountryCode.Us,
-            email: 'home@example.com',
-            firstName: 'John',
-            lastName: 'Doe',
           },
         ],
       } satisfies ApiCheckoutDeliveryAddressesAddInput);
@@ -54,9 +50,32 @@ test.describe('checkout-api: delivery addresses management', () => {
       expect(groupHome.deliveryAddress?.address2).toBe('Apt 4B');
       expect(groupHome.deliveryAddress?.city).toBe('New York');
       expect(groupHome.deliveryAddress?.countryCode).toBe('US');
-      expect(groupHome.deliveryAddress?.firstName).toBe('John');
-      expect(groupHome.deliveryAddress?.lastName).toBe('Doe');
-      expect(groupHome.deliveryAddress?.email).toBe('home@example.com');
+    });
+
+    await test.step('add recipients to delivery groups', async () => {
+      const deliveryGroupId = updatedCheckout?.deliveryGroups[0].id as string;
+
+      const { data } = await api.client.checkout.addDeliveryRecipients({
+        checkoutId,
+        recipients: [
+          {
+            deliveryGroupId,
+            recipient: {
+              firstName: 'John',
+              lastName: 'Doe',
+              email: 'home@example.com',
+            },
+          },
+        ],
+      });
+
+      updatedCheckout = data.checkoutMutation.checkoutDeliveryRecipientsAdd;
+      expect(updatedCheckout.id).toBe(checkoutId);
+
+      const [groupHome] = updatedCheckout.deliveryGroups;
+      expect(groupHome.recipient?.firstName).toBe('John');
+      expect(groupHome.recipient?.lastName).toBe('Doe');
+      expect(groupHome.recipient?.email).toBe('home@example.com');
     });
 
     await test.step('update delivery addresses', async () => {
@@ -70,9 +89,6 @@ test.describe('checkout-api: delivery addresses management', () => {
               address2: 'Suite 10',
               city: 'Brooklyn',
               countryCode: CountryCode.Us,
-              email: 'updated@example.com',
-              firstName: 'Jane',
-              lastName: 'Smith',
             },
           },
         ],
@@ -88,9 +104,47 @@ test.describe('checkout-api: delivery addresses management', () => {
       expect(addr?.address1).toBe('789 Updated Street');
       expect(addr?.address2).toBe('Suite 10');
       expect(addr?.city).toBe('Brooklyn');
-      expect(addr?.firstName).toBe('Jane');
-      expect(addr?.lastName).toBe('Smith');
-      expect(addr?.email).toBe('updated@example.com');
+    });
+
+    await test.step('update recipients', async () => {
+      const deliveryGroupId = updatedCheckout?.deliveryGroups[0].id as string;
+
+      const { data } = await api.client.checkout.updateDeliveryRecipients({
+        checkoutId,
+        updates: [
+          {
+            deliveryGroupId,
+            recipient: {
+              firstName: 'Jane',
+              lastName: 'Smith',
+              email: 'updated@example.com',
+            },
+          },
+        ],
+      });
+
+      const updated = data.checkoutMutation.checkoutDeliveryRecipientsUpdate;
+      expect(updated.id).toBe(checkoutId);
+
+      const deliveryGroup = updated.deliveryGroups.find((g) => g.id === deliveryGroupId);
+      expect(deliveryGroup?.recipient?.firstName).toBe('Jane');
+      expect(deliveryGroup?.recipient?.lastName).toBe('Smith');
+      expect(deliveryGroup?.recipient?.email).toBe('updated@example.com');
+    });
+
+    await test.step('remove recipient', async () => {
+      const deliveryGroupId = updatedCheckout?.deliveryGroups[0].id as string;
+
+      const { data } = await api.client.checkout.removeDeliveryRecipients({
+        checkoutId,
+        deliveryGroupIds: [deliveryGroupId],
+      });
+
+      const { id, deliveryGroups } = data.checkoutMutation.checkoutDeliveryRecipientsRemove;
+      expect(id).toBe(checkoutId);
+
+      const deliveryGroup = deliveryGroups.find((g) => g.id === deliveryGroupId);
+      expect(deliveryGroup?.recipient).toBeNull();
     });
 
     await test.step('remove delivery address', async () => {

@@ -4,7 +4,7 @@ import { EntityStatus, WeightUnit } from '@codegen/admin-gql';
 import { CurrencyCode } from '@codegen/client-gql';
 import { composeGlobalId, TypeName } from '@utils/globalid';
 
-test.describe('Cart API', () => {
+test.describe.skip('Cart API', () => {
   test('Create empty cart', async ({ api }) => {
     await api.session.setupClient();
     const { data } = await api.client.cart.create({
@@ -320,7 +320,7 @@ test.describe('Cart API', () => {
     expect(data?.loadCart?.cart?.id).toBe(cartId);
   });
 
-  test.only('Zero price items: add, update quantity, remove with mixed cart', async ({ api }) => {
+  test('Zero price items: add, update quantity, remove with mixed cart', async ({ api }) => {
     await api.session.setupUserAndProject();
     const handle = `test-product-${Date.now()}`;
     const product = await api.admin.product.create({

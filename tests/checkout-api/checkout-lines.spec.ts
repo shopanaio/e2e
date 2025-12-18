@@ -15,7 +15,6 @@ test.describe('checkout-api: lines operations', () => {
       api.session.setCustomerScope();
 
       const { data: createdResp } = await api.client.checkout.create({
-        idempotency: `e2e-${Date.now()}`,
         localeCode: 'en',
         currencyCode: CurrencyCode.Usd,
         items: [],
@@ -30,7 +29,7 @@ test.describe('checkout-api: lines operations', () => {
       api.session.setTenantScope();
       const handle = `test-product-${Date.now()}`;
       unitPrice = 100;
-      const product = await api.admin.product.create({
+      await api.admin.product.create({
         input: {
           title: 'Test Product',
           status: EntityStatus.Published,
@@ -52,8 +51,11 @@ test.describe('checkout-api: lines operations', () => {
           },
         },
       });
-      const variantId = product.variants[0].id as string;
-      purchasableId = variantId;
+
+      // Fetch product from client API to get correct purchasable ID (base64 encoded)
+      api.session.setCustomerScope();
+      const variant = await api.client.variant.get(handle);
+      purchasableId = variant.id;
     });
 
     await test.step('add line to checkout', async () => {
@@ -71,8 +73,8 @@ test.describe('checkout-api: lines operations', () => {
 
       // capture unit price and validate totals after add
       expect(afterAdd?.totalQuantity).toBe(2);
-      expect(Number(afterAdd?.cost.subtotalAmount.amount)).toBe((unitPrice / 100) * 2);
-      expect(Number(afterAdd?.cost.totalAmount.amount)).toBe((unitPrice / 100) * 2);
+      expect(afterAdd?.cost.subtotalAmount.amount).toBe((unitPrice / 100) * 2);
+      expect(afterAdd?.cost.totalAmount.amount).toBe((unitPrice / 100) * 2);
       expect(afterAdd?.cost.subtotalAmount.currencyCode).toBe('USD');
       expect(afterAdd?.cost.totalAmount.currencyCode).toBe('USD');
     });
@@ -87,8 +89,8 @@ test.describe('checkout-api: lines operations', () => {
       expect(afterUpd?.lines[0].quantity).toBe(3);
       // validate totals after update
       expect(afterUpd?.totalQuantity).toBe(3);
-      expect(Number(afterUpd?.cost.subtotalAmount.amount)).toBe((unitPrice / 100) * 3);
-      expect(Number(afterUpd?.cost.totalAmount.amount)).toBe((unitPrice / 100) * 3);
+      expect(afterUpd?.cost.subtotalAmount.amount).toBe((unitPrice / 100) * 3);
+      expect(afterUpd?.cost.totalAmount.amount).toBe((unitPrice / 100) * 3);
     });
 
     // proceed to deletion scenario
@@ -102,8 +104,8 @@ test.describe('checkout-api: lines operations', () => {
       const afterDel = delResp.checkoutMutation.checkoutLinesDelete.checkout;
       expect(afterDel?.lines.length).toBe(0);
       expect(afterDel?.totalQuantity).toBe(0);
-      expect(Number(afterDel?.cost.subtotalAmount.amount)).toBe(0);
-      expect(Number(afterDel?.cost.totalAmount.amount)).toBe(0);
+      expect(afterDel?.cost.subtotalAmount.amount).toBe(0);
+      expect(afterDel?.cost.totalAmount.amount).toBe(0);
     });
   });
 });

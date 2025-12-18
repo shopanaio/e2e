@@ -1,5 +1,5 @@
 import { EntityStatus } from '@codegen/admin-gql';
-import { ApiCheckoutLine, CurrencyCode } from '@codegen/client-gql';
+import { ApiCheckoutLine, ApiProductVariant, CurrencyCode } from '@codegen/client-gql';
 import { test } from '@fixtures/api/api';
 import { expect } from '@playwright/test';
 import * as yup from 'yup';
@@ -10,14 +10,14 @@ test.describe('checkout-api: lines add', () => {
   }) => {
     await test.step('setup client (tenant, project, apiKey) and customer scope', async () => {
       await api.session.setupClient();
+      api.session.setCustomerScope();
     });
 
     let checkoutId = '';
-    let purchasableId = '';
+    let purchasableSlug = '';
 
     await test.step('create empty checkout', async () => {
       const { data } = await api.client.checkout.create({
-        idempotency: `e2e-${Date.now()}`,
         localeCode: 'en',
         currencyCode: CurrencyCode.Usd,
         items: [],
@@ -53,17 +53,20 @@ test.describe('checkout-api: lines add', () => {
           },
         },
       });
-      purchasableId = product.variants[0].id as string;
-      expect(purchasableId).toBeTruthy();
+      purchasableSlug = product.variants[0].slug as string;
+      expect(purchasableSlug).toBeTruthy();
     });
+
+    let variant: ApiProductVariant;
 
     await test.step('add one line to checkout', async () => {
       api.session.setCustomerScope();
+      variant = await api.client.variant.get(purchasableSlug);
       const { data } = await api.client.checkout.addLines({
         checkoutId,
         lines: [
           {
-            purchasableId,
+            purchasableId: variant.id,
             quantity: 2,
           },
         ],
@@ -85,30 +88,21 @@ test.describe('checkout-api: lines add', () => {
 
       const checkout = data.checkoutQuery.checkout;
       const line = checkout?.lines[0] as ApiCheckoutLine;
-      // Все точные проверки переносим в yup-схемы ниже
 
-      // Схематичная проверка через yup
       const moneySchema = yup
         .object({
           currencyCode: yup.string().equals(['USD']).required(),
-          // Decimal сериализуется строкой, ожидаем строку с двумя знаками
-          amount: yup
-            .string()
-            .matches(/^[-+]?\d+\.\d{2}$/)
-            .required(),
+          amount: yup.number().required(),
         })
         .required();
 
-      // Вычисляем ожидаемое значение totalAmount без использования schema.test
-      const unitAmount = parseFloat(String(line.cost.unitPrice.amount));
-      const expectedTotalRounded = (
-        Math.round((unitAmount * 2 + Number.EPSILON) * 100) / 100
-      ).toFixed(2);
+      const unitAmount = line.cost.unitPrice.amount;
+      const expectedTotalRounded = Math.round((unitAmount * 2 + Number.EPSILON) * 100) / 100;
 
       const lineSchema = yup
         .object({
           id: yup.string().required(),
-          purchasableId: yup.string().equals([purchasableId]).required(),
+          purchasableId: yup.string().equals([variant.id]).required(),
           quantity: yup.number().equals([2]).required(),
           title: yup.string().required(),
           sku: yup.string().equals(['SKU-ALP-1']).required(),
@@ -118,7 +112,7 @@ test.describe('checkout-api: lines add', () => {
               totalAmount: yup
                 .object({
                   currencyCode: yup.string().equals(['USD']).required(),
-                  amount: yup.string().equals([expectedTotalRounded]).required(),
+                  amount: yup.number().equals([expectedTotalRounded]).required(),
                 })
                 .required(),
               subtotalAmount: moneySchema,
@@ -134,7 +128,6 @@ test.describe('checkout-api: lines add', () => {
 
       expect(line).toMatchSchema(lineSchema);
 
-      // Валидация структуры checkout в целом и точных значений через yup
       expect(checkout).toMatchSchema(
         yup.object({
           id: yup.string().equals([checkoutId]).required(),
@@ -145,7 +138,7 @@ test.describe('checkout-api: lines add', () => {
               totalAmount: yup
                 .object({
                   currencyCode: yup.string().equals(['USD']).required(),
-                  amount: yup.string().equals([expectedTotalRounded]).required(),
+                  amount: yup.number().equals([expectedTotalRounded]).required(),
                 })
                 .required(),
             })

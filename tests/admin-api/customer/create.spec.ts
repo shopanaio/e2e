@@ -1,7 +1,7 @@
 import { test } from '@fixtures/base.extend';
 import { expect } from '@playwright/test';
 
-// TODO: Переписать тест для использования api.admin.customer фикстурных методов вместо ручных GraphQL вызовов
+
 
 test.describe('CustomerCreate', () => {
   test('Create', async ({ api }) => {

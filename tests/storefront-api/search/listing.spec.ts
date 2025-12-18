@@ -13,7 +13,7 @@ import { GraphQLFileName } from '@queries/filenames';
 // Test data preparation
 // ---------------------------------------------------------------------------
 
-// Фиксированный поисковый термин, используется и в prepare, и в сортировке
+
 const SEARCH_TERM = 'LaptopTest';
 
 export const listingSorts: ListingSort[] = [
@@ -29,7 +29,7 @@ export const listingSorts: ListingSort[] = [
 async function prepareSearchListing(api: ApiFixtures['api']) {
   await api.session.setupUserAndProject();
 
-  // Поисковый запрос фиксированный, чтобы тайтлы были предсказуемыми
+  
   const searchTerm = SEARCH_TERM;
 
   const specs: string[] = [
@@ -45,7 +45,7 @@ async function prepareSearchListing(api: ApiFixtures['api']) {
 
   for (let i = 0; i < specs.length; i++) {
     const title = specs[i];
-    const price = (i + 1) * 100; // возрастающая цена для PriceAsc
+    const price = (i + 1) * 100; 
 
     await api.admin.product.create({
       input: {
@@ -74,12 +74,12 @@ async function prepareSearchListing(api: ApiFixtures['api']) {
     creationOrderTitles.push(title);
   }
 
-  // creationOrderTitles хранит порядок CreatedAtAsc / PriceAsc
+  
 
-  const expectedTitles = creationOrderTitles; // базовый порядок
+  const expectedTitles = creationOrderTitles; 
 
   // ------------------------------
-  // Создаём товары, которые НЕ должны попасть в выдачу
+  
   // ------------------------------
   const IRRELEVANT_COUNT = 3;
   for (let i = 0; i < IRRELEVANT_COUNT; i++) {
@@ -132,7 +132,7 @@ const sortToFieldOrder = {
 
 const getExpectedBySort = (titles: string[], sort: ListingSort) => {
   switch (sort) {
-    // --- CreatedAt / Price --- (у нас оба совпадают с порядком создания)
+    
     case ListingSort.CreatedAtAsc:
     case ListingSort.PriceAsc:
       return [...titles];
@@ -157,8 +157,8 @@ const getExpectedBySort = (titles: string[], sort: ListingSort) => {
           createdIdx: idx,
         }))
         .sort((a, b) => {
-          if (b.weight !== a.weight) return b.weight - a.weight; // больше вхождений выше
-          return b.createdIdx - a.createdIdx; // tie-break: id DESC (позже создан – выше)
+          if (b.weight !== a.weight) return b.weight - a.weight; 
+          return b.createdIdx - a.createdIdx; 
         })
         .map((x) => x.title);
     }

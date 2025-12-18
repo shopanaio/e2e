@@ -8,7 +8,6 @@ test.describe('checkout-api: read model', () => {
     api.session.setCustomerScope();
 
     const input = {
-      idempotency: `e2e-${Date.now()}`,
       localeCode: 'en',
       currencyCode: CurrencyCode.Usd,
       items: [],

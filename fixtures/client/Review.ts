@@ -64,7 +64,6 @@ export class Review {
     return data.voteReviewHelpful;
   }
 
-  /** Получить отзыв по ID. */
   async findOne(id: string, throwOnError = true): Promise<ApiProductReview | null> {
     const { data, errors } = await this.api.query('client/ReviewFindOne', {
       variables: { id },

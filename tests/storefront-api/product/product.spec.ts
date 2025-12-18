@@ -32,12 +32,12 @@ test.describe('product', () => {
     await api.session.setupApiKey();
 
     for (const variant of adminProduct.variants) {
-      const { product } = await api.client.product.get(variant.slug);
+      const clientVariant = await api.client.variant.get(variant.slug);
 
-      expect(product?.handle).toBe(productContainerSlug);
-      expect(product?.title).toBe(adminProduct.title);
-      expect(product?.description).not.toBeUndefined();
-      expect(product?.excerpt).not.toBeUndefined();
+      expect(clientVariant?.product?.handle).toBe(productContainerSlug);
+      expect(clientVariant?.product?.title).toBe(adminProduct.title);
+      expect(clientVariant?.product?.description).not.toBeUndefined();
+      expect(clientVariant?.product?.excerpt).not.toBeUndefined();
     }
   });
 });

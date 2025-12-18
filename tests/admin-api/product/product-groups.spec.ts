@@ -1,6 +1,4 @@
-/**
- * Тесты работы с Feature и FeatureGroup в Admin API.
- */
+
 import { test } from '@fixtures/base.extend';
 import { randomUUID } from 'node:crypto';
 import {

@@ -2,7 +2,7 @@ import { test } from '@fixtures/base.extend';
 import { expect } from '@playwright/test';
 import { EntityStatus } from '@codegen/admin-gql';
 
-// TODO: Переписать тест для использования api.admin.product фикстурных методов вместо ручных GraphQL вызовов
+
 // DISABLED: This test relies on removed FeatureGroup API and complex UI interactions
 
 test.describe('Product Options Create', () => {
@@ -30,7 +30,7 @@ test.describe('Product Options Create', () => {
         status: EntityStatus.Draft,
       });
 
-      // Verify that 9 variants were created (3 colors × 3 sizes)
+      
       expect(product.variants?.length).toBe(9);
       expect(product.title).toBe('T-Shirt');
     });

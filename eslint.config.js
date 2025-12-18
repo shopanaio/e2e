@@ -5,7 +5,6 @@ import graphqlPlugin from '@graphql-eslint/eslint-plugin';
 import eslintConfigPrettier from 'eslint-config-prettier/flat';
 
 export default defineConfig([
-  // 1) полностью глобальные игноры
   globalIgnores([
     'node_modules/**',
     'dist/**',
@@ -19,7 +18,6 @@ export default defineConfig([
     "k6/**",
   ]),
 
-  // 2) весь остальной конфиг, в том числе TypeScript и GraphQL правила
   tseslint.config(
     eslint.configs.recommended,
     tseslint.configs.strict,

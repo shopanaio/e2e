@@ -13,7 +13,7 @@ query CategoriesBreadcrumbs($first: Int, $sort: CategorySort) {
           excerpt
           createdAt
           updatedAt
-          listingType
+          # listingType
           seoTitle
           seoDescription
         }

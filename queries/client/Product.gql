@@ -5,30 +5,27 @@ query Product($handle: String!) {
     title
     description
     excerpt
-    price {
-      amount
-      currencyCode
-    }
     rating {
       rating
       count
     }
-    sku
-    stockStatus {
-      handle
-      isAvailable
-    }
-    cover {
-      id
-      source
-      url
-    }
-    product {
+    variants {
       id
       handle
-      title
-      description
-      excerpt
+      price {
+        amount
+        currencyCode
+      }
+      sku
+      stockStatus {
+        handle
+        isAvailable
+      }
+      cover {
+        id
+        source
+        url
+      }
     }
   }
 }

@@ -15,7 +15,6 @@ test.describe('checkout-api: lines clear', () => {
 
     await test.step('create empty checkout', async () => {
       const { data } = await api.client.checkout.create({
-        idempotency: `e2e-${Date.now()}`,
         localeCode: 'en',
         currencyCode: CurrencyCode.Usd,
         items: [],
@@ -27,7 +26,7 @@ test.describe('checkout-api: lines clear', () => {
     await test.step('seed product variant and get purchasableId', async () => {
       api.session.setTenantScope();
       const handle = `test-product-${Date.now()}`;
-      const product = await api.admin.product.create({
+      await api.admin.product.create({
         input: {
           title: 'Clear Lines Product',
           status: EntityStatus.Published,
@@ -49,7 +48,11 @@ test.describe('checkout-api: lines clear', () => {
           },
         },
       });
-      purchasableId = product.variants[0].id as string;
+
+      // Fetch product from client API to get correct purchasable ID (base64 encoded)
+      api.session.setCustomerScope();
+      const variant = await api.client.variant.get(handle);
+      purchasableId = variant.id;
       expect(purchasableId).toBeTruthy();
     });
 
@@ -76,8 +79,8 @@ test.describe('checkout-api: lines clear', () => {
       const afterClear = data.checkoutMutation.checkoutLinesClear.checkout;
       expect(afterClear?.lines.length).toBe(0);
       expect(afterClear?.totalQuantity).toBe(0);
-      expect(Number(afterClear?.cost.subtotalAmount.amount)).toBe(0);
-      expect(Number(afterClear?.cost.totalAmount.amount)).toBe(0);
+      expect(afterClear?.cost.subtotalAmount.amount).toBe(0);
+      expect(afterClear?.cost.totalAmount.amount).toBe(0);
     });
 
     await test.step('read checkout by id and verify empty state', async () => {
@@ -86,8 +89,8 @@ test.describe('checkout-api: lines clear', () => {
       expect(read?.id).toBe(checkoutId);
       expect(read?.lines.length).toBe(0);
       expect(read?.totalQuantity).toBe(0);
-      expect(Number(read?.cost.subtotalAmount.amount)).toBe(0);
-      expect(Number(read?.cost.totalAmount.amount)).toBe(0);
+      expect(read?.cost.subtotalAmount.amount).toBe(0);
+      expect(read?.cost.totalAmount.amount).toBe(0);
     });
   });
 });

@@ -1,5 +1,5 @@
 query ProductContainerCategoriesList($handle: String!, $first: Int = 10) {
-  product(handle: $handle) {
+  variant(handle: $handle) {
     id
     handle
     categories(first: $first) {

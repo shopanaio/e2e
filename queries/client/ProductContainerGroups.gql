@@ -1,5 +1,5 @@
 query ProductContainerGroups($handle: String!) {
-  product(handle: $handle) {
+  variant(handle: $handle) {
     id
     handle
     title

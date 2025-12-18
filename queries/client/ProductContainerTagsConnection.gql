@@ -6,7 +6,7 @@ query ProductContainerTagsConnection(
   $before: Cursor
   $sort: TagSort
 ) {
-  product(handle: $handle) {
+  variant(handle: $handle) {
     product {
       tags(first: $first, after: $after, last: $last, before: $before, sort: $sort) {
         edges {

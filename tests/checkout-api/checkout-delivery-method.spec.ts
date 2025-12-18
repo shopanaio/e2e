@@ -4,16 +4,8 @@ import { expect } from '@playwright/test';
 
 test.describe('checkout-api: delivery method update', () => {
   test('should select delivery method for first delivery group', async ({ api }) => {
-    await test.step('setup client and install shipping apps', async () => {
+    await test.step('setup client', async () => {
       await api.session.setupClient();
-
-      // Install shipping apps to get shipping methods
-      await api.admin.mutation('admin/AppsInstall', {
-        variables: { code: 'shipping:novaposhta' },
-      });
-      await api.admin.mutation('admin/AppsInstall', {
-        variables: { code: 'shipping:meest' },
-      });
     });
 
     let checkoutId = '';
@@ -23,7 +15,6 @@ test.describe('checkout-api: delivery method update', () => {
     await test.step('create checkout', async () => {
       api.session.setCustomerScope();
       const { data } = await api.client.checkout.create({
-        idempotency: `e2e-${Date.now()}`,
         localeCode: 'en',
         currencyCode: CurrencyCode.Usd,
         items: [],
@@ -37,6 +28,7 @@ test.describe('checkout-api: delivery method update', () => {
       const { data } = await api.client.checkout.readFull(checkoutId);
 
       const checkout = data.checkoutQuery.checkout;
+
       expect(checkout?.deliveryGroups).toBeTruthy();
       expect(checkout?.deliveryGroups.length).toBeGreaterThan(0);
 
@@ -45,14 +37,20 @@ test.describe('checkout-api: delivery method update', () => {
 
       expect(group.deliveryMethods.length).toBeGreaterThan(0);
       shippingMethodCode = group.deliveryMethods[0].code;
+      console.log('shippingMethodCode', shippingMethodCode);
       expect(shippingMethodCode).toBeTruthy();
     });
 
     await test.step('select delivery method for entire checkout', async () => {
+      const { data: readData } = await api.client.checkout.readFull(checkoutId);
+      const group = readData.checkoutQuery.checkout?.deliveryGroups[0];
+      const provider = group?.deliveryMethods[0]?.provider?.code || '';
+
       const { data } = await api.client.checkout.updateDeliveryMethod({
         checkoutId,
         shippingMethodCode,
         deliveryGroupId,
+        provider,
       });
 
       const updatedCheckout = data.checkoutMutation.checkoutDeliveryMethodUpdate;
@@ -81,10 +79,12 @@ test.describe('checkout-api: delivery method update', () => {
       const differentMethod = availableMethods?.find((m) => m.code !== shippingMethodCode);
 
       if (differentMethod) {
+        const provider = differentMethod.provider?.code || '';
         const { data } = await api.client.checkout.updateDeliveryMethod({
           checkoutId,
           shippingMethodCode: differentMethod.code,
           deliveryGroupId,
+          provider,
         });
 
         const updatedCheckout = data.checkoutMutation.checkoutDeliveryMethodUpdate;
@@ -95,12 +95,8 @@ test.describe('checkout-api: delivery method update', () => {
   });
 
   test('should clear delivery method selection', async ({ api }) => {
-    await test.step('setup client and install shipping apps', async () => {
+    await test.step('setup client', async () => {
       await api.session.setupClient();
-
-      await api.admin.mutation('admin/AppsInstall', {
-        variables: { code: 'shipping:novaposhta' },
-      });
     });
 
     let checkoutId = '';
@@ -110,7 +106,6 @@ test.describe('checkout-api: delivery method update', () => {
     await test.step('create checkout and select delivery method', async () => {
       api.session.setCustomerScope();
       const { data: createData } = await api.client.checkout.create({
-        idempotency: `e2e-${Date.now()}`,
         localeCode: 'en',
         currencyCode: CurrencyCode.Usd,
         items: [],
@@ -124,11 +119,13 @@ test.describe('checkout-api: delivery method update', () => {
       const group = readData.checkoutQuery.checkout?.deliveryGroups[0];
       deliveryGroupId = group?.id || '';
       shippingMethodCode = group?.deliveryMethods[0]?.code || '';
+      const provider = group?.deliveryMethods[0]?.provider?.code || '';
 
       await api.client.checkout.updateDeliveryMethod({
         checkoutId,
         shippingMethodCode,
         deliveryGroupId,
+        provider,
       });
     });
 
@@ -153,10 +150,12 @@ test.describe('checkout-api: delivery method update', () => {
       const differentMethod = availableMethods?.find((m) => m.code !== shippingMethodCode);
 
       if (differentMethod) {
+        const provider = differentMethod.provider?.code || '';
         const { data } = await api.client.checkout.updateDeliveryMethod({
           checkoutId,
           shippingMethodCode: differentMethod.code,
           deliveryGroupId,
+          provider,
         });
 
         const updatedGroup = data.checkoutMutation.checkoutDeliveryMethodUpdate.deliveryGroups.find(

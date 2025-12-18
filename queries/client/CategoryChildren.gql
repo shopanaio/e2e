@@ -17,7 +17,7 @@ query CategoryChildren(
           handle
           description
           excerpt
-          listingType
+          # listingType
           createdAt
           updatedAt
           seoTitle

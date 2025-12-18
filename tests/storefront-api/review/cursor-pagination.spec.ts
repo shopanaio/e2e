@@ -41,12 +41,12 @@ const getExpectedBySort = (titles: string[], sort: ProductReviewSort) => {
 async function prepareProductReviews(api: ApiFixtures['api']) {
   await api.session.setupUserAndProject();
 
-  // Создаём продукт и получаем handle для витрины
+  
   const {
     variants: [{ slug: handle }],
   } = await api.admin.product.create();
 
-  // Подготавливаем API-key и первого покупателя
+  
   await api.session.setupApiKey();
   await api.session.setupCustomer();
 
@@ -55,7 +55,7 @@ async function prepareProductReviews(api: ApiFixtures['api']) {
   const expectedTitles: string[] = [];
   const reviewIds: { global: string; internal: string }[] = [];
 
-  // Будем создавать 5 отзывов от разных покупателей
+  
   for (let i = 0; i < 5; i++) {
     api.session.customer.data = generateUser();
     await api.session.setupCustomer();
@@ -63,7 +63,7 @@ async function prepareProductReviews(api: ApiFixtures['api']) {
     const title = `Review ${i}`;
     const { id: reviewId, iid } = await api.client.review.create({
       title,
-      rating: i + 1, // 1 → 5
+      rating: i + 1, 
       message: `Message ${i}`,
       productId: product.id,
     });
@@ -75,21 +75,21 @@ async function prepareProductReviews(api: ApiFixtures['api']) {
     });
   }
 
-  // Переключаемся на tenant-scope для админских действий (апрув отзывов)
+  
   api.session.setTenantScope();
   for (const { internal: iid } of reviewIds) {
     const ok = await api.admin.review.approve(iid);
     expect(ok).toBe(true);
   }
 
-  // Возвращаемся к customer-scope, чтобы голосовать helpful
+  
   await api.session.setCustomerScope();
 
   for (let i = 0; i < reviewIds.length; i++) {
     const { global: reviewId } = reviewIds[i];
     for (let v = 0; v < i; v++) {
       if (v > 0) {
-        // каждый голос – новым пользователем
+        
         api.session.customer.data = generateUser();
         await api.session.setupCustomer();
       }
@@ -98,7 +98,7 @@ async function prepareProductReviews(api: ApiFixtures['api']) {
     }
   }
 
-  // Сортируем ожидаемые тайтлы по возрастанию rating (1 → 5)
+  
   return {
     expectedTitles,
     baseVariables: { handle },

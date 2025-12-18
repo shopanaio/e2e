@@ -39,14 +39,15 @@ mutation CheckoutPromoCodeAdd($input: CheckoutPromoCodeAddInput!) {
           }
         }
       }
-      customerIdentity { email phone countryCode customer { id } }
+      customerIdentity { email phone countryCode firstName lastName middleName customer { id } }
       customerNote
       deliveryGroups {
         id
         checkoutLines { id }
-        deliveryAddress { id address1 address2 city countryCode provinceCode postalCode email firstName lastName data }
-        deliveryMethods { code deliveryMethodType provider { code data } }
-        selectedDeliveryMethod { code deliveryMethodType provider { code data } }
+        deliveryAddress { id address1 address2 city countryCode provinceCode postalCode data }
+        recipient { firstName lastName middleName email phone }
+        deliveryMethods { code deliveryMethodType provider { code } data }
+        selectedDeliveryMethod { code deliveryMethodType provider { code } data }
         estimatedCost { amount { amount currencyCode } paymentModel }
       }
       appliedPromoCodes {

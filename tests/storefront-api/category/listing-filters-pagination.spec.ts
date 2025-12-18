@@ -48,7 +48,7 @@ async function prepareComplexFilteredListing(api: ApiFixtures['api']) {
     input: { title: 'Sale', slug: `sale-${randomUUID()}`, color: '#000000' },
   });
 
-  // Features и Options теперь будут созданы inline при создании продуктов
+  
 
   // 3. Products
   const matchingProductsCount = 7; // For pagination - increased to get 5 products in price range
@@ -154,20 +154,20 @@ async function prepareComplexFilteredListing(api: ApiFixtures['api']) {
   await api.session.setupApiKey();
 
   // ---------------------------------------------------------------------
-  // Итоговый набор данных для теста
+  
   // ---------------------------------------------------------------------
-  // Всего создано 15 товаров. Из них только 5 должны соответствовать
-  // всем критериям комплексного фильтра, что достаточно для 3 страниц
-  // пагинации (pageSize=2).
+  
+  
+  
   //
-  // Критерии фильтра:
-  // 1. Цена: от 12.00 до 18.00
-  // 2. Тег: 'Sale'
-  // 3. Характеристика: 'Cotton'
-  // 4. Опция: 'Size M'
-  // 5. Наличие: 'IN_STOCK'
+  
+  
+  
+  
+  
+  
   //
-  // Продукты, которые должны вернуться (соответствуют всем критериям):
+  
   // - Product C (price 12.00)
   // - Product D (price 13.00)
   // - Product E (price 14.00)
